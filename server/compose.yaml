@@ -1,0 +1,47 @@
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_PATH: /data/fursa.sqlite3
+      TRUSTED_PROXIES: 172.31.247.3/32
+    volumes:
+      - jobs_data:/data
+    networks:
+      backend:
+        ipv4_address: 172.31.247.2
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?Set API_DOMAIN in .env}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      backend:
+        ipv4_address: 172.31.247.3
+    depends_on:
+      api:
+        condition: service_healthy
+volumes:
+  jobs_data:
+  caddy_data:
+  caddy_config:
+networks:
+  backend:
+    ipam:
+      config:
+        - subnet: 172.31.247.0/24

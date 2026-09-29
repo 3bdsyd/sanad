@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "377548025897",
+    "project_id": "snd-project-8794b",
+    "storage_bucket": "snd-project-8794b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:377548025897:android:a05cdfd42131016f6bac38",
+        "android_client_info": {
+          "package_name": "app.fursa.fursa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbv8wbwYkIG8KMscguRjQogUgOsQK9C6M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
