@@ -3,14 +3,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// User appearance choice: follows the device, or pins light / dark.
 class SanadThemeController extends ChangeNotifier {
-  static const prefsKey = 'fursa.theme.mode';
+  static const prefsKey = 'snad.theme.mode';
 
   ThemeMode _mode = ThemeMode.system;
   ThemeMode get mode => _mode;
 
   Future<void> load() async {
     final preferences = await SharedPreferences.getInstance();
-    _mode = _decode(preferences.getString(prefsKey));
+    final current = preferences.getString(prefsKey);
+    _mode = _decode(current);
     notifyListeners();
   }
 
@@ -22,12 +23,9 @@ class SanadThemeController extends ChangeNotifier {
     await preferences.setString(prefsKey, _encode(value));
   }
 
-  /// Cycles تلقائي → فاتح → داكن → تلقائي.
-  Future<void> cycle() => setMode(switch (_mode) {
-    ThemeMode.system => ThemeMode.light,
-    ThemeMode.light => ThemeMode.dark,
-    ThemeMode.dark => ThemeMode.system,
-  });
+  /// Switches directly to the opposite visible appearance.
+  Future<void> toggle(Brightness brightness) =>
+      setMode(brightness == Brightness.dark ? ThemeMode.light : ThemeMode.dark);
 
   String get label => switch (_mode) {
     ThemeMode.system => 'تلقائي مع الجهاز',

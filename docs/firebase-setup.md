@@ -1,13 +1,13 @@
 # Firebase لتطبيق سند
 
-أضيفت حزمة `firebase_core` الرسمية وتهيئة آمنة في [firebase_bootstrap.dart](../lib/core/firebase_bootstrap.dart). سُجّل تطبيقا iOS وAndroid بالمعرّف الموجود `app.fursa.fursa` داخل المشروع الذي اختاره صاحب التطبيق: `snd-project-8794b`، رقم المشروع `377548025897` واسم العرض `snd project`. الإعدادات الفعلية مولّدة باستخدام FlutterFire، وليست قيماً تجريبية.
+أضيفت حزمة `firebase_core` الرسمية وتهيئة آمنة في [firebase_bootstrap.dart](../lib/core/firebase_bootstrap.dart). معرّف Android وiOS الحالي هو `com.jobsnad.snad` ضمن مشروع Firebase `snd-project-8794b`، رقم المشروع `377548025897`. تطبيقَا Android وiOS بالمعرّف `com.jobsnad.snad` مسجّلان في Firebase، وهذه هي معرّفات التطبيق وإعداداتهما الحالية.
 
 | المنصة | Firebase App ID |
 | --- | --- |
-| iOS | `1:377548025897:ios:070cb8c44eb4f8526bac38` |
-| Android | `1:377548025897:android:a05cdfd42131016f6bac38` |
+| iOS | `1:377548025897:ios:cd3a2efd884c58a36bac38` |
+| Android | `1:377548025897:android:90cc0a4f24dd28c56bac38` |
 
-بيانات الفرص تبقى على [خادم REST الحالي](backend.md). لم تُضف Firestore أو حسابات مستخدمين أو Analytics أو FCM؛ مركز الإشعارات الحالي محلي، وليس push.
+بيانات الفرص تبقى على [خادم REST الحالي](backend.md). أُضيف Firebase Messaging وإشعارات الجهاز على Android وiOS. لا تُستخدم Firestore أو Analytics. في تحديث4 نوفمبر2026 أُضيف عميل Firebase Authentication لتوثيق Google/Apple فقط؛ جلسة سند وبيانات الحساب والبريد ورمز الدخول تديرها API المنصة، ولا يعني وجود SDK أن المزودين مفعلان في لوحة Firebase. [إعدادات المنصة المطلوبة](backend-handoff-2026-11-03/CONFIGURATION.md). تفاصيل التنفيذ والتحقق في [الإشعارات والتنقل](notifications-and-navigation.md).
 
 ## ربط المشروع الحقيقي
 
@@ -40,7 +40,9 @@ await FirebaseBootstrap.initialize();
 
 ## متطلبات البناء والتحقق
 
-Firebase Core الحالي يتطلب iOS 15 أو أحدث وAndroid API 23 أو أحدث؛ ضُبط حد iOS الأدنى على 15 وضُمن حد Android ضمن Gradle. ملف plist مضاف إلى Resources في Runner، وGoogle Services plugin مفعّل على Android بواسطة FlutterFire. لا تضف تهيئة `FirebaseApp.configure()` يدوية مكررة في AppDelegate.
+Firebase Core الحالي يتطلب iOS 15 أو أحدث وAndroid API 23 أو أحدث؛ ضُبط حد iOS الأدنى على 15 وضُمن حد Android ضمن Gradle؛ التطبيق ككل يحتاج API24 بسبب مكتبة الإعلانات. ملف plist مضاف إلى Resources في Runner، وGoogle Services plugin مفعّل على Android بواسطة FlutterFire. لا تضف تهيئة `FirebaseApp.configure()` يدوية مكررة في AppDelegate.
+
+حد iOS 15 مثبت في إعدادات المشروع وهدفي `Runner` و`RunnerTests` لكل من Debug وProfile وRelease، وفي `AppFrameworkInfo.plist`. Flutter يحدّث حد حزمة Swift المولدة من إعدادات الهدف أثناء بناء iOS؛ لا تعدّل `ios/Flutter/ephemeral` يدوياً ولا تشغّل بناء منصتين بالتوازي لأن توليد ملفات Flutter مشترك بينهما.
 
 ```sh
 flutter pub get
@@ -52,3 +54,8 @@ flutter build apk --debug
 شغّل التطبيق على المنصتين وتحقق في سجل debug من `Firebase Core initialized: PROJECT_ID.` مع المعرّف المقصود. لا يكفي بناء ناجح لإثبات الربط. لا تطبع محتوى الإعدادات أو بيانات تسجيل دخول CLI في السجلات. إذا لم يُحدّد Project ID أو لم يُنفّذ هذا الفحص، يجب وصف الحالة بأنها «تجهيز الربط بانتظار إعداد المشروع»، وليس اتصالاً مكتملاً.
 
 المراجع: [إعداد Firebase الرسمي لـFlutter](https://firebase.google.com/docs/flutter/setup)، [Firebase CLI](https://firebase.google.com/docs/cli)، [حزمة Firebase Core الرسمية](https://pub.dev/packages/firebase_core).
+
+
+فحص الإنتاج في 5 أكتوبر 2026: تأكد تسجيل Android وiOS عبر Firebase CLI، وصُحح اعتماد إرسال Laravel إلى مشروع سند، ووُضع خارج الويب ودُوّر المفتاح بموافقة المستخدم. نجح FCM `validate_only` بعد الإصلاح. تفاصيل الحماية وحدود اختبار التسليم في [تدقيق الإشعارات](notifications-and-navigation.md#تدقيق-وإصلاح-الخادم-الحي--5-أكتوبر-2026).
+
+مجموعة FlutterFire المثبتة للتحضير الحالي: Core4.15.2 وAuth6.7.1 وMessaging16.7.1، تطلب Firebase Apple SDK12.19.3 نفسه. تثبيت هذه المجموعة يمنع تعارض SPM exact versions، ولا يغير Project ID أو Bundle ID أو التوقيع. لا تعدّل نسخ الحزم داخل pub-cache يدوياً.

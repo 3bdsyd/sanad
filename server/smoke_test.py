@@ -7,11 +7,15 @@ import secrets
 import sqlite3
 import tempfile
 import threading
+import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import redirect_stdout
+from unittest.mock import patch
 from wsgiref.simple_server import WSGIRequestHandler, make_server
 
-os.environ["FURSA_TEST_IMPORT"] = "1"
-from app import FursaApp
+os.environ["SNAD_TEST_IMPORT"] = "1"
+from app import SnadApp
 
 JOB = {
     "title": "مطور تطبيقات فلتر",
@@ -39,16 +43,16 @@ def main():
     with tempfile.TemporaryDirectory() as directory:
         database = os.path.join(directory, "smoke.sqlite3")
         admin = secrets.token_urlsafe(48)
-        app = FursaApp(database, admin, origins=["https://jobs.example.test"])
+        app = SnadApp(database, admin, origins=["https://jobs.example.test"])
         call_index = 0
 
-        def request(method, path, body=None, token=None, origin=None, ip=None, raw=None):
+        def request(method, path, body=None, token=None, origin=None, ip=None, raw=None, content_type="application/json"):
             nonlocal call_index
             call_index += 1
             encoded = raw if raw is not None else json.dumps(body).encode() if body is not None else b""
             route, _, query = path.partition("?")
             env = {"REQUEST_METHOD": method, "PATH_INFO": route, "QUERY_STRING": query,
-                   "REMOTE_ADDR": ip or f"192.0.2.{call_index % 254 + 1}", "CONTENT_TYPE": "application/json",
+                   "REMOTE_ADDR": ip or f"192.0.2.{call_index % 254 + 1}", "CONTENT_TYPE": content_type,
                    "CONTENT_LENGTH": str(len(encoded)), "wsgi.input": io.BytesIO(encoded)}
             if token:
                 env["HTTP_AUTHORIZATION"] = "Bearer " + token
@@ -78,6 +82,10 @@ def main():
         expect(request("POST", "/v1/jobs", dict(JOB, expiresInDays=365))["status"] == 422, "duration bounded")
         expect(request("POST", "/v1/jobs", dict(JOB, title="\ud800 bad"))["status"] == 422, "invalid Unicode rejected")
         expect(request("POST", "/v1/jobs", raw=b'{"title":"a","title":"b"}')["status"] == 400, "duplicate JSON keys")
+        for raw in (b"[]", b"null", b"{", b'\xff', b'{"salaryMin":NaN}', b'{"salaryMin":Infinity}'):
+            expect(request("POST", "/v1/jobs", raw=raw)["status"] == 400, "malformed JSON rejected")
+        expect(request("POST", "/v1/jobs", JOB, content_type="text/plain")["status"] == 415, "JSON content type required")
+        expect(request("POST", "/v1/jobs", raw=b" " * 24577)["status"] == 413, "oversized body rejected")
         for website in ["javascript:alert(1)", "file:///tmp/company", "ftp://example.com", "https://user:password@example.com", "https://@example.com", "https://example.com\n", "https://example.com/%0a", "https://example.com:99999", "https://not a host.com", "https://-bad.example.com", "https://example.com\\@evil.example", "https://example.com/\u202e", "https://example.com/\ud800", "https://example.com/" + "a" * 2048, None, 123]:
             invalid_link = request("POST", "/v1/jobs", dict(JOB, companyWebsite=website))
             expect(invalid_link["status"] == 422 and invalid_link["body"]["error"]["field"] == "companyWebsite", "invalid company website rejected")
@@ -99,6 +107,9 @@ def main():
             stored = db.execute("SELECT token_hash FROM jobs WHERE id=?", (identifier,)).fetchone()[0]
         expect(stored != token and len(stored) == 64, "only token hash persisted")
         expect(request("GET", "/v1/admin/jobs")["status"] == 401, "admin protected")
+        expect(request("GET", "/v1/admin/reports")["status"] == 401, "report queue protected")
+        for action in ("approve", "reject", "block"):
+            expect(request("POST", f"/v1/admin/jobs/{identifier}/{action}", {})["status"] == 401, "moderation action protected")
         expect(request("GET", "/v1/admin/jobs", token=admin)["body"]["total"] == 1, "moderation queue")
         expect(request("POST", f"/v1/admin/jobs/{identifier}/approve", {}, token=admin)["status"] == 200, "approval")
         published = request("GET", "/v1/jobs")["body"]
@@ -109,7 +120,8 @@ def main():
         query = urlencode({"q": "فلتر", "salaryMin": 800, "currency": "USD", "salaryPeriod": "شهري"})
         expect(request("GET", "/v1/jobs?" + query)["body"]["total"] == 1, "Arabic search and salary overlap")
         expect(request("GET", "/v1/jobs?pageSize=9999")["status"] == 422, "pagination bounded")
-        expect(request("GET", "/v1/jobs?city=not-a-city")["status"] == 422, "filters validated")
+        expect(request("GET", "/v1/jobs?country=not-a-country")["status"] == 422, "country filters validated")
+        expect(request("GET", "/v1/jobs?city=not-a-city")["body"]["total"] == 0, "free city filter returns honest empty results")
         expect(request("GET", "/v1/jobs?unknown=1")["status"] == 422, "unknown filter rejected")
         expect(request("GET", "/v1/jobs?q=%27%20OR%201=1--")["body"]["total"] == 0, "query parameterization")
         expect(request("GET", "/v1/jobs", origin="https://evil.example")["status"] == 403, "CORS closed")
@@ -117,19 +129,29 @@ def main():
         expect(cors["headers"]["Access-Control-Allow-Origin"] == "https://jobs.example.test", "CORS exact origin")
         expect(request("POST", f"/v1/jobs/{identifier}/report", {"reason": "إعلان وهمي للاختبار"})["status"] == 201, "report accepted")
         expect(len(request("GET", "/v1/admin/reports", token=admin)["body"]["reports"]) == 1, "report reaches moderation")
+        expect(request("POST", f"/v1/admin/jobs/{identifier}/approve", {}, token=admin)["status"] == 409, "published job cannot be approved twice")
+        rejected = request("POST", "/v1/jobs", JOB)["body"]
+        rejected_id = rejected["id"]
+        expect(request("POST", f"/v1/admin/jobs/{rejected_id}/reject", {"reason": "الوصف يحتاج توضيحاً"}, token=admin)["status"] == 200, "moderator rejection")
+        expect(request("GET", f"/v1/jobs/{rejected_id}")["status"] == 404, "rejected job hidden")
+        rejected_owner = request("GET", f"/v1/submissions/{rejected_id}", token=rejected["managementToken"])
+        expect(rejected_owner["body"]["job"]["rejectionReason"] == "الوصف يحتاج توضيحاً", "owner can read rejection reason")
+        expect(request("POST", f"/v1/admin/jobs/{rejected_id}/approve", {}, token=admin)["status"] == 409, "rejected job cannot be republished")
+        expect(request("POST", f"/v1/jobs/{rejected_id}/report", {"reason": "سبب للاختبار"})["status"] == 404, "hidden job cannot be reported")
+        expect(request("DELETE", f"/v1/submissions/{rejected_id}", token=rejected["managementToken"])["status"] == 200, "rejected owner may delete")
         # Startup against the same durable file must preserve approved postings.
-        app = FursaApp(database, admin, origins=["https://jobs.example.test"])
+        app = SnadApp(database, admin, origins=["https://jobs.example.test"])
         expect(request("GET", "/v1/jobs")["body"]["total"] == 1, "survives restart")
         expect(request("GET", f"/v1/jobs/{identifier}")["body"]["job"]["companyWebsite"] == "https://example.com/about", "website survives restart")
         # Simulate an existing v1 payload; startup adds only the optional key.
         with sqlite3.connect(database) as db:
-            db.execute("UPDATE jobs SET payload=json_remove(payload, '$.companyWebsite') WHERE id=?", (identifier,))
+            db.execute("UPDATE jobs SET payload=json_remove(payload, '$.companyWebsite', '$.country') WHERE id=?", (identifier,))
             db.execute("PRAGMA user_version=1")
-        app = FursaApp(database, admin, origins=["https://jobs.example.test"])
+        app = SnadApp(database, admin, origins=["https://jobs.example.test"])
         migrated = request("GET", f"/v1/submissions/{identifier}", token=token)["body"]["job"]
-        expect(migrated["companyWebsite"] == "" and migrated["title"] == JOB["title"] and migrated["status"] == "published", "v1 migration preserves job and owner token")
+        expect(migrated["companyWebsite"] == "" and migrated["country"] == "سوريا" and migrated["title"] == JOB["title"] and migrated["status"] == "published", "v1 migration preserves job and owner token")
         with sqlite3.connect(database) as db:
-            expect(db.execute("PRAGMA user_version").fetchone()[0] == 2, "payload schema migration recorded")
+            expect(db.execute("PRAGMA user_version").fetchone()[0] == 3, "payload schema migration recorded")
         expect(request("DELETE", f"/v1/submissions/{identifier}", token="wrong")["status"] == 404, "unauthorized delete denied")
         expect(request("DELETE", f"/v1/submissions/{identifier}", token=token)["status"] == 200, "owner delete")
         expect(request("GET", "/v1/jobs")["body"]["total"] == 0, "deleted from public")
@@ -144,13 +166,52 @@ def main():
         for _ in range(5):
             request("POST", "/v1/jobs", {}, ip="198.51.100.99")
         expect(request("POST", "/v1/jobs", {}, ip="198.51.100.99")["status"] == 429, "shared durable posting rate limit")
+        with patch("app.time.time", return_value=3_600_000):
+            for _ in range(5):
+                request("POST", "/v1/jobs", {}, ip="198.51.100.98")
+            limited = request("POST", "/v1/jobs", {}, ip="198.51.100.98")
+            expect(limited["status"] == 429 and limited["headers"]["Retry-After"] == "3600", "retry-after covers the full posting limit window")
+        with patch("app.time.time", return_value=3_603_600):
+            expect(request("POST", "/v1/jobs", {}, ip="198.51.100.98")["status"] == 422, "posting limit resets when retry-after elapses")
         spoofed = {"REMOTE_ADDR": "198.51.100.2", "HTTP_X_FORWARDED_FOR": "1.1.1.1"}
         expect(app.client_ip(spoofed) == "198.51.100.2", "untrusted proxy header ignored")
-        trusted = FursaApp(database, admin, trusted_proxies=["127.0.0.1/32"])
+        trusted = SnadApp(database, admin, trusted_proxies=["127.0.0.1/32"])
         expect(trusted.client_ip({"REMOTE_ADDR": "127.0.0.1", "HTTP_X_FORWARDED_FOR": "1.1.1.1, 198.51.100.2"}) == "198.51.100.2", "trusted chain reads rightmost untrusted IP")
         with sqlite3.connect(database) as db:
-            db.execute("UPDATE jobs SET status='published',expires_at='2000-01-01T00:00:00Z'")
+            db.execute("UPDATE jobs SET status='pending',expires_at='2000-01-01T00:00:00Z'")
         expect(request("GET", "/v1/jobs")["body"]["total"] == 0, "expired jobs hidden")
+        expect(request("GET", f"/v1/jobs/{identifier}")["status"] == 404, "expired detail hidden")
+        expect(request("GET", f"/v1/submissions/{identifier}", token=created["managementToken"])["body"]["status"] == "expired", "owner sees expired status")
+        expect(request("POST", f"/v1/admin/jobs/{identifier}/approve", {}, token=admin)["status"] == 409, "expired job cannot be approved")
+
+        # Reporting and withdrawal may arrive on different Gunicorn workers.
+        # A report either commits before deletion or observes a missing job.
+        for index in range(8):
+            concurrent_job = request("POST", "/v1/jobs", dict(JOB, phone="", email=f"concurrency{index}@example.test"))["body"]
+            concurrent_id = concurrent_job["id"]
+            request("POST", f"/v1/admin/jobs/{concurrent_id}/approve", {}, token=admin)
+            barrier = threading.Barrier(2)
+
+            def report_during_withdrawal():
+                barrier.wait(timeout=5)
+                return request("POST", f"/v1/jobs/{concurrent_id}/report", {"reason": "بلاغ بالتزامن مع الحذف"})
+
+            def withdraw_during_report():
+                barrier.wait(timeout=5)
+                return request("DELETE", f"/v1/submissions/{concurrent_id}", token=concurrent_job["managementToken"])
+
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                report_future = pool.submit(report_during_withdrawal)
+                withdrawal_future = pool.submit(withdraw_during_report)
+                expect(report_future.result()["status"] in (201, 404), "report/withdrawal race never returns a server error")
+                expect(withdrawal_future.result()["status"] == 200, "concurrent withdrawal succeeds")
+            expect(request("GET", f"/v1/submissions/{concurrent_id}", token=concurrent_job["managementToken"])["status"] == 404, "concurrent withdrawal removes owner data")
+
+        from maintenance import main as maintain
+        with patch.dict(os.environ, {"DATABASE_PATH": database}), redirect_stdout(io.StringIO()):
+            maintain()
+        expect(request("GET", f"/v1/submissions/{identifier}", token=created["managementToken"])["status"] == 404, "retention cleanup removes expired owner data")
+        expect(request("POST", "/v1/jobs", JOB)["status"] == 403, "retention cleanup preserves abuse blocks")
 
         class QuietHandler(WSGIRequestHandler):
             def log_message(self, *args):
@@ -161,6 +222,36 @@ def main():
             thread.start()
             with urllib.request.urlopen(f"http://127.0.0.1:{httpd.server_port}/health", timeout=3) as response:
                 expect(json.load(response)["status"] == "ok", "real HTTP health")
+
+            def http_request(method, path, body=None, token=None):
+                headers = {"Accept": "application/json", "Content-Type": "application/json"}
+                if token:
+                    headers["Authorization"] = "Bearer " + token
+                encoded = None if body is None else json.dumps(body).encode()
+                outgoing = urllib.request.Request(f"http://127.0.0.1:{httpd.server_port}" + path, data=encoded, headers=headers, method=method)
+                try:
+                    response = urllib.request.urlopen(outgoing, timeout=3)
+                except urllib.error.HTTPError as error:
+                    response = error
+                with response:
+                    return {"status": response.status, "body": json.load(response)}
+
+            http_created = http_request("POST", "/v1/jobs", dict(JOB, phone="", email="http-lifecycle@example.test"))
+            expect(http_created["status"] == 201, "real HTTP submission")
+            http_id, http_token = http_created["body"]["id"], http_created["body"]["managementToken"]
+            expect(http_request("GET", f"/v1/jobs/{http_id}")["status"] == 404, "real HTTP pending hidden")
+            expect(http_request("GET", f"/v1/submissions/{http_id}", token=http_token)["status"] == 200, "real HTTP private authorization")
+            expect(http_request("POST", f"/v1/admin/jobs/{http_id}/approve", {}, token=admin)["status"] == 200, "real HTTP moderation")
+            expect(http_request("GET", f"/v1/jobs/{http_id}")["status"] == 200, "real HTTP published detail")
+            expect(http_request("POST", f"/v1/jobs/{http_id}/report", {"reason": "بلاغ للتجربة المحلية"})["status"] == 201, "real HTTP report")
+            expect(http_request("DELETE", f"/v1/submissions/{http_id}", token=http_token)["status"] == 200, "real HTTP withdrawal")
+            expect(http_request("GET", f"/v1/submissions/{http_id}", token=http_token)["status"] == 404, "real HTTP withdrawn data absent")
+            for country in ['AE', 'EG', 'invalid']:
+                posted = http_request('POST', '/v1/jobs', dict(JOB, country=country, phone='', email='foreign@example.test'))
+                expect(posted['status'] == 422, f'foreign country rejected: {country}')
+                expect(http_request('GET', '/v1/jobs?country=' + country)['status'] == 422, 'foreign discovery rejected')
+            expect(request('POST', '/v1/jobs', dict(JOB, city='Berlin'))['status'] == 422, 'foreign city rejected')
+            expect(request('POST', '/v1/jobs', dict(JOB, currency='EGP'))['status'] == 422, 'unsupported currency rejected')
             httpd.shutdown()
             thread.join(timeout=3)
     print(f"PASS: {checks} API checks (temporary SQLite, no external services)")

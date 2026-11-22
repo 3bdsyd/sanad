@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -6,14 +8,23 @@ import '../../../../core/design.dart';
 import '../../../../core/motion.dart';
 import '../../../../core/sanad_refresh.dart';
 import '../../../../core/web_layout.dart';
+import '../../../../core/web_nav_history.dart';
 import '../../data/jobs_store.dart';
 import '../../domain/job.dart';
 import '../../domain/job_filters.dart';
 import '../about_page.dart';
+import '../../../platform/presentation/auth_page.dart';
+import '../../../platform/presentation/account_page.dart';
+import '../../../platform/presentation/publisher_panel.dart';
+import '../../../platform/presentation/saved_panel.dart';
 import '../filter_sheet.dart';
+import '../location_picker.dart';
 import '../job_details.dart';
 import '../notifications.dart';
 import '../post_job.dart';
+import '../saved_matches_notice.dart';
+import '../country_flag.dart';
+import '../../domain/job_geography.dart';
 import 'sanad_web_shell.dart';
 
 /// Adaptive website entry for Flutter web — not the mobile app chrome.
@@ -36,6 +47,7 @@ class _SanadWebAppState extends State<SanadWebApp> {
   final refreshKey = GlobalKey<SanadRefreshState>();
   final Set<String> saving = {};
   String? feedback;
+  Timer? _noticesTimer;
 
   JobsStore get store => widget.store;
   bool get searching => store.filters.activeCount > 0 || store.query.isNotEmpty;
@@ -45,10 +57,17 @@ class _SanadWebAppState extends State<SanadWebApp> {
   void initState() {
     super.initState();
     search.text = store.query;
+    // Keep the follow-up center fresh while the site tab stays open.
+    unawaited(store.refreshNotices());
+    unawaited(store.refreshSavedSearchMatches());
+    _noticesTimer = Timer.periodic(const Duration(minutes: 2), (_) {
+      unawaited(store.refreshNotices());
+    });
   }
 
   @override
   void dispose() {
+    _noticesTimer?.cancel();
     searchFocus.dispose();
     search.dispose();
     scroll.dispose();
@@ -67,10 +86,68 @@ class _SanadWebAppState extends State<SanadWebApp> {
     }
   }
 
+  Future<void> leavePage([Future<void> Function()? next]) async {
+    final nav = Navigator.of(context);
+    while (nav.canPop()) {
+      final depth = WebNavHistory.instance.pageDepth;
+      await nav.maybePop();
+      await Future<void>.delayed(Duration.zero);
+      if (!mounted) return;
+      // A draft veto keeps its inline confirmation visible.
+      if (nav.canPop() && WebNavHistory.instance.pageDepth == depth) return;
+    }
+    final traversal = WebNavHistory.instance.pendingTraversal;
+    if (traversal != null) await traversal;
+    if (mounted && next != null) await next();
+  }
+
+  Widget siteFrame(Widget child) {
+    var routeMenuOpen = false;
+    return StatefulBuilder(
+      builder: (context, updateShell) => SanadWebShell(
+        section: section,
+        menuOpen: routeMenuOpen,
+        onToggleMenu: () => updateShell(() => routeMenuOpen = !routeMenuOpen),
+        noticesUnread:
+            store.noticesUnread +
+            store.savedSearchMatches
+                .where((job) => store.isNewSavedMatch(job.id))
+                .length,
+        onSection: (value) {
+          if (value == 2) {
+            unawaited(leavePage(openPost));
+            return;
+          }
+          unawaited(leavePage());
+          setState(() => section = value);
+        },
+        onNotices: () => unawaited(leavePage(openNotices)),
+        onAbout: () => unawaited(leavePage(openAbout)),
+        child: child,
+      ),
+    );
+  }
+
   Future<void> openFilters() => navigate(() async {
-    final result = await showFilters(context, store);
+    final result = await openPage<JobFilters>(
+      context,
+      siteFrame(FilterSheet(store: store)),
+    );
     if (result != null && mounted) store.updateFilters(result);
   });
+
+  Future<void> openCityFilter() => navigate(
+    () => openPage<JobFilters>(
+      context,
+      siteFrame(
+        LocationPickerPage(
+          store: store,
+          initial: store.filters,
+          applyToStore: true,
+        ),
+      ),
+    ).then((_) {}),
+  );
 
   void clearFilters() {
     search.clear();
@@ -79,38 +156,86 @@ class _SanadWebAppState extends State<SanadWebApp> {
   }
 
   Future<void> openDetails(Job job) => navigate(
-    () => openPage<void>(context, JobDetails(job: job, store: store)),
-  );
-
-  Future<void> openNotices() => navigate(
     () => openPage<void>(
       context,
-      NotificationsPage(
-        store: store,
-        onJob: (job) =>
-            openPage<void>(context, JobDetails(job: job, store: store)),
+      siteFrame(JobDetails(job: job, store: store)),
+      webPath: '/jobs/${Uri.encodeComponent(job.id)}',
+    ),
+  );
+
+  Future<void> openNotices({Set<String>? focusJobIds}) => navigate(
+    () => openPage<void>(
+      context,
+      siteFrame(
+        NotificationsPage(
+          store: store,
+          focusJobIds: focusJobIds,
+          initialNewOnly: focusJobIds != null,
+          onJob: (job) => openPage<void>(
+            context,
+            siteFrame(JobDetails(job: job, store: store)),
+            webPath: '/jobs/${Uri.encodeComponent(job.id)}',
+          ),
+        ),
       ),
     ),
   );
 
-  Future<void> openAbout() =>
-      navigate(() => openPage<void>(context, AboutPage(store: store)));
+  Future<void> openNewMatches() async {
+    final ids = store.newMatchAlertJobs.map((job) => job.id).toSet();
+    if (ids.isEmpty) return;
+    await store.acknowledgeMatchAlert(ids);
+    if (mounted) await openNotices(focusJobIds: ids);
+  }
 
-  Future<void> openPost() => navigate(() => showPostJob(context, store));
+  Future<void> openAbout() => navigate(
+    () => openPage<void>(
+      context,
+      siteFrame(
+        store.accountsEnabled
+            ? AccountPage(store: store)
+            : AboutPage(store: store),
+      ),
+    ),
+  );
+
+  Future<void> openPost() => navigate(
+    () => openPage<void>(
+      context,
+      siteFrame(
+        store.accountsEnabled
+            ? PublisherPanel(store: store)
+            : PostJobPage(store: store),
+      ),
+    ),
+  );
 
   Future<void> favorite(Job job) async {
+    final desired = !store.savedIds.contains(job.id);
+    if (store.accountsEnabled &&
+            !await ensureAccount(
+              context,
+              store.platform,
+              reason: 'لحفظ الفرصة',
+            ) ||
+        !mounted) {
+      return;
+    }
     if (!saving.add(job.id)) return;
     setState(() {});
     try {
-      await store.toggleSaved(job.id);
+      await store.toggleSaved(job.id, desired: desired);
       if (!mounted) return;
       setState(() {
-        feedback =
-            store.error ??
-            (store.savedIds.contains(job.id)
-                ? 'صارت بالمحفوظة.'
-                : 'شِلنا الفرصة من المحفوظة.');
+        // store.error already has its own SignalCard; avoid duplicating it.
+        feedback = store.error != null
+            ? null
+            : (store.savedIds.contains(job.id)
+                  ? 'أُضيفت الفرصة إلى المحفوظات.'
+                  : 'أُزيلت الفرصة من المحفوظات.');
       });
+    } catch (e) {
+      if (mounted) setState(() => feedback = e.toString());
     } finally {
       saving.remove(job.id);
       if (mounted) setState(() {});
@@ -124,6 +249,7 @@ class _SanadWebAppState extends State<SanadWebApp> {
     setState(() => refreshing = true);
     try {
       await store.refresh();
+      await store.refreshSavedSearchMatches(force: true);
       return store.error;
     } finally {
       if (mounted) setState(() => refreshing = false);
@@ -141,52 +267,70 @@ class _SanadWebAppState extends State<SanadWebApp> {
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: store,
-    builder: (context, _) => SanadWebShell(
-      section: section,
-      menuOpen: menuOpen,
-      onToggleMenu: () => setState(() => menuOpen = !menuOpen),
-      onSection: (value) {
-        if (value == 2) {
-          openPost();
-          return;
-        }
-        setState(() {
-          section = value;
-          menuOpen = false;
-          feedback = null;
-        });
-      },
-      onNotices: openNotices,
-      onAbout: openAbout,
-      child: switch (section) {
-        1 => _SavedSection(
-          store: store,
-          saving: saving,
-          onOpen: openDetails,
-          onFavorite: favorite,
-          age: age,
-          onRefresh: refreshFeed,
-        ),
-        _ => _DiscoverSection(
-          store: store,
-          feed: feed,
-          searching: searching,
-          search: search,
-          searchFocus: searchFocus,
-          scroll: scroll,
-          refreshKey: refreshKey,
-          saving: saving,
-          feedback: feedback,
-          onClearFeedback: () => setState(() => feedback = null),
-          onFilters: openFilters,
-          onClearFilters: clearFilters,
-          onOpen: openDetails,
-          onFavorite: favorite,
-          onRefresh: refreshFeed,
-          age: age,
-        ),
-      },
-    ),
+    builder: (context, _) {
+      final compact = WebLayout.of(context) == WebBreakpoint.compact;
+      final headerExtent =
+          MediaQuery.paddingOf(context).top +
+          70 +
+          (compact && menuOpen ? 300 : 0);
+      return SanadWebShell(
+        section: section,
+        menuOpen: menuOpen,
+        overlayHeader: true,
+        noticesUnread:
+            store.noticesUnread +
+            store.savedSearchMatches
+                .where((job) => store.isNewSavedMatch(job.id))
+                .length,
+        onToggleMenu: () => setState(() => menuOpen = !menuOpen),
+        onSection: (value) {
+          if (value == 2) {
+            openPost();
+            return;
+          }
+          setState(() {
+            section = value;
+            menuOpen = false;
+            feedback = null;
+          });
+        },
+        onNotices: openNotices,
+        onAbout: openAbout,
+        child: switch (section) {
+          1 when store.accountsEnabled => SavedPanel(store: store),
+          1 => _SavedSection(
+            store: store,
+            saving: saving,
+            headerExtent: headerExtent,
+            onOpen: openDetails,
+            onFavorite: favorite,
+            age: age,
+            onRefresh: refreshFeed,
+          ),
+          _ => _DiscoverSection(
+            store: store,
+            feed: feed,
+            headerExtent: headerExtent,
+            searching: searching,
+            search: search,
+            searchFocus: searchFocus,
+            scroll: scroll,
+            refreshKey: refreshKey,
+            saving: saving,
+            feedback: feedback,
+            onClearFeedback: () => setState(() => feedback = null),
+            onFilters: openFilters,
+            onCityFilter: openCityFilter,
+            onClearFilters: clearFilters,
+            onNewMatches: openNewMatches,
+            onOpen: openDetails,
+            onFavorite: favorite,
+            onRefresh: refreshFeed,
+            age: age,
+          ),
+        },
+      );
+    },
   );
 }
 
@@ -194,6 +338,7 @@ class _DiscoverSection extends StatelessWidget {
   const _DiscoverSection({
     required this.store,
     required this.feed,
+    required this.headerExtent,
     required this.searching,
     required this.search,
     required this.searchFocus,
@@ -203,7 +348,9 @@ class _DiscoverSection extends StatelessWidget {
     required this.feedback,
     required this.onClearFeedback,
     required this.onFilters,
+    required this.onCityFilter,
     required this.onClearFilters,
+    required this.onNewMatches,
     required this.onOpen,
     required this.onFavorite,
     required this.onRefresh,
@@ -212,6 +359,7 @@ class _DiscoverSection extends StatelessWidget {
 
   final JobsStore store;
   final List<Job> feed;
+  final double headerExtent;
   final bool searching;
   final TextEditingController search;
   final FocusNode searchFocus;
@@ -221,7 +369,9 @@ class _DiscoverSection extends StatelessWidget {
   final String? feedback;
   final VoidCallback onClearFeedback;
   final VoidCallback onFilters;
+  final VoidCallback onCityFilter;
   final VoidCallback onClearFilters;
+  final VoidCallback onNewMatches;
   final Future<void> Function(Job) onOpen;
   final Future<void> Function(Job) onFavorite;
   final Future<String?> Function() onRefresh;
@@ -238,12 +388,16 @@ class _DiscoverSection extends StatelessWidget {
       key: refreshKey,
       enabled: !store.loading && !store.busy,
       onRefresh: onRefresh,
-      successLabel: store.isDemo ? 'تحدّثت فرص العرض' : 'صارت الفرص محدّثة',
+      successLabel: store.isDemo ? 'تحدّثت فرص العرض' : 'تم تحديث الفرص',
       child: CustomScrollView(
         controller: scroll,
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
+          SliverToBoxAdapter(child: SizedBox(height: headerExtent)),
+          SliverToBoxAdapter(
+            child: SavedMatchesNotice(store: store, onView: onNewMatches),
+          ),
           SliverToBoxAdapter(
             child: _SiteHero(
               breakpoint: breakpoint,
@@ -261,13 +415,13 @@ class _DiscoverSection extends StatelessWidget {
                   constraints: const BoxConstraints(
                     maxWidth: WebLayout.contentMax,
                   ),
-                  child: _QuickFilters(store: store, onFilters: onFilters),
+                  child: _QuickFilters(store: store, onCity: onCityFilter),
                 ),
               ),
             ),
           ),
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(padding.left, 28, padding.right, 40),
+            padding: EdgeInsets.fromLTRB(padding.left, 28, padding.right, 0),
             sliver: SliverToBoxAdapter(
               child: Center(
                 child: ConstrainedBox(
@@ -277,6 +431,12 @@ class _DiscoverSection extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (store.isDemo) ...[
+                        const SignalCard(
+                          'وضع العرض: هذه فرص افتراضية لتجربة سند، والتواصل معها غير متاح.',
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       if (feedback != null) ...[
                         SignalCard(feedback!, onClose: onClearFeedback),
                         const SizedBox(height: 16),
@@ -289,36 +449,33 @@ class _DiscoverSection extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                       ],
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  searching
-                                      ? 'نتائج بحثك'
-                                      : 'فرص تستاهل تشوفها',
-                                  style: TextStyle(
-                                    fontSize:
-                                        breakpoint == WebBreakpoint.compact
-                                        ? 22
-                                        : 28,
-                                    fontWeight: FontWeight.w800,
-                                    color: context.sanad.ink,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${feed.length} فرصة${searching ? ' مطابقة' : ' متاحة'}',
-                                  style: TextStyle(
-                                    color: context.sanad.secondary,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
+                      SanadActionHeader(
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              searching ? 'نتائج البحث' : 'فرص العمل المتاحة',
+                              style: TextStyle(
+                                fontSize: breakpoint == WebBreakpoint.compact
+                                    ? 22
+                                    : 28,
+                                fontWeight: FontWeight.w800,
+                                color: context.sanad.ink,
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 4),
+                            Text(
+                              store.isDemo
+                                  ? '${feed.length} فرصة تجريبية${searching ? ' مطابقة' : ''}'
+                                  : '${store.pagedCatalog ? store.totalCount : feed.length} فرصة${searching ? ' مطابقة' : ' متاحة'}',
+                              style: TextStyle(
+                                color: context.sanad.secondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                        actions: [
                           if (searching)
                             TextButton.icon(
                               onPressed: onClearFilters,
@@ -332,39 +489,65 @@ class _DiscoverSection extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 18),
-                      if (feed.isEmpty)
-                        _EmptyJobs(searching: searching)
-                      else
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            final width = constraints.maxWidth;
-                            final cardWidth = columns == 1
-                                ? width
-                                : (width - gutter * (columns - 1)) / columns;
-                            return Wrap(
-                              spacing: gutter,
-                              runSpacing: gutter,
-                              children: [
-                                for (final job in feed)
-                                  SizedBox(
-                                    width: cardWidth,
-                                    child: _WebJobCard(
-                                      job: job,
-                                      saved: store.savedIds.contains(job.id),
-                                      busy: saving.contains(job.id),
-                                      ageLabel: age(job.createdAt),
-                                      onOpen: () => onOpen(job),
-                                      onFavorite: () => onFavorite(job),
-                                    ),
-                                  ),
-                              ],
-                            );
-                          },
+                      if (store.discoveryLoading)
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 16),
+                          child: SanadLoader(
+                            size: 24,
+                            label: 'جارٍ تحديث نتائج البحث…',
+                          ),
                         ),
+                      if (feed.isEmpty && !store.discoveryLoading)
+                        _EmptyJobs(searching: searching),
                     ],
                   ),
                 ),
               ),
+            ),
+          ),
+          if (feed.isNotEmpty)
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(padding.left, 0, padding.right, 40),
+              sliver: _WebJobCardsSliver(
+                jobs: feed,
+                columns: columns,
+                gutter: gutter,
+                // Next page starts loading before the visitor reaches the end.
+                onNearEnd: store.hasMore ? store.loadMore : null,
+                card: (job) => _WebJobCard(
+                  key: ValueKey('feed-${job.id}'),
+                  job: job,
+                  saved: store.savedIds.contains(job.id),
+                  busy: saving.contains(job.id),
+                  ageLabel: age(job.createdAt),
+                  onOpen: () => onOpen(job),
+                  onFavorite: () => onFavorite(job),
+                ),
+              ),
+            ),
+          if (feed.isNotEmpty &&
+              (store.loadingMore || store.loadMoreError != null))
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 40),
+                child: Center(
+                  child: store.loadingMore
+                      ? const SanadLoader(
+                          size: 24,
+                          label: 'جارٍ تحميل المزيد من الفرص…',
+                        )
+                      : TextButton(
+                          onPressed: store.loadMore,
+                          child: const Text('تعذّر التحميل، حاول مجدداً'),
+                        ),
+                ),
+              ),
+            ),
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: SanadWebFooter(),
             ),
           ),
         ],
@@ -457,7 +640,7 @@ class _SiteHero extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
-        'فرص بسوريا',
+        'فرص عمل دولية',
         style: TextStyle(
           color: context.sanad.primary,
           fontWeight: FontWeight.w700,
@@ -466,7 +649,7 @@ class _SiteHero extends StatelessWidget {
       ),
       const SizedBox(height: 10),
       Text(
-        'شغلك الجاي، أقرب.',
+        'فرص العمل المتاحة',
         style: TextStyle(
           color: context.sanad.ink,
           fontWeight: FontWeight.w800,
@@ -476,7 +659,7 @@ class _SiteHero extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       Text(
-        'تصفّح الفرص وتواصل مباشرة مع صاحب الإعلان بواتساب أو الإيميل، بلا حساب.',
+        'تصفّح الفرص وتواصل مباشرة مع صاحب الإعلان عبر واتساب أو البريد الإلكتروني، دون حساب.',
         style: TextStyle(
           color: context.sanad.secondary,
           fontSize: stacked ? 14 : 16,
@@ -514,7 +697,7 @@ class _SiteHero extends StatelessWidget {
               style: TextStyle(color: context.sanad.ink, fontSize: 15),
               decoration: InputDecoration(
                 filled: false,
-                hintText: 'دوّر على شغل، جهة أو مهارة',
+                hintText: 'ابحث عن وظيفة أو جهة أو مهارة',
                 hintStyle: TextStyle(
                   color: context.sanad.secondary,
                   fontSize: 14,
@@ -543,7 +726,7 @@ class _SiteHero extends StatelessWidget {
           child: Badge(
             isLabelVisible: store.filters.activeCount > 0,
             label: Text('${store.filters.activeCount}'),
-            child: FilledButton.tonal(
+            child: SanadPrimaryButton.tonal(
               onPressed: onFilters,
               child: const Text('فلتر'),
             ),
@@ -555,17 +738,17 @@ class _SiteHero extends StatelessWidget {
 }
 
 class _QuickFilters extends StatelessWidget {
-  const _QuickFilters({required this.store, required this.onFilters});
+  const _QuickFilters({required this.store, required this.onCity});
   final JobsStore store;
-  final VoidCallback onFilters;
+  final VoidCallback onCity;
 
   @override
   Widget build(BuildContext context) {
     final chips = <(String, bool, VoidCallback, IconData?)>[
       (
-        store.filters.city ?? 'كل سوريا',
-        store.filters.city != null,
-        onFilters,
+        store.filters.locationLabel,
+        store.filters.country != null || store.filters.city != null,
+        onCity,
         CupertinoIcons.location,
       ),
       (
@@ -599,18 +782,30 @@ class _QuickFilters extends StatelessWidget {
         null,
       ),
     ];
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        for (final chip in chips)
-          _FilterChip(
+    return SizedBox(
+      height: compactWebControls(context) ? 44 : 52,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        itemCount: chips.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        itemBuilder: (context, index) {
+          final chip = chips[index];
+          return _FilterChip(
             label: chip.$1,
             selected: chip.$2,
             onTap: chip.$3,
             icon: chip.$4,
-          ),
-      ],
+            leading: index == 0 && countryFor(store.filters.country) != null
+                ? CountryFlag(
+                    country: countryFor(store.filters.country)!,
+                    size: 18,
+                  )
+                : null,
+            showChevron: index == 0,
+          );
+        },
+      ),
     );
   }
 }
@@ -621,12 +816,16 @@ class _FilterChip extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.icon,
+    this.leading,
+    this.showChevron = false,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
   final IconData? icon;
+  final Widget? leading;
+  final bool showChevron;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -649,7 +848,10 @@ class _FilterChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (icon != null) ...[
+              if (leading != null) ...[
+                leading!,
+                const SizedBox(width: 6),
+              ] else if (icon != null) ...[
                 AppIcon(
                   icon,
                   size: 15,
@@ -669,6 +871,16 @@ class _FilterChip extends StatelessWidget {
                   fontSize: 13,
                 ),
               ),
+              if (showChevron) ...[
+                const SizedBox(width: 8),
+                AppIcon(
+                  CupertinoIcons.chevron_down,
+                  size: 12,
+                  color: selected
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : context.sanad.secondary,
+                ),
+              ],
             ],
           ),
         ),
@@ -677,8 +889,69 @@ class _FilterChip extends StatelessWidget {
   );
 }
 
+/// Lazily builds equal-height rows. A minimum height aligns ordinary cards
+/// across the grid; intrinsic sizing still accommodates enlarged text.
+class _WebJobCardsSliver extends StatelessWidget {
+  const _WebJobCardsSliver({
+    required this.jobs,
+    required this.columns,
+    required this.gutter,
+    required this.card,
+    this.onNearEnd,
+  });
+
+  final List<Job> jobs;
+  final int columns;
+  final double gutter;
+  final Widget Function(Job job) card;
+  final Future<void> Function()? onNearEnd;
+
+  @override
+  Widget build(BuildContext context) => SliverList.builder(
+    itemCount: (jobs.length + columns - 1) ~/ columns,
+    itemBuilder: (context, rowIndex) {
+      final rows = (jobs.length + columns - 1) ~/ columns;
+      final nearEnd = onNearEnd;
+      if (nearEnd != null && rowIndex >= rows - 3) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => nearEnd());
+      }
+      final firstIndex = rowIndex * columns;
+      return Padding(
+        padding: EdgeInsets.only(bottom: gutter),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: WebLayout.contentMax),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight:
+                    340 * MediaQuery.textScalerOf(context).scale(14) / 14,
+              ),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var column = 0; column < columns; column++) ...[
+                      if (column > 0) SizedBox(width: gutter),
+                      Expanded(
+                        child: firstIndex + column < jobs.length
+                            ? card(jobs[firstIndex + column])
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 class _WebJobCard extends StatelessWidget {
   const _WebJobCard({
+    super.key,
     required this.job,
     required this.saved,
     required this.busy,
@@ -695,105 +968,120 @@ class _WebJobCard extends StatelessWidget {
   final VoidCallback onFavorite;
 
   @override
-  Widget build(BuildContext context) => Material(
-    color: context.sanad.surface,
-    elevation: 0,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(24),
-      side: BorderSide(color: context.sanad.border),
-    ),
-    clipBehavior: Clip.antiAlias,
-    child: InkWell(
-      onTap: onOpen,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CompanyMark(job.category, size: 44),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        job.company,
-                        textDirection: textDirectionFor(job.company),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    child: Material(
+      color: context.sanad.surface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: context.sanad.border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onOpen,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CompanyMark(job.category, size: 44),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          job.company,
+                          textDirection: textDirectionFor(job.company),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
                         ),
-                      ),
-                      Text(
-                        ageLabel,
-                        style: TextStyle(
-                          color: context.sanad.secondary,
-                          fontSize: 11,
+                        Text(
+                          ageLabel,
+                          style: TextStyle(
+                            color: context.sanad.secondary,
+                            fontSize: 11,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  IconButton(
+                    tooltip: saved ? 'إزالة من المحفوظة' : 'حفظ الفرصة',
+                    onPressed: busy ? null : onFavorite,
+                    icon: AnimatedSaveIcon(saved: saved),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Text(
+                job.title,
+                textDirection: textDirectionFor(job.title),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: context.sanad.ink,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  height: 1.45,
                 ),
-                IconButton(
-                  tooltip: saved ? 'إزالة من المحفوظة' : 'حفظ الفرصة',
-                  onPressed: busy ? null : onFavorite,
-                  icon: AnimatedSaveIcon(saved: saved),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                job.viewsCount > 0
+                    ? '${job.locationLabel} · ${job.workMode} · ${job.viewsCount} مشاهدة'
+                    : '${job.locationLabel} · ${job.workMode}',
+                style: TextStyle(color: context.sanad.secondary, fontSize: 12),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  AppTag(job.workType, color: context.sanad.primary),
+                  AppTag(job.experienceLabel, color: context.sanad.primary),
+                ],
+              ),
+              const SizedBox(height: 14),
+              const Spacer(),
+              Text(
+                job.salaryLabel,
+                textDirection: job.hasSalary
+                    ? TextDirection.ltr
+                    : TextDirection.rtl,
+                style: TextStyle(
+                  color: context.sanad.ink,
+                  fontWeight: FontWeight.w700,
+                  fontSize: job.hasSalary ? 18 : 14,
                 ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Text(
-              job.title,
-              textDirection: textDirectionFor(job.title),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: context.sanad.ink,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                height: 1.45,
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${job.locationLabel} · ${job.workMode}',
-              style: TextStyle(color: context.sanad.secondary, fontSize: 12),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                AppTag(job.workType, color: context.sanad.primary),
-                AppTag(job.experience, color: context.sanad.primary),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Text(
-              job.salaryLabel,
-              textDirection: job.hasSalary
-                  ? TextDirection.ltr
-                  : TextDirection.rtl,
-              style: TextStyle(
-                color: context.sanad.ink,
-                fontWeight: FontWeight.w700,
-                fontSize: job.hasSalary ? 18 : 14,
+              const SizedBox(height: 5),
+              Text(
+                job.salaryPeriodLabel ?? '',
+                style: TextStyle(
+                  color: context.sanad.primary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'شوف التفاصيل',
-              style: TextStyle(
-                color: context.sanad.primary,
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
+              const SizedBox(height: 8),
+              Text(
+                'عرض التفاصيل',
+                style: TextStyle(
+                  color: context.sanad.primary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     ),
@@ -807,9 +1095,11 @@ class _EmptyJobs extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _EmptyPanel(
     icon: searching ? CupertinoIcons.search : CupertinoIcons.briefcase,
-    title: searching ? 'ما لقينا فرص بهالبحث' : 'ما في فرص معروضة هلّق',
+    title: searching
+        ? 'لم نعثر على فرص تطابق البحث'
+        : 'لا توجد فرص معروضة حالياً',
     body: searching
-        ? 'جرّب كلمات أوسع أو امسح الفلاتر.'
+        ? 'استخدم كلمات أكثر عمومية أو أزل بعض عوامل التصفية.'
         : 'حدّث الصفحة لاحقاً أو انشر فرصة إذا كنت معلناً.',
   );
 }
@@ -820,8 +1110,8 @@ class _EmptySaved extends StatelessWidget {
   @override
   Widget build(BuildContext context) => const _EmptyPanel(
     icon: CupertinoIcons.heart,
-    title: 'ما حفظت شي بعد',
-    body: 'من صفحة الفرص احفظ اللي يعجبك لترجع له بسهولة.',
+    title: 'لم تحفظ أي فرصة بعد.',
+    body: 'احفظ الفرص من الصفحة الرئيسية لتعود إليها بسهولة.',
   );
 }
 
@@ -872,6 +1162,7 @@ class _SavedSection extends StatelessWidget {
   const _SavedSection({
     required this.store,
     required this.saving,
+    required this.headerExtent,
     required this.onOpen,
     required this.onFavorite,
     required this.age,
@@ -880,6 +1171,7 @@ class _SavedSection extends StatelessWidget {
 
   final JobsStore store;
   final Set<String> saving;
+  final double headerExtent;
   final Future<void> Function(Job) onOpen;
   final Future<void> Function(Job) onFavorite;
   final String Function(DateTime) age;
@@ -896,12 +1188,13 @@ class _SavedSection extends StatelessWidget {
     return SanadRefresh(
       enabled: !store.loading && !store.busy,
       onRefresh: onRefresh,
-      successLabel: 'صارت المحفوظة محدّثة',
+      successLabel: 'تم تحديث المحفوظات',
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
+          SliverToBoxAdapter(child: SizedBox(height: headerExtent)),
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(padding.left, 28, padding.right, 40),
+            padding: EdgeInsets.fromLTRB(padding.left, 28, padding.right, 0),
             sliver: SliverToBoxAdapter(
               child: Center(
                 child: ConstrainedBox(
@@ -930,39 +1223,42 @@ class _SavedSection extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 22),
-                      if (jobs.isEmpty)
-                        const _EmptySaved()
-                      else
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            final width = constraints.maxWidth;
-                            final cardWidth = columns == 1
-                                ? width
-                                : (width - gutter * (columns - 1)) / columns;
-                            return Wrap(
-                              spacing: gutter,
-                              runSpacing: gutter,
-                              children: [
-                                for (final job in jobs)
-                                  SizedBox(
-                                    width: cardWidth,
-                                    child: _WebJobCard(
-                                      job: job,
-                                      saved: true,
-                                      busy: saving.contains(job.id),
-                                      ageLabel: age(job.createdAt),
-                                      onOpen: () => onOpen(job),
-                                      onFavorite: () => onFavorite(job),
-                                    ),
-                                  ),
-                              ],
-                            );
-                          },
+                      if (store.isDemo) ...[
+                        const SignalCard(
+                          'وضع العرض: المحفوظات هنا فرص افتراضية للتجربة فقط.',
                         ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (jobs.isEmpty) const _EmptySaved(),
                     ],
                   ),
                 ),
               ),
+            ),
+          ),
+          if (jobs.isNotEmpty)
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(padding.left, 0, padding.right, 40),
+              sliver: _WebJobCardsSliver(
+                jobs: jobs,
+                columns: columns,
+                gutter: gutter,
+                card: (job) => _WebJobCard(
+                  key: ValueKey('saved-${job.id}'),
+                  job: job,
+                  saved: true,
+                  busy: saving.contains(job.id),
+                  ageLabel: age(job.createdAt),
+                  onOpen: () => onOpen(job),
+                  onFavorite: () => onFavorite(job),
+                ),
+              ),
+            ),
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: SanadWebFooter(),
             ),
           ),
         ],

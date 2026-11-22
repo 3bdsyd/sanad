@@ -2,13 +2,13 @@
 
 ## رسوم أصلية وخفيفة
 
-صُممت 52 أيقونة بمسارات متجهة لهذا التطبيق على شبكة 24 وحدة، بسماكة 1.7 وزوايا ونهايات مستديرة، دون تعبئات زخرفية. [كتالوج SVG](../assets/icons/fursa-symbols.svg) و[مصدر المسارات](../assets/icons/fursa-symbols.json) قابلان للمراجعة والتعديل. هذه رسوم code-native وليست صور شبكة أو أيقونات مقتطعة من المرجع.
+صُممت 52 أيقونة بمسارات متجهة لهذا التطبيق على شبكة 24 وحدة، بسماكة 1.7 وزوايا ونهايات مستديرة، دون تعبئات زخرفية. [كتالوج SVG](../assets/icons/snad-symbols.svg) و[مصدر المسارات](../assets/icons/snad-symbols.json) قابلان للمراجعة والتعديل. هذه رسوم code-native وليست صور شبكة أو أيقونات مقتطعة من المرجع.
 
-[مولّد الكتالوج](../tools/generate_ui_icons.py) ينتج [مسارات Dart](../lib/core/fursa_icon_paths.dart) وكتالوج Swift وورقة SVG من المصدر نفسه. [عارض Flutter](../lib/core/fursa_icons.dart) يخزن Path مرة واحدة لكل رمز ويغيّر اللون والحجم والحالة دون إعادة تحليل الرسم في كل frame. القلب يستعمل المسار نفسه للحالة الفارغة والممتلئة.
+[مولّد الكتالوج](../tools/generate_ui_icons.py) ينتج [مسارات Dart](../lib/core/snad_icon_paths.dart) وكتالوج Swift وورقة SVG من المصدر نفسه. [عارض Flutter](../lib/core/snad_icons.dart) يخزن Path مرة واحدة لكل رمز ويغيّر اللون والحجم والحالة دون إعادة تحليل الرسم في كل frame. القلب يستعمل المسار نفسه للحالة الفارغة والممتلئة.
 
 ```sh
 python3 tools/generate_ui_icons.py
-dart format lib/core/fursa_icon_paths.dart
+dart format lib/core/snad_icon_paths.dart
 ```
 
 الناف بار يبقى UITabBar أصلياً، وتُرسم أيقونات home/heart/plus من هندسة المجموعة نفسها إلى UIImage template بمقاس 22pt على iOS. راجع مسارات الطرفين عند تعديل هذه الرموز. تبقى قناة SF Symbols للحالات غير الموجودة في الكتالوج، والقناة الأصلية للهزات؛ بقية الإجراءات المعروضة تستخدم مجموعة سند.

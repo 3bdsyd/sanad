@@ -11,111 +11,31 @@ import '../../../core/motion.dart';
 import '../../../core/web_layout.dart';
 import '../data/jobs_store.dart';
 import '../domain/job.dart';
+import '../domain/job_geography.dart';
+import '../domain/job_regions.dart';
+import 'geography_picker.dart';
+import '../../platform/presentation/auth_page.dart';
+import 'feed_scroll_header.dart';
+import 'country_flag.dart';
 import '../domain/company_website.dart';
 import '../domain/job_title_suggestions.dart';
 
-class _PhoneCountry {
-  const _PhoneCountry(this.name, this.flag, this.dialCode);
+final _phoneCountries = availableJobCountries
+    .where((country) => country.dialCode.isNotEmpty)
+    .toList();
 
-  final String name;
-  final String flag;
-  final String dialCode;
-
-  String get isoCode => switch (dialCode) {
-    '+963' => 'SY',
-    '+961' => 'LB',
-    '+962' => 'JO',
-    '+970' => 'PS',
-    '+964' => 'IQ',
-    '+90' => 'TR',
-    '+966' => 'SA',
-    '+971' => 'AE',
-    '+974' => 'QA',
-    '+965' => 'KW',
-    '+973' => 'BH',
-    '+968' => 'OM',
-    '+967' => 'YE',
-    '+20' => 'EG',
-    '+49' => 'DE',
-    '+44' => 'GB',
-    '+33' => 'FR',
-    '+46' => 'SE',
-    '+31' => 'NL',
-    '+43' => 'AT',
-    '+32' => 'BE',
-    '+41' => 'CH',
-    '+39' => 'IT',
-    '+34' => 'ES',
-    '+47' => 'NO',
-    '+45' => 'DK',
-    '+358' => 'FI',
-    '+48' => 'PL',
-    '+7' => 'RU',
-    '+1' => name == 'كندا' ? 'CA' : 'US',
-    '+52' => 'MX',
-    '+55' => 'BR',
-    '+61' => 'AU',
-    '+64' => 'NZ',
-    '+91' => 'IN',
-    '+92' => 'PK',
-    '+880' => 'BD',
-    '+81' => 'JP',
-    '+82' => 'KR',
-    '+86' => 'CN',
-    '+98' => 'IR',
-    '+27' => 'ZA',
-    _ => 'SY',
-  };
+Future<void> showPostJob(BuildContext context, JobsStore store) async {
+  if (store.accountsEnabled &&
+          !await ensureAccount(
+            context,
+            store.platform,
+            reason: 'لإضافة فرصة عمل',
+          ) ||
+      !context.mounted) {
+    return;
+  }
+  await openPage<void>(context, PostJobPage(store: store));
 }
-
-const _phoneCountries = [
-  _PhoneCountry('سوريا', '🇸🇾', '+963'),
-  _PhoneCountry('لبنان', '🇱🇧', '+961'),
-  _PhoneCountry('الأردن', '🇯🇴', '+962'),
-  _PhoneCountry('فلسطين', '🇵🇸', '+970'),
-  _PhoneCountry('العراق', '🇮🇶', '+964'),
-  _PhoneCountry('تركيا', '🇹🇷', '+90'),
-  _PhoneCountry('السعودية', '🇸🇦', '+966'),
-  _PhoneCountry('الإمارات', '🇦🇪', '+971'),
-  _PhoneCountry('قطر', '🇶🇦', '+974'),
-  _PhoneCountry('الكويت', '🇰🇼', '+965'),
-  _PhoneCountry('البحرين', '🇧🇭', '+973'),
-  _PhoneCountry('عُمان', '🇴🇲', '+968'),
-  _PhoneCountry('اليمن', '🇾🇪', '+967'),
-  _PhoneCountry('مصر', '🇪🇬', '+20'),
-  _PhoneCountry('ألمانيا', '🇩🇪', '+49'),
-  _PhoneCountry('المملكة المتحدة', '🇬🇧', '+44'),
-  _PhoneCountry('فرنسا', '🇫🇷', '+33'),
-  _PhoneCountry('السويد', '🇸🇪', '+46'),
-  _PhoneCountry('هولندا', '🇳🇱', '+31'),
-  _PhoneCountry('النمسا', '🇦🇹', '+43'),
-  _PhoneCountry('بلجيكا', '🇧🇪', '+32'),
-  _PhoneCountry('سويسرا', '🇨🇭', '+41'),
-  _PhoneCountry('إيطاليا', '🇮🇹', '+39'),
-  _PhoneCountry('إسبانيا', '🇪🇸', '+34'),
-  _PhoneCountry('النرويج', '🇳🇴', '+47'),
-  _PhoneCountry('الدنمارك', '🇩🇰', '+45'),
-  _PhoneCountry('فنلندا', '🇫🇮', '+358'),
-  _PhoneCountry('بولندا', '🇵🇱', '+48'),
-  _PhoneCountry('روسيا', '🇷🇺', '+7'),
-  _PhoneCountry('الولايات المتحدة', '🇺🇸', '+1'),
-  _PhoneCountry('كندا', '🇨🇦', '+1'),
-  _PhoneCountry('المكسيك', '🇲🇽', '+52'),
-  _PhoneCountry('البرازيل', '🇧🇷', '+55'),
-  _PhoneCountry('أستراليا', '🇦🇺', '+61'),
-  _PhoneCountry('نيوزيلندا', '🇳🇿', '+64'),
-  _PhoneCountry('الهند', '🇮🇳', '+91'),
-  _PhoneCountry('باكستان', '🇵🇰', '+92'),
-  _PhoneCountry('بنغلادش', '🇧🇩', '+880'),
-  _PhoneCountry('اليابان', '🇯🇵', '+81'),
-  _PhoneCountry('كوريا الجنوبية', '🇰🇷', '+82'),
-  _PhoneCountry('الصين', '🇨🇳', '+86'),
-  _PhoneCountry('إيران', '🇮🇷', '+98'),
-  _PhoneCountry('جنوب أفريقيا', '🇿🇦', '+27'),
-];
-
-Future<void> showPostJob(BuildContext context, JobsStore store) =>
-    openPage<void>(context, PostJobPage(store: store));
 
 class PostJobPage extends StatefulWidget {
   const PostJobPage({super.key, required this.store});
@@ -130,6 +50,7 @@ class _PostJobPageState extends State<PostJobPage>
   final forms = [GlobalKey<FormState>(), GlobalKey<FormState>()];
   final scroll = ScrollController();
   final consentKey = GlobalKey();
+  final jobCountryKey = GlobalKey<FormFieldState<JobCountry>>();
   final Map<TextEditingController, GlobalKey<FormFieldState<String>>>
   fieldKeys = {};
   final Map<TextEditingController, FocusNode> focusNodes = {};
@@ -149,35 +70,73 @@ class _PostJobPageState extends State<PostJobPage>
     value: 1,
   );
   Timer? revealTimer;
-  String city = jobCities.first;
+  final jobCity = TextEditingController();
+  late JobCountry jobCountry;
+  bool countryChosen = false;
+  bool phoneCountryChosen = false;
   String category = jobCategories.first;
   String workType = jobWorkTypes.first;
   String workMode = jobWorkModes.first;
   String experience = jobExperienceLevels.first;
   String currency = 'SYP';
   String period = 'شهري';
-  _PhoneCountry phoneCountry = _phoneCountries.first;
+  late JobCountry phoneCountry;
   String? expandedChoice, error;
   int step = 0, days = 30;
   bool tried = false;
   bool consent = false, consentError = false;
   bool saving = false, changed = false, confirmingExit = false;
   bool completed = false, submissionRecorded = false, allowExit = false;
+  bool uncertainSubmission = false, retryReviewed = false;
+  Job? uncertainDraft;
+  Set<String> knownSubmissionIds = {};
   bool showSalary = false;
   bool showTitleSuggestions = true;
 
   String _shown(String value, List<String> options) =>
       options.contains(value) ? value : options.first;
 
+  Future<void> changeJobCountry() async {
+    final value = await chooseJobCountry(context, selected: jobCountry.code);
+    if (!mounted ||
+        value == null ||
+        (value == jobCountry.code && countryChosen)) {
+      return;
+    }
+    final next = countryFor(value)!;
+    setState(() {
+      if (currency == jobCountry.currency) currency = next.currency;
+      jobCountry = next;
+      countryChosen = true;
+      jobCity.clear();
+      fieldKeys[jobCity]?.currentState?.didChange('');
+      if (!phoneCountryChosen &&
+          phone.text.isEmpty &&
+          next.dialCode.isNotEmpty) {
+        phoneCountry = next;
+      }
+      changed = true;
+    });
+    jobCountryKey.currentState?.didChange(next);
+  }
+
+  Future<void> changeSalaryCurrency() async {
+    final value = await chooseJobCurrency(context, selected: currency);
+    if (mounted && value != null) {
+      setState(() {
+        currency = value;
+        changed = true;
+      });
+    }
+  }
+
   void _alignChoices() {
     if (!mounted || completed || saving) return;
     final nextCategory = _shown(category, widget.store.categoryOptions);
-    final nextCity = _shown(city, widget.store.placeOptions);
     final nextWorkType = _shown(workType, widget.store.workTypeOptions);
     final nextWorkMode = _shown(workMode, widget.store.workModeOptions);
     final nextExperience = _shown(experience, widget.store.experienceOptions);
     if (nextCategory == category &&
-        nextCity == city &&
         nextWorkType == workType &&
         nextWorkMode == workMode &&
         nextExperience == experience) {
@@ -185,7 +144,6 @@ class _PostJobPageState extends State<PostJobPage>
     }
     setState(() {
       category = nextCategory;
-      city = nextCity;
       workType = nextWorkType;
       workMode = nextWorkMode;
       experience = nextExperience;
@@ -196,6 +154,7 @@ class _PostJobPageState extends State<PostJobPage>
     title,
     company,
     companyWebsite,
+    jobCity,
     description,
     requirements,
     phone,
@@ -207,6 +166,12 @@ class _PostJobPageState extends State<PostJobPage>
   @override
   void initState() {
     super.initState();
+    jobCountry = countryFor(widget.store.filters.country ?? 'SY')!;
+    countryChosen = widget.store.filters.country != null;
+    jobCity.text =
+        canonicalRegion(jobCountry.code, widget.store.filters.city) ?? '';
+    currency = jobCountry.currency;
+    phoneCountry = jobCountry.dialCode.isEmpty ? countryFor('SY')! : jobCountry;
     widget.store.addListener(_alignChoices);
     WidgetsBinding.instance.addObserver(this);
     for (final controller in controllers) {
@@ -266,6 +231,12 @@ class _PostJobPageState extends State<PostJobPage>
 
   void revealInvalid() {
     for (final controller in controllers) {
+      if (controller == jobCity &&
+          (jobCountryKey.currentState?.hasError ?? false)) {
+        final target = jobCountryKey.currentContext;
+        if (target != null) revealTarget(target);
+        return;
+      }
       if (fieldKeys[controller]?.currentState?.hasError ?? false) {
         focusNodes[controller]?.requestFocus();
         scheduleReveal(controller);
@@ -284,16 +255,8 @@ class _PostJobPageState extends State<PostJobPage>
     return value;
   }
 
-  String normalizedPhone(String raw) {
-    final value = normalizeDigits(
-      raw.trim(),
-    ).replaceAll(RegExp(r'[\s()\-]'), '');
-    if (value.startsWith('+')) return value;
-    final digits = value.replaceAll(RegExp(r'\D'), '');
-    if (digits.startsWith('00')) return '+${digits.substring(2)}';
-    final national = digits.startsWith('0') ? digits.substring(1) : digits;
-    return '${phoneCountry.dialCode}$national';
-  }
+  String normalizedPhone(String raw) =>
+      normalizeContactPhone(raw, phoneCountry);
 
   int? number(TextEditingController controller) =>
       int.tryParse(normalizeDigits(controller.text));
@@ -306,18 +269,18 @@ class _PostJobPageState extends State<PostJobPage>
   }) {
     final value = raw?.trim() ?? '';
     if (controller == phone && value.isEmpty && email.text.trim().isEmpty) {
-      return 'أضف رقم واتساب أو إيميل للتواصل.';
+      return 'أدخل رقم واتساب أو عنوان بريد إلكتروني للتواصل.';
     }
-    if (required && value.isEmpty) return 'هالحقل مطلوب.';
+    if (required && value.isEmpty) return 'هذا الحقل مطلوب.';
     if (controller == title && value.length < 3) {
-      return 'اكتب مسمّى من ٣ أحرف على الأقل.';
+      return 'يجب ألا يقل المسمّى الوظيفي عن ٣ أحرف.';
     }
     if (controller == company && value.length < 2) {
-      return 'اكتب اسم الجهة من حرفين على الأقل.';
+      return 'يجب ألا يقل اسم جهة العمل عن حرفين.';
     }
     if (controller == companyWebsite &&
         normalizeCompanyWebsite(raw ?? '') == null) {
-      return 'أضف رابط موقع صحيح، مثل example.com، بدون اسم مستخدم أو كلمة مرور.';
+      return 'أدخل رابطاً صحيحاً لموقع الجهة، مثل example.com، من دون اسم مستخدم أو كلمة مرور.';
     }
     if (controller == description && value.length < 20) {
       return 'اكتب وصفاً واضحاً من ٢٠ حرفاً على الأقل.';
@@ -330,7 +293,7 @@ class _PostJobPageState extends State<PostJobPage>
           .toList();
       if (items.length > 12 ||
           items.any((s) => s.length < 2 || s.length > 200)) {
-        return 'حتى ١٢ متطلباً، كل سطر بين ٢ و٢٠٠ حرف.';
+        return 'يمكن إضافة ١٢ متطلباً كحد أقصى، على أن يتراوح طول كل سطر بين حرفين و٢٠٠ حرف.';
       }
     }
     if (numeric &&
@@ -344,17 +307,17 @@ class _PostJobPageState extends State<PostJobPage>
         number(controller) != null &&
         number(minSalary) != null &&
         number(controller)! < number(minSalary)!) {
-      return 'الحد الأعلى لازم يكون أكبر من أو يساوي الأدنى.';
+      return 'يجب أن يكون الحد الأعلى أكبر من الحد الأدنى أو مساوياً له.';
     }
     if (controller == email &&
         value.isNotEmpty &&
         !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value)) {
-      return 'تأكد من صيغة البريد، مثال: name@example.com';
+      return 'تحقّق من صيغة البريد الإلكتروني، مثل name@example.com.';
     }
     if (controller == phone &&
         value.isNotEmpty &&
         !RegExp(r'^\+[1-9]\d{7,14}$').hasMatch(normalizedPhone(value))) {
-      return 'تأكد من الرقم ورمز البلد، مثال: 09xxxxxxxx أو +49…';
+      return 'تحقّق من رقم الهاتف ورمز البلد، أو اكتب الرقم الدولي مع +.';
     }
     return null;
   }
@@ -368,6 +331,7 @@ class _PostJobPageState extends State<PostJobPage>
     int max = 140,
     bool required = true,
     bool numeric = false,
+    bool enabled = true,
     TextInputType? keyboard,
     Widget? countrySelector,
   }) => Padding(
@@ -384,7 +348,7 @@ class _PostJobPageState extends State<PostJobPage>
         focusNode: focusNodes[controller],
         controller: controller,
         onTap: () => scheduleReveal(controller),
-        enabled: !saving && !submissionRecorded,
+        enabled: enabled && !saving && !submissionRecorded,
         scrollPadding: const EdgeInsets.all(24),
         autovalidateMode: tried
             ? AutovalidateMode.onUserInteraction
@@ -432,8 +396,17 @@ class _PostJobPageState extends State<PostJobPage>
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          helperText: helper,
-          helperMaxLines: 3,
+          helper: helper == null
+              ? null
+              : Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    helper,
+                    textDirection: TextDirection.rtl,
+                    textAlign: TextAlign.right,
+                    maxLines: 3,
+                  ),
+                ),
           errorMaxLines: 3,
           counterText: '',
           alignLabelWithHint: lines > 1,
@@ -476,9 +449,7 @@ class _PostJobPageState extends State<PostJobPage>
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                    SanadActions(
                       children: [
                         for (final suggestion in suggestions)
                           OutlinedButton(
@@ -523,13 +494,20 @@ class _PostJobPageState extends State<PostJobPage>
   String choiceLabel(String value) => switch (value) {
     'SYP' => 'ليرة سورية',
     'USD' => 'دولار أمريكي',
+    'AED' => 'درهم إماراتي',
+    'SAR' => 'ريال سعودي',
+    'شهري' => 'شهرياً',
+    'أسبوعي' => 'أسبوعياً',
+    'يومي' => 'يومياً',
+    _ when jobExperienceLevels.contains(value) => experienceDisplayLabel(value),
     _ => value,
   };
 
   Widget phoneCountryButton() => Theme(
     data: Theme.of(context).copyWith(
       splashFactory: NoSplash.splashFactory,
-      highlightColor: context.sanad.tint.withValues(alpha: .55),
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
     ),
     child: Material(
       color: Colors.transparent,
@@ -548,13 +526,13 @@ class _PostJobPageState extends State<PostJobPage>
               },
         child: SizedBox(
           width: 116,
-          height: 52,
+          height: compactWebControls(context) ? 44 : 52,
           child: Directionality(
             textDirection: TextDirection.ltr,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(phoneCountry.flag, style: const TextStyle(fontSize: 17)),
+                CountryFlag(country: phoneCountry, size: 17),
                 const SizedBox(width: 5),
                 Text(
                   phoneCountry.dialCode,
@@ -590,9 +568,9 @@ class _PostJobPageState extends State<PostJobPage>
     final query = normalizeDigits(countrySearch.text.trim()).toLowerCase();
     final countries = _phoneCountries
         .where(
-          (country) =>
-              country.name.toLowerCase().contains(query) ||
-              country.dialCode.contains(query),
+          (country) => locationSearchKey(
+            '${country.name} ${country.englishName} ${country.code} ${country.dialCode}',
+          ).contains(locationSearchKey(query)),
         )
         .toList();
     return Padding(
@@ -629,7 +607,7 @@ class _PostJobPageState extends State<PostJobPage>
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'ما لقينا هالبلد أو الرمز.',
+                  'لم نعثر على هذا البلد أو الرمز.',
                   style: TextStyle(color: context.sanad.secondary),
                 ),
               )
@@ -639,7 +617,8 @@ class _PostJobPageState extends State<PostJobPage>
                 child: Theme(
                   data: Theme.of(context).copyWith(
                     splashFactory: NoSplash.splashFactory,
-                    highlightColor: context.sanad.tint.withValues(alpha: .55),
+                    highlightColor: Colors.transparent,
+                    splashColor: Colors.transparent,
                   ),
                   child: ListView.separated(
                     shrinkWrap: true,
@@ -658,10 +637,7 @@ class _PostJobPageState extends State<PostJobPage>
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                         ),
-                        leading: Text(
-                          country.flag,
-                          style: const TextStyle(fontSize: 20),
-                        ),
+                        leading: CountryFlag(country: country, size: 20),
                         title: Text(country.name),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -686,6 +662,7 @@ class _PostJobPageState extends State<PostJobPage>
                             : () {
                                 setState(() {
                                   phoneCountry = country;
+                                  phoneCountryChosen = true;
                                   expandedChoice = null;
                                   changed = true;
                                   if (phone.text.isNotEmpty) {
@@ -721,6 +698,39 @@ class _PostJobPageState extends State<PostJobPage>
     List<String> values,
     ValueChanged<String> changedValue,
   ) {
+    if (label == 'المجال') {
+      return ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: AppIcon(sanadPickerIcon(label), color: context.sanad.primary),
+        title: Text(label),
+        subtitle: Text(choiceLabel(value)),
+        trailing: AppIcon(
+          CupertinoIcons.chevron_left,
+          color: context.sanad.primary,
+          size: 18,
+        ),
+        onTap: saving || submissionRecorded
+            ? null
+            : () async {
+                FocusScope.of(context).unfocus();
+                final selected = await chooseJobCategory(
+                  context,
+                  values: values,
+                  selected: value,
+                  translations: {
+                    for (final field in widget.store.fields)
+                      field.nameAr: field.nameEn,
+                  },
+                );
+                if (mounted && selected != null) {
+                  setState(() {
+                    changedValue(selected);
+                    changed = true;
+                  });
+                }
+              },
+      );
+    }
     final isOpen = expandedChoice == label;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -730,11 +740,17 @@ class _PostJobPageState extends State<PostJobPage>
           child: Theme(
             data: Theme.of(context).copyWith(
               splashFactory: NoSplash.splashFactory,
-              highlightColor: context.sanad.tint.withValues(alpha: .55),
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
             ),
             child: ListTile(
               contentPadding: EdgeInsets.zero,
               minVerticalPadding: 16,
+              leading: AppIcon(
+                sanadPickerIcon(label),
+                color: context.sanad.primary,
+                size: 22,
+              ),
               title: Text(label, style: const TextStyle(fontSize: 14)),
               subtitle: Text(
                 choiceLabel(value),
@@ -788,7 +804,9 @@ class _PostJobPageState extends State<PostJobPage>
                                       });
                                     },
                               style: OutlinedButton.styleFrom(
-                                minimumSize: const Size(48, 48),
+                                minimumSize: compactWebControls(context)
+                                    ? const Size(44, 44)
+                                    : const Size(48, 48),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                 ),
@@ -915,6 +933,18 @@ class _PostJobPageState extends State<PostJobPage>
 
   Future<void> next() async {
     if (saving || completed || submissionRecorded || confirmingExit) return;
+    if (uncertainSubmission) {
+      if (!retryReviewed) {
+        await verifySubmission();
+        return;
+      }
+      // This explicit action follows an authoritative owner-list check and an
+      // inline warning. Never repeat an ambiguous POST automatically.
+      setState(() {
+        uncertainSubmission = false;
+        retryReviewed = false;
+      });
+    }
     FocusScope.of(context).unfocus();
     setState(() => tried = true);
     if (!(forms[step].currentState?.validate() ?? false)) {
@@ -940,6 +970,7 @@ class _PostJobPageState extends State<PostJobPage>
       error = null;
     });
     final existingIds = widget.store.submissions.map((s) => s.id).toSet();
+    knownSubmissionIds = existingIds;
     try {
       final now = DateTime.now();
       final job = Job(
@@ -947,7 +978,8 @@ class _PostJobPageState extends State<PostJobPage>
         title: title.text.trim(),
         company: company.text.trim(),
         companyWebsite: normalizeCompanyWebsite(companyWebsite.text)!,
-        city: _shown(city, widget.store.placeOptions),
+        country: jobCountry.name,
+        city: jobCity.text.trim(),
         category: _shown(category, widget.store.categoryOptions),
         jobFieldId: widget.store.fieldIdFor(
           _shown(category, widget.store.categoryOptions),
@@ -971,6 +1003,7 @@ class _PostJobPageState extends State<PostJobPage>
         expiresAt: now.add(Duration(days: days)),
         status: 'pending',
       );
+      uncertainDraft = job;
       await widget.store.submit(job, contactConsent: consent);
       if (!mounted) return;
       setState(() {
@@ -988,9 +1021,12 @@ class _PostJobPageState extends State<PostJobPage>
         error = exception.toString().replaceFirst('Exception: ', '');
         // The server can accept a job before secure/local persistence fails.
         // In that state never expose another submit button for the same draft.
-        submissionRecorded = widget.store.submissions.any(
-          (submission) => !existingIds.contains(submission.id),
-        );
+        submissionRecorded = widget.store.submissions.any(matchesPendingDraft);
+        uncertainSubmission =
+            !submissionRecorded &&
+            exception is JobsException &&
+            exception.uncertainOutcome;
+        retryReviewed = false;
         if (submissionRecorded) changed = false;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -998,6 +1034,58 @@ class _PostJobPageState extends State<PostJobPage>
       });
     } finally {
       if (mounted) setState(() => saving = false);
+    }
+  }
+
+  bool matchesPendingDraft(Submission submission) {
+    final draft = uncertainDraft;
+    if (draft == null || knownSubmissionIds.contains(submission.id)) {
+      return false;
+    }
+    final job = submission.job;
+    return countryFor(job.country)?.code == countryFor(draft.country)?.code &&
+        job.city.trim() == draft.city.trim() &&
+        job.title.trim() == draft.title.trim() &&
+        job.company.trim() == draft.company.trim() &&
+        job.description.trim() == draft.description.trim() &&
+        (draft.phone.isNotEmpty
+            ? normalizedPhone(job.phone) == normalizedPhone(draft.phone)
+            : job.email.trim().toLowerCase() ==
+                  draft.email.trim().toLowerCase());
+  }
+
+  Future<void> verifySubmission() async {
+    if (saving || uncertainDraft == null) return;
+    setState(() => saving = true);
+    try {
+      await widget.store.refreshMySubmissions();
+      if (!mounted) return;
+      final matched = widget.store.submissions.any(matchesPendingDraft);
+      setState(() {
+        submissionRecorded = matched;
+        retryReviewed = !matched;
+        if (matched) {
+          uncertainSubmission = false;
+          changed = false;
+          error = 'عُثر على إعلانك ضمن إعلاناتي. لا حاجة إلى إرساله مرة أخرى.';
+        } else {
+          error =
+              'حدّثنا إعلاناتك ولم نعثر على إعلان جديد مطابق. ربما وصل الطلب الأول رغم انقطاع الرد؛ وقد تؤدي إعادة الإرسال إلى إنشاء إعلان مكرر. يمكنك التحقق مرة أخرى أو اختيار إعادة الإرسال بوضوح.';
+        }
+      });
+    } catch (exception) {
+      if (!mounted) return;
+      setState(() {
+        retryReviewed = false;
+        error = exception is JobsException
+            ? exception.message
+            : 'تعذّر التحقق من إعلاناتك. أعد التحقق قبل إعادة الإرسال.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => saving = false);
+        animateScrollTo(context, scroll, 0);
+      }
     }
   }
 
@@ -1027,25 +1115,39 @@ class _PostJobPageState extends State<PostJobPage>
     if (saving) return;
     if (confirmingExit) {
       setState(() => confirmingExit = false);
-    } else if (step == 1 && !completed && !submissionRecorded) {
+    } else if (step == 1 &&
+        !completed &&
+        !submissionRecorded &&
+        !uncertainSubmission) {
       changeStep(0);
     } else {
       requestClose();
     }
   }
 
-  Widget exitConfirmation() => section('تترك الإعلان؟', [
+  Widget exitConfirmation() => section('مغادرة نموذج الإعلان', [
     Text(
-      'التفاصيل اللي كتبتها ما انحفظت بعد.',
+      uncertainSubmission
+          ? 'لم يتأكد إرسال الإعلان. راجع إعلاناتي قبل إنشاء إعلان آخر لتجنّب التكرار.'
+          : 'لم تُحفظ التفاصيل التي أدخلتها بعد.',
       style: TextStyle(color: context.sanad.secondary),
     ),
     const SizedBox(height: 14),
-    FilledButton(
+    SanadPrimaryButton(
       onPressed: () => setState(() => confirmingExit = false),
-      child: const Text('كمّل كتابة'),
+      child: Text(
+        uncertainSubmission ? 'متابعة التحقق' : 'متابعة إدخال البيانات',
+      ),
     ),
     const SizedBox(height: 12),
-    TextButton(onPressed: exitPage, child: const Text('اترك الإعلان بدون حفظ')),
+    TextButton(
+      onPressed: exitPage,
+      child: Text(
+        uncertainSubmission
+            ? 'العودة من دون إعادة الإرسال'
+            : 'مغادرة النموذج من دون حفظ الإعلان',
+      ),
+    ),
     const SizedBox(height: 8),
   ]);
 
@@ -1053,13 +1155,13 @@ class _PostJobPageState extends State<PostJobPage>
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       postIntro(),
-      section('عرّف الناس بالفرصة', [
-        field(title, 'المسمّى الوظيفي', hint: 'مثلاً: مصمم غرافيك', max: 100),
+      section('تفاصيل الوظيفة', [
+        field(title, 'المسمّى الوظيفي', hint: 'مثال: مصمم غرافيك', max: 100),
         titleSuggestions(),
         field(
           company,
           'اسم جهة العمل',
-          hint: 'الاسم اللي رح يظهر بالإعلان',
+          hint: 'الاسم الذي سيظهر في الإعلان',
           max: 100,
         ),
         field(
@@ -1067,18 +1169,97 @@ class _PostJobPageState extends State<PostJobPage>
           'رابط جهة العمل',
           hint: 'example.com',
           helper:
-              'اختياري · موقع مؤسستك أو صفحتها الرسمية، وبيظهر ضمن تفاصيل الفرصة.',
+              'اختياري · موقع الجهة أو صفحتها الرسمية. سيظهر الرابط ضمن تفاصيل الفرصة.',
           keyboard: TextInputType.url,
           required: false,
           max: 2048,
         ),
       ], icon: CupertinoIcons.briefcase),
-      section('وين وكيف الشغل؟', [
-        picker(
-          'المحافظة',
-          _shown(city, widget.store.placeOptions),
-          widget.store.placeOptions,
-          (v) => city = v,
+      section('مكان العمل وطبيعته', [
+        FormField<JobCountry>(
+          key: jobCountryKey,
+          initialValue: countryChosen ? jobCountry : null,
+          validator: (value) => value == null ? 'اختر بلد مكان العمل.' : null,
+          builder: (state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('بلد العمل'),
+                subtitle: Text(countryChosen ? jobCountry.name : 'اختر البلد'),
+                leading: countryChosen
+                    ? CountryFlag(country: jobCountry)
+                    : AppIcon(
+                        CupertinoIcons.globe,
+                        color: context.sanad.primary,
+                      ),
+                trailing: AppIcon(
+                  CupertinoIcons.chevron_left,
+                  color: context.sanad.primary,
+                  size: 18,
+                ),
+                onTap: null,
+              ),
+              if (state.hasError)
+                Text(
+                  state.errorText!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+            ],
+          ),
+        ),
+        FormField<String>(
+          key: fieldKeys[jobCity],
+          initialValue: jobCity.text,
+          autovalidateMode: tried
+              ? AutovalidateMode.onUserInteraction
+              : AutovalidateMode.disabled,
+          validator: (value) => value == null || value.isEmpty
+              ? 'اختر ${regionLabel(jobCountry.code)}.'
+              : null,
+          builder: (state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                enabled: countryChosen && !saving && !submissionRecorded,
+                leading: AppIcon(
+                  CupertinoIcons.location,
+                  color: context.sanad.primary,
+                ),
+                title: Text(regionLabel(jobCountry.code)),
+                subtitle: Text(
+                  jobCity.text.isEmpty
+                      ? 'اختر ${regionLabel(jobCountry.code)}'
+                      : jobCity.text,
+                ),
+                trailing: AppIcon(
+                  CupertinoIcons.chevron_left,
+                  color: context.sanad.primary,
+                  size: 18,
+                ),
+                onTap: () async {
+                  FocusScope.of(context).unfocus();
+                  final value = await chooseJobRegion(
+                    context,
+                    country: jobCountry.code,
+                    selected: jobCity.text,
+                  );
+                  if (!mounted || value == null) return;
+                  setState(() {
+                    jobCity.text = value;
+                    changed = true;
+                  });
+                  state.didChange(value);
+                },
+              ),
+              if (state.hasError)
+                Text(
+                  state.errorText!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+            ],
+          ),
         ),
         Divider(height: 1, color: context.sanad.border),
         picker(
@@ -1103,21 +1284,21 @@ class _PostJobPageState extends State<PostJobPage>
         ),
         Divider(height: 1, color: context.sanad.border),
         picker(
-          'الخبرة المطلوبة',
+          'متطلبات الخبرة',
           _shown(experience, widget.store.experienceOptions),
           widget.store.experienceOptions,
           (v) => experience = v,
         ),
         const SizedBox(height: 12),
       ], icon: CupertinoIcons.location),
-      section('شو المطلوب؟', [
+      section('ما المتطلبات؟', [
         field(
           description,
-          'وصف الشغل والمسؤوليات',
+          'وصف الوظيفة والمسؤوليات',
           lines: 5,
           max: 5000,
-          hint: 'شو رح يعمل الشخص؟ وين وأي ساعات؟',
-          helper: 'التفاصيل الواضحة بتسهّل وصول الشخص المناسب.',
+          hint: 'ما المهام المطلوبة؟ وأين ومتى سيؤديها الموظف؟',
+          helper: 'تسهّل التفاصيل الواضحة وصول الشخص المناسب.',
         ),
         field(
           requirements,
@@ -1136,7 +1317,7 @@ class _PostJobPageState extends State<PostJobPage>
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       section(
-        'كيف بيتواصلوا معك؟',
+        'كيف يتواصل الباحثون عن عمل معك؟',
         [
           field(
             phone,
@@ -1145,7 +1326,7 @@ class _PostJobPageState extends State<PostJobPage>
             keyboard: TextInputType.phone,
             max: 40,
             hint: 'الرقم المحلي',
-            helper: 'رقم واتساب أو بريد إلكتروني واحد بيكفي.',
+            helper: 'يكفي إدخال رقم واتساب أو بريد إلكتروني واحد.',
             countrySelector: phoneCountryButton(),
           ),
           MotionSize(
@@ -1163,7 +1344,7 @@ class _PostJobPageState extends State<PostJobPage>
             hint: 'name@example.com',
           ),
         ],
-        subtitle: 'التواصل مباشر معك، بدون إنشاء حساب.',
+        subtitle: 'سيكون التواصل معك مباشرةً، من دون إنشاء حساب.',
         icon: CupertinoIcons.chat_bubble_2_fill,
       ),
       section('الراتب', [
@@ -1171,7 +1352,7 @@ class _PostJobPageState extends State<PostJobPage>
           contentPadding: EdgeInsets.zero,
           title: const Text('إضافة راتب', style: TextStyle(fontSize: 14)),
           subtitle: Text(
-            'اختياري، لكنه بيوفّر وقتك ووقت المتقدم.',
+            'اختياري، ويساعد توضيح الراتب الباحثين عن عمل على تقييم الفرصة.',
             style: TextStyle(fontSize: 12, color: context.sanad.secondary),
           ),
           value: showSalary,
@@ -1193,10 +1374,24 @@ class _PostJobPageState extends State<PostJobPage>
           child: showSalary
               ? Column(
                   children: [
-                    picker('العملة', currency, const [
-                      'SYP',
-                      'USD',
-                    ], (v) => currency = v),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('عملة الراتب'),
+                      leading: AppIcon(
+                        CupertinoIcons.money_dollar_circle,
+                        color: context.sanad.primary,
+                        size: 22,
+                      ),
+                      subtitle: Text(currencyLabel(currency)),
+                      onTap: saving || submissionRecorded
+                          ? null
+                          : changeSalaryCurrency,
+                      trailing: AppIcon(
+                        CupertinoIcons.chevron_left,
+                        color: context.sanad.primary,
+                        size: 18,
+                      ),
+                    ),
                     picker(
                       'فترة الراتب',
                       period,
@@ -1225,7 +1420,7 @@ class _PostJobPageState extends State<PostJobPage>
               : Padding(
                   padding: EdgeInsets.only(bottom: 16),
                   child: Text(
-                    'رح يظهر «الراتب عند التواصل».',
+                    'سيظهر في الإعلان: «الراتب عند التواصل».',
                     style: TextStyle(
                       fontSize: 12,
                       color: context.sanad.secondary,
@@ -1235,9 +1430,7 @@ class _PostJobPageState extends State<PostJobPage>
         ),
       ], icon: CupertinoIcons.money_dollar_circle),
       section('مدة الإعلان', [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
+        SanadActions(
           children: [
             for (final value in [7, 14, 30])
               Semantics(
@@ -1250,7 +1443,9 @@ class _PostJobPageState extends State<PostJobPage>
                           changed = true;
                         }),
                   style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(48, 48),
+                    minimumSize: compactWebControls(context)
+                        ? const Size(44, 44)
+                        : const Size(48, 48),
                     backgroundColor: days == value
                         ? context.sanad.tint
                         : context.sanad.surface,
@@ -1260,7 +1455,7 @@ class _PostJobPageState extends State<PostJobPage>
                           : context.sanad.border,
                     ),
                   ),
-                  child: Text('$value يوم'),
+                  child: Text('$value ${value == 7 ? 'أيام' : 'يوماً'}'),
                 ),
               ),
           ],
@@ -1306,7 +1501,7 @@ class _PostJobPageState extends State<PostJobPage>
         ),
         const SizedBox(height: 12),
         Text(
-          'يُراجع الإعلان قبل النشر. لا نقبل فرصاً تطلب دفع مبالغ للتقديم. بتقدر تتابع إعلانك وتسحبه من الجهاز نفسه؛ احتفظ ببيانات التطبيق.',
+          'يُراجع الإعلان قبل نشره. لا تُقبل الفرص التي تطلب دفع مبالغ للتقديم. يمكنك متابعة إعلانك وسحبه من الجهاز نفسه؛ لذا احتفظ ببيانات التطبيق.',
           style: TextStyle(fontSize: 12, color: context.sanad.secondary),
         ),
         const SizedBox(height: 18),
@@ -1354,7 +1549,7 @@ class _PostJobPageState extends State<PostJobPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'خلّي الفرصة تلاقي صاحبها',
+                  'إدخال بيانات فرصة العمل',
                   style: TextStyle(
                     color: context.sanad.ink,
                     fontWeight: FontWeight.w700,
@@ -1363,7 +1558,7 @@ class _PostJobPageState extends State<PostJobPage>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'تفاصيل واضحة، تواصل مباشر، ومراجعة قبل النشر.',
+                  'يرجى استكمال البيانات المطلوبة. يُراجع الإعلان قبل نشره.',
                   style: TextStyle(
                     color: context.sanad.secondary,
                     fontSize: 12,
@@ -1386,7 +1581,10 @@ class _PostJobPageState extends State<PostJobPage>
         child: AnimatedContainer(
           duration: motionDuration(context, 240),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          padding: EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: compactWebControls(context) ? 9 : 12,
+          ),
           decoration: BoxDecoration(
             color: active
                 ? context.sanad.primary
@@ -1419,7 +1617,9 @@ class _PostJobPageState extends State<PostJobPage>
                     : Text(
                         '${index + 1}',
                         style: TextStyle(
-                          color: active ? Colors.white : context.sanad.primary,
+                          color: active
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : context.sanad.primary,
                           fontWeight: FontWeight.w700,
                           fontSize: 12,
                         ),
@@ -1432,7 +1632,9 @@ class _PostJobPageState extends State<PostJobPage>
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: active ? Colors.white : context.sanad.ink,
+                    color: active
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : context.sanad.ink,
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
@@ -1467,7 +1669,12 @@ class _PostJobPageState extends State<PostJobPage>
   }
 
   Widget success() => SingleChildScrollView(
-    padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
+    padding: EdgeInsets.fromLTRB(
+      24,
+      36,
+      24,
+      24 + (kIsWeb ? MediaQuery.paddingOf(context).bottom : 0),
+    ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1496,22 +1703,24 @@ class _PostJobPageState extends State<PostJobPage>
         ),
         const SizedBox(height: 24),
         Text(
-          widget.store.isDemo ? 'انحفظت التجربة!' : 'وصلتنا فرصتك!',
+          widget.store.isDemo
+              ? 'تم حفظ الإعلان التجريبي.'
+              : 'تم استلام إعلانك.',
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 10),
         Text(
           widget.store.isDemo
-              ? 'انحفظ الإعلان محلياً للتجربة، وما اننشر للعامة.'
-              : 'رح نراجع إعلانك قبل ظهوره للناس. بتلاقي حالته بصفحة إعلاناتك.',
+              ? 'حُفظ الإعلان على الجهاز للتجربة، ولم يُنشر للعامة.'
+              : 'سنراجع إعلانك قبل عرضه للباحثين. يمكنك متابعة حالته من صفحة إعلاناتي.',
           textAlign: TextAlign.center,
           style: TextStyle(color: context.sanad.secondary),
         ),
         const SizedBox(height: 28),
         section(title.text.trim(), [
           Text(
-            '${company.text.trim()} · $city',
+            '${company.text.trim()} · ${jobCountry.name} · ${jobCity.text.trim()}',
             style: TextStyle(color: context.sanad.secondary),
           ),
           const SizedBox(height: 12),
@@ -1526,11 +1735,57 @@ class _PostJobPageState extends State<PostJobPage>
           ),
           const SizedBox(height: 18),
         ]),
-        FilledButton(
+        SanadPrimaryButton(
           onPressed: exitPage,
           child: const Text('العودة إلى إعلاناتي'),
         ),
       ],
+    ),
+  );
+
+  Widget bottomAction() => Container(
+    padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+    decoration: BoxDecoration(
+      color: context.sanad.surface,
+      border: Border(top: BorderSide(color: context.sanad.border)),
+    ),
+    child: SafeArea(
+      top: false,
+      child: SizedBox(
+        width: double.infinity,
+        child: SanadPrimaryButton(
+          style: FilledButton.styleFrom(
+            minimumSize: Size(0, compactWebControls(context) ? 44 : 54),
+            padding: EdgeInsets.symmetric(
+              horizontal: compactWebControls(context) ? 16 : 20,
+              vertical: compactWebControls(context) ? 10 : 12,
+            ),
+          ),
+          onPressed: submissionRecorded
+              ? exitPage
+              : saving || confirmingExit
+              ? null
+              : next,
+          child: saving
+              ? SanadLoader(
+                  size: 26,
+                  label: uncertainSubmission ? 'جارٍ التحقق…' : 'جارٍ الإرسال…',
+                )
+              : Text(
+                  submissionRecorded
+                      ? 'العودة إلى إعلاناتي'
+                      : uncertainSubmission
+                      ? retryReviewed
+                            ? 'أعد الإرسال رغم احتمال التكرار'
+                            : 'تحقق من إعلاناتي'
+                      : step == 0
+                      ? 'التالي: التواصل والراتب'
+                      : widget.store.isDemo
+                      ? 'حفظ إعلان تجريبي'
+                      : 'إرسال للمراجعة',
+                ),
+        ),
+      ),
     ),
   );
 
@@ -1547,56 +1802,65 @@ class _PostJobPageState extends State<PostJobPage>
     child: ReferenceBackdrop(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          foregroundColor: context.sanad.ink,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          flexibleSpace: sanadHeaderFill(context),
-          title: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'إضافة فرصة',
-                style: TextStyle(
-                  fontSize: kIsWeb ? 20 : 17,
-                  fontWeight: FontWeight.w700,
+        appBar: kIsWeb
+            ? null
+            : AppBar(
+                backgroundColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                foregroundColor: context.sanad.ink,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                flexibleSpace: sanadHeaderChrome(
+                  context: context,
+                  from: 0,
+                  to: .42,
+                  opaque: true,
+                  edge: false,
+                  blur: false,
                 ),
-              ),
-              Text(
-                step == 0 ? 'التفاصيل أولاً' : 'التواصل والنشر',
-                style: TextStyle(
-                  color: context.sanad.secondary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                title: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'إضافة فرصة',
+                      style: TextStyle(
+                        fontSize: kIsWeb ? 20 : 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      step == 0 ? 'التفاصيل أولاً' : 'التواصل والنشر',
+                      style: TextStyle(
+                        color: context.sanad.secondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          leading: IconButton(
-            tooltip: step == 1 && !completed ? 'العودة للتفاصيل' : 'رجوع',
-            onPressed: saving ? null : back,
-            icon: AppIcon(
-              CupertinoIcons.chevron_right,
-              color: context.sanad.ink,
-            ),
-          ),
-          actions: [
-            if (step == 1 && !completed)
-              TextButton(
-                onPressed: saving ? null : requestClose,
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+                leading: IconButton(
+                  tooltip: step == 1 && !completed ? 'العودة للتفاصيل' : 'رجوع',
+                  onPressed: saving ? null : back,
+                  icon: AppIcon(
+                    CupertinoIcons.chevron_right,
+                    color: context.sanad.ink,
                   ),
                 ),
-                child: const Text('إغلاق'),
+                actions: [
+                  if (step == 1 && !completed)
+                    TextButton(
+                      onPressed: saving ? null : requestClose,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                      ),
+                      child: const Text('إغلاق'),
+                    ),
+                  const SizedBox(width: 8),
+                ],
               ),
-            const SizedBox(width: 8),
-          ],
-        ),
         body: SafeArea(
           top: false,
           bottom: false,
@@ -1609,117 +1873,157 @@ class _PostJobPageState extends State<PostJobPage>
                   ? success()
                   : Column(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                          child: postStepHeader(),
-                        ),
                         Expanded(
-                          child: SingleChildScrollView(
+                          child: CustomScrollView(
                             controller: scroll,
                             keyboardDismissBehavior:
                                 ScrollViewKeyboardDismissBehavior.onDrag,
-                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                if (confirmingExit) exitConfirmation(),
-                                if (error != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 16),
-                                    child: SignalCard(
-                                      error!,
-                                      onClose: submissionRecorded
-                                          ? null
-                                          : () => setState(() => error = null),
+                            slivers: [
+                              FeedScrollHeader(
+                                searchFocused: false,
+                                child: sanadHeaderChrome(
+                                  context: context,
+                                  from: .42,
+                                  to: 1,
+                                  opaque: true,
+                                  blur: false,
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      20,
+                                      8,
+                                      20,
+                                      12,
                                     ),
-                                  ),
-                                if (widget.store.isDemo)
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: 16),
-                                    child: Text(
-                                      'وضع تجريبي · الإعلان بينحفظ على هالجهاز فقط.',
-                                      style: TextStyle(
-                                        color: context.sanad.secondary,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ExcludeFocus(
-                                  excluding:
-                                      confirmingExit || submissionRecorded,
-                                  child: IgnorePointer(
-                                    ignoring:
-                                        confirmingExit || submissionRecorded,
-                                    child: FadeTransition(
-                                      opacity: stepAnimation,
-                                      child: SlideTransition(
-                                        position:
-                                            Tween<Offset>(
-                                              begin: const Offset(.035, 0),
-                                              end: Offset.zero,
-                                            ).animate(
-                                              CurvedAnimation(
-                                                parent: stepAnimation,
-                                                curve: Curves.easeOutCubic,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        if (kIsWeb) ...[
+                                          SanadActionHeader(
+                                            title: Text(
+                                              'إضافة فرصة',
+                                              style: TextStyle(
+                                                color: context.sanad.ink,
+                                                fontSize: 28,
+                                                fontWeight: FontWeight.w800,
                                               ),
                                             ),
-                                        child: Form(
-                                          key: forms[step],
-                                          child: step == 0
-                                              ? stepOne()
-                                              : stepTwo(),
-                                        ),
-                                      ),
+                                            actions: [
+                                              if (step == 1 && !completed)
+                                                TextButton(
+                                                  onPressed: saving
+                                                      ? null
+                                                      : back,
+                                                  child: const Text('التفاصيل'),
+                                                ),
+                                              if (step == 1 && !completed)
+                                                TextButton(
+                                                  onPressed: saving
+                                                      ? null
+                                                      : requestClose,
+                                                  child: const Text('إغلاق'),
+                                                ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                        ],
+                                        postStepHeader(),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-                          decoration: BoxDecoration(
-                            color: context.sanad.surface,
-                            border: Border(
-                              top: BorderSide(color: context.sanad.border),
-                            ),
-                          ),
-                          child: SafeArea(
-                            top: false,
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: FilledButton(
-                                style: FilledButton.styleFrom(
-                                  minimumSize: const Size(0, 54),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 12,
+                              ),
+                              SliverPadding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  8,
+                                  20,
+                                  8,
+                                ),
+                                sliver: SliverToBoxAdapter(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      if (confirmingExit) exitConfirmation(),
+                                      if (error != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 16,
+                                          ),
+                                          child: SignalCard(
+                                            error!,
+                                            action:
+                                                uncertainSubmission && !saving
+                                                ? verifySubmission
+                                                : null,
+                                            actionLabel: 'تحقق من إعلاناتي',
+                                            onClose:
+                                                submissionRecorded ||
+                                                    uncertainSubmission
+                                                ? null
+                                                : () => setState(
+                                                    () => error = null,
+                                                  ),
+                                          ),
+                                        ),
+                                      if (widget.store.isDemo)
+                                        Padding(
+                                          padding: EdgeInsets.only(bottom: 16),
+                                          child: Text(
+                                            'وضع العرض · يُحفظ الإعلان على هذا الجهاز فقط.',
+                                            style: TextStyle(
+                                              color: context.sanad.secondary,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ExcludeFocus(
+                                        excluding:
+                                            confirmingExit ||
+                                            submissionRecorded ||
+                                            uncertainSubmission,
+                                        child: IgnorePointer(
+                                          ignoring:
+                                              confirmingExit ||
+                                              submissionRecorded ||
+                                              uncertainSubmission,
+                                          child: FadeTransition(
+                                            opacity: stepAnimation,
+                                            child: SlideTransition(
+                                              position:
+                                                  Tween<Offset>(
+                                                    begin: const Offset(
+                                                      .035,
+                                                      0,
+                                                    ),
+                                                    end: Offset.zero,
+                                                  ).animate(
+                                                    CurvedAnimation(
+                                                      parent: stepAnimation,
+                                                      curve:
+                                                          Curves.easeOutCubic,
+                                                    ),
+                                                  ),
+                                              child: Form(
+                                                key: forms[step],
+                                                child: step == 0
+                                                    ? stepOne()
+                                                    : stepTwo(),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      if (kIsWeb) bottomAction(),
+                                    ],
                                   ),
                                 ),
-                                onPressed: submissionRecorded
-                                    ? exitPage
-                                    : saving || confirmingExit
-                                    ? null
-                                    : next,
-                                child: saving
-                                    ? const SanadLoader(
-                                        size: 26,
-                                        label: 'عم نرسل…',
-                                      )
-                                    : Text(
-                                        submissionRecorded
-                                            ? 'العودة إلى إعلاناتي'
-                                            : step == 0
-                                            ? 'التالي: التواصل والراتب'
-                                            : widget.store.isDemo
-                                            ? 'حفظ إعلان تجريبي'
-                                            : 'إرسال للمراجعة',
-                                      ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
+                        if (!kIsWeb) bottomAction(),
                       ],
                     ),
             ),

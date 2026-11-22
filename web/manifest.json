@@ -4,7 +4,7 @@
   "start_url": ".",
   "display": "standalone",
   "background_color": "#F2F7FC",
-  "theme_color": "#20508A",
+  "theme_color": "#F2F7FC",
   "description": "سند — سندك للخطوة الجاية.",
   "orientation": "portrait-primary",
   "prefer_related_applications": false,

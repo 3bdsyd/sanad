@@ -1,0 +1,40 @@
+# Flutter web SPA on Hostinger (Apache).
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Serve deep-link verification files without SPA rewrite.
+  RewriteRule ^\.well-known/ - [L]
+
+  # Public policy/help pages must never fall through to the Flutter shell.
+  RewriteRule ^(privacy|support)/?$ $1/index.html [L]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Apple expects application/json for AASA on many hosts.
+<IfModule mod_mime.c>
+  AddType application/json .json
+  AddType application/wasm .wasm
+  AddType image/x-icon .ico
+  AddType image/vnd.microsoft.icon .ico
+  <Files "apple-app-site-association">
+    ForceType application/json
+  </Files>
+</IfModule>
+
+# Keep HTML/JS fresh: Hostinger CDN previously pinned broken favicon.ico HTML
+# and week-long main.dart.js after deploys.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(js|json)$">
+    Header set Cache-Control "public, max-age=300, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(ico|png|svg)$">
+    Header set Cache-Control "public, max-age=86400, must-revalidate"
+  </FilesMatch>
+</IfModule>

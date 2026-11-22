@@ -1,0 +1,80 @@
+{
+  "engine": "Playwright WebKit 26.6 on macOS; not physical iPhone Safari",
+  "data": "local demo",
+  "status": "partial; input and draft checks remain inconclusive",
+  "observations": [
+    "Startup, save/reload persistence, filters and Back/Forward were observed at widths 320, 390, 768 and 1440.",
+    "The initial empty-search assertion sampled before state settled; waiting for the empty state succeeded in a subsequent 390-width run.",
+    "Draft checks were intermittent. A focused follow-up could not reach the Flutter text editor through the semantic input. No draft-protection defect was established and no full WebKit pass is claimed.",
+    "No JavaScript errors or external startup requests were observed in the diagnostic run."
+  ],
+  "startup_diagnostic": {
+    "requests": [
+      "http://127.0.0.1:5189/",
+      "http://127.0.0.1:5189/manifest.json",
+      "http://127.0.0.1:5189/icons/Icon-192.png",
+      "http://127.0.0.1:5189/flutter_bootstrap.js?v=10",
+      "http://127.0.0.1:5189/canvaskit/canvaskit.wasm",
+      "http://127.0.0.1:5189/canvaskit/canvaskit.js",
+      "http://127.0.0.1:5189/main.dart.js?v=20260930j",
+      "http://127.0.0.1:5189/assets/FontManifest.json",
+      "http://127.0.0.1:5189/assets/fonts/MaterialIcons-Regular.otf",
+      "http://127.0.0.1:5189/assets/assets/fonts/Roboto-Regular.ttf",
+      "http://127.0.0.1:5189/assets/assets/fonts/Vazirmatn-Regular.ttf",
+      "http://127.0.0.1:5189/assets/assets/fonts/Vazirmatn-Bold.ttf",
+      "http://127.0.0.1:5189/assets/packages/cupertino_icons/assets/CupertinoIcons.ttf",
+      "http://127.0.0.1:5189/assets/AssetManifest.bin.json",
+      "http://127.0.0.1:5189/assets/assets/images/sanad-logo.png",
+      "http://127.0.0.1:5189/assets/assets/images/sanad-logo-contrast.png",
+      "http://127.0.0.1:5189/assets/assets/images/career-robot.png",
+      "blob:http://127.0.0.1:5189/c840f537-ca9f-4e7d-b806-85df3a4c52db",
+      "blob:http://127.0.0.1:5189/de01d004-30e3-48a1-9bd6-5d3f18af9065",
+      "blob:http://127.0.0.1:5189/487df736-471d-44a5-8724-7d3a1ab35c9e"
+    ],
+    "failed": [],
+    "console": [
+      {
+        "type": "debug",
+        "text": "Injecting <script> tag. Using callback."
+      },
+      {
+        "type": "warning",
+        "text": "WebGL: non-portable extension enabled: WEBGL_polygon_mode"
+      },
+      {
+        "type": "warning",
+        "text": "WebGL: non-portable extension enabled: WEBGL_polygon_mode"
+      },
+      {
+        "type": "warning",
+        "text": "WebGL: non-portable extension enabled: WEBGL_polygon_mode"
+      }
+    ],
+    "errors": [],
+    "body": "",
+    "tags": [
+      "FLT-SEMANTICS-PLACEHOLDER",
+      "FLT-ANNOUNCEMENT-HOST",
+      "FLT-ANNOUNCEMENT-POLITE",
+      "FLT-ANNOUNCEMENT-ASSERTIVE",
+      "FLT-GLASS-PANE",
+      "FLT-TEXT-EDITING-HOST",
+      "FLT-SEMANTICS-HOST"
+    ]
+  },
+  "focused_input_followup": [
+    {
+      "width": 390,
+      "errors": [],
+      "initialFieldBounds": {
+        "x": 504,
+        "y": 438,
+        "width": 328,
+        "height": 58
+      }
+    },
+    {
+      "failure": "page.waitForFunction: Timeout 10000ms exceeded."
+    }
+  ]
+}

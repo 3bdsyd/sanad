@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/app_links.dart';
@@ -13,6 +14,13 @@ import '../../../core/web_layout.dart';
 import '../domain/job.dart';
 import '../domain/company_website.dart';
 import '../data/jobs_store.dart';
+import '../../ads/domain/ad_config.dart';
+import '../../ads/presentation/screen_banner.dart';
+import '../../ads/presentation/ad_separated_content.dart';
+import '../../ads/data/banner_ad_session.dart';
+import 'feed_scroll_header.dart';
+import '../../platform/presentation/auth_page.dart';
+import '../../platform/presentation/applications_page.dart';
 
 class JobDetails extends StatefulWidget {
   const JobDetails({
@@ -20,10 +28,12 @@ class JobDetails extends StatefulWidget {
     required this.job,
     required this.store,
     this.heroTag,
+    this.bannerSession,
   });
   final Job job;
   final JobsStore store;
   final String? heroTag;
+  final BannerAdSession? bannerSession;
 
   @override
   State<JobDetails> createState() => _JobDetailsState();
@@ -31,6 +41,13 @@ class JobDetails extends StatefulWidget {
 
 class _JobDetailsState extends State<JobDetails> {
   final scroll = ScrollController();
+  final chromeVisible = ValueNotifier<bool>(true);
+  double lastOffset = 0, directionDistance = 0;
+  ScrollDirection lastDirection = ScrollDirection.idle;
+  bool chromeUpdateScheduled = false;
+  bool? pendingVisibility;
+  bool pendingCompact = false;
+  double bannerExtent = 0;
   final feedbackKey = GlobalKey();
   final reportKey = GlobalKey();
   final hideKey = GlobalKey();
@@ -56,16 +73,53 @@ class _JobDetailsState extends State<JobDetails> {
     super.initState();
     initiallyPublic = widget.store.jobs.any((item) => item.id == widget.job.id);
     scroll.addListener(onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await widget.store.trackJobView(widget.job);
+      if (mounted) setState(() {});
+    });
   }
 
   void onScroll() {
-    final next = scroll.offset > 170;
-    if (next != compact) setState(() => compact = next);
+    pendingCompact = scroll.offset > 170;
+    if (!chromeUpdateScheduled) {
+      chromeUpdateScheduled = true;
+      // Viewport corrections from hiding the dock may arrive during layout.
+      // Apply chrome changes after layout, including with Reduce Motion.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        chromeUpdateScheduled = false;
+        if (!mounted) return;
+        if (pendingCompact != compact) setState(() => compact = pendingCompact);
+        final visible = pendingVisibility;
+        pendingVisibility = null;
+        if (visible != null) chromeVisible.value = visible;
+      });
+    }
+    final delta = scroll.offset - lastOffset;
+    lastOffset = scroll.offset;
+    final direction = scroll.position.userScrollDirection;
+    // Dock resizing and ensureVisible corrections are not user reversals.
+    if (direction == ScrollDirection.idle ||
+        (direction == ScrollDirection.forward && delta >= 0) ||
+        (direction == ScrollDirection.reverse && delta <= 0)) {
+      return;
+    }
+    if (scroll.offset <= 4) {
+      pendingVisibility = true;
+      directionDistance = 0;
+      return;
+    }
+    if (direction != lastDirection) directionDistance = 0;
+    lastDirection = direction;
+    directionDistance += delta.abs();
+    if (directionDistance >= 4) {
+      pendingVisibility = direction == ScrollDirection.forward;
+    }
   }
 
   @override
   void dispose() {
     scroll.dispose();
+    chromeVisible.dispose();
     super.dispose();
   }
 
@@ -106,7 +160,7 @@ class _JobDetailsState extends State<JobDetails> {
       return;
     }
     if (!available) {
-      message('هذه الفرصة لم تعد متاحة. ارجع للفرص لتشوف خيارات جديدة.');
+      message('لم تعد هذه الفرصة متاحة. عُد إلى الفرص لاستكشاف خيارات أخرى.');
       return;
     }
     setState(() => contacting = true);
@@ -126,11 +180,21 @@ class _JobDetailsState extends State<JobDetails> {
                   'subject=${Uri.encodeComponent('بخصوص فرصة ${current.title}')}',
             )
           : whatsappUri(raw);
-      if (uri == null) return;
+      final launchFailure = email
+          ? 'تعذّر فتح البريد. تأكد من وجود تطبيق بريد على جهازك وحاول مرة أخرى.'
+          : 'تعذّر فتح واتساب. تحقق من الاتصال ومن تثبيت واتساب ثم حاول مرة أخرى.';
+      if (uri == null) {
+        message(launchFailure);
+        return;
+      }
       try {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        final opened = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+        if (!opened) message(launchFailure);
       } catch (_) {
-        // Silent: do not show a failure panel for WhatsApp or email.
+        message(launchFailure);
       }
     } catch (error) {
       message(error.toString().replaceFirst('Exception: ', ''));
@@ -148,7 +212,7 @@ class _JobDetailsState extends State<JobDetails> {
     }
 
     if (job.isDemo || widget.store.isDemo) {
-      websiteMessage('هذه فرصة توضيحية. رابط الجهة ما بينفتح بوضع العرض.');
+      websiteMessage('هذه فرصة توضيحية. لا يمكن فتح رابط الجهة في وضع العرض.');
       return;
     }
     if (!available) {
@@ -171,12 +235,12 @@ class _JobDetailsState extends State<JobDetails> {
         Uri.parse(website),
         mode: LaunchMode.externalApplication,
       );
-      if (!opened) websiteMessage('تعذّر فتح الرابط. جرّب مرة ثانية.');
+      if (!opened) websiteMessage('تعذّر فتح الرابط. حاول مرة أخرى.');
     } catch (error) {
       websiteMessage(
         error is JobsException
             ? error.toString().replaceFirst('Exception: ', '')
-            : 'تعذّر فتح رابط الجهة. جرّب مرة ثانية.',
+            : 'تعذّر فتح رابط الجهة. حاول مرة أخرى.',
       );
     } finally {
       if (mounted) setState(() => openingWebsite = false);
@@ -222,9 +286,19 @@ class _JobDetailsState extends State<JobDetails> {
 
   Future<void> save() async {
     if (saving) return;
+    final desired = !widget.store.savedIds.contains(job.id);
+    if (widget.store.accountsEnabled &&
+            !await ensureAccount(
+              context,
+              widget.store.platform,
+              reason: 'لحفظ الفرصة',
+            ) ||
+        !mounted) {
+      return;
+    }
     setState(() => saving = true);
     try {
-      await widget.store.toggleSaved(job.id);
+      await widget.store.toggleSaved(job.id, desired: desired);
       await NativeBridge.selectionHaptic();
       if (mounted && widget.store.error != null) {
         message(widget.store.error!);
@@ -236,14 +310,14 @@ class _JobDetailsState extends State<JobDetails> {
     }
   }
 
-  Future<void> shareJob() async {
+  Future<void> shareJob([BuildContext? anchorContext]) async {
     if (sharing) return;
     if (job.isDemo || widget.store.isDemo) {
-      message('هالفرصة تجريبية. المشاركة بتتاح بعد ربط الخدمة.');
+      message('هذه فرصة تجريبية. ستتاح المشاركة بعد ربط الخدمة.');
       return;
     }
     if (!available) {
-      message('هالفرصة ما عادت متاحة للمشاركة.');
+      message('لم تعد هذه الفرصة متاحة للمشاركة.');
       return;
     }
     setState(() => sharing = true);
@@ -253,15 +327,24 @@ class _JobDetailsState extends State<JobDetails> {
         job.title,
         '${job.company} · ${job.locationLabel}',
         '${job.workType} · ${job.workMode}',
-        if (link != null) ...['', 'شوف الفرصة على سند:', link.toString()],
+        if (link != null) ...['', 'اطّلع على الفرصة في سند:', link.toString()],
         if (link == null) ...['', 'فرصة من تطبيق سند'],
       ].join('\n');
+      final box = (anchorContext ?? context).findRenderObject();
+      final origin = box is RenderBox && box.hasSize
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
       await SharePlus.instance.share(
-        ShareParams(text: text, subject: job.title, title: 'مشاركة فرصة'),
+        ShareParams(
+          text: text,
+          subject: job.title,
+          title: 'مشاركة فرصة',
+          sharePositionOrigin: origin,
+        ),
       );
       await NativeBridge.selectionHaptic();
     } catch (_) {
-      message('تعذّرت المشاركة. جرّب مرة ثانية.');
+      message('تعذّرت المشاركة. حاول مرة أخرى.');
     } finally {
       if (mounted) setState(() => sharing = false);
     }
@@ -271,50 +354,113 @@ class _JobDetailsState extends State<JobDetails> {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: widget.store,
     builder: (context, _) {
-      final webWide = kIsWeb && WebLayout.of(context) != WebBreakpoint.compact;
+      final webWide = kIsWeb && WebLayout.of(context) == WebBreakpoint.expanded;
       final contentMax = kIsWeb ? WebLayout.readingMax : 720.0;
       return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: context.sanad.isDark
-            ? SystemUiOverlayStyle.light
-            : SystemUiOverlayStyle.dark,
+        value: sanadSystemBars(context.sanad),
         child: ReferenceBackdrop(
           child: Scaffold(
             backgroundColor: Colors.transparent,
-            bottomNavigationBar: webWide ? null : contactDock(),
-            body: SafeArea(
-              bottom: false,
-              top: false,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: webWide ? WebLayout.contentMax : contentMax,
-                  ),
-                  child: webWide
-                      ? Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: WebLayout.pagePadding(
-                              WebLayout.of(context),
-                            ).left,
+            extendBody: !kIsWeb,
+            bottomNavigationBar: kIsWeb
+                ? null
+                : SafeArea(
+                    top: false,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (AdConfig.supported && !widget.store.isDemo)
+                          SafeArea(
+                            top: false,
+                            bottom: false,
+                            child: ScreenBanner(
+                              enabled: available && !widget.store.isDemo,
+                              placement: 'job_details_banner',
+                              contextKey: job.id,
+                              session: widget.bannerSession,
+                              onExtentChanged: (value) {
+                                if (mounted && value != bannerExtent) {
+                                  setState(() => bannerExtent = value);
+                                }
+                              },
+                            ),
                           ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 7,
-                                child: detailsScroll(
-                                  contentMax: contentMax,
-                                  showInlineContact: false,
+                        ValueListenableBuilder<bool>(
+                          valueListenable: chromeVisible,
+                          child: contactDock(),
+                          builder: (context, visible, child) => IgnorePointer(
+                            ignoring: !visible,
+                            child: ExcludeSemantics(
+                              excluding: !visible,
+                              child: MotionSize(
+                                alignment: Alignment.topCenter,
+                                duration: motionDuration(
+                                  context,
+                                  visible ? 320 : 220,
+                                ),
+                                curve: Curves.easeInOutCubic,
+                                child: ClipRect(
+                                  child: Align(
+                                    heightFactor: visible ? 1 : 0,
+                                    child: AnimatedOpacity(
+                                      opacity: visible ? 1 : 0,
+                                      duration: motionDuration(
+                                        context,
+                                        visible ? 320 : 220,
+                                      ),
+                                      child: child,
+                                    ),
+                                  ),
                                 ),
                               ),
-                              const SizedBox(width: 24),
-                              SizedBox(width: 300, child: webActionRail()),
-                            ],
+                            ),
                           ),
-                        )
-                      : detailsScroll(
-                          contentMax: contentMax,
-                          showInlineContact: kIsWeb,
                         ),
+                      ],
+                    ),
+                  ),
+            body: Builder(
+              builder: (bodyContext) => AdSeparatedContent(
+                bannerExtent: kIsWeb ? 0 : bannerExtent,
+                child: SafeArea(
+                  bottom: false,
+                  top: false,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: webWide ? WebLayout.contentMax : contentMax,
+                      ),
+                      child: webWide
+                          ? Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: WebLayout.pagePadding(
+                                  WebLayout.of(context),
+                                ).left,
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    flex: 7,
+                                    child: detailsScroll(
+                                      contentMax: contentMax,
+                                      showInlineContact: false,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 24),
+                                  SizedBox(width: 300, child: webActionRail()),
+                                ],
+                              ),
+                            )
+                          : detailsScroll(
+                              contentMax: contentMax,
+                              showInlineContact: kIsWeb,
+                              footerInset: kIsWeb
+                                  ? 0
+                                  : MediaQuery.paddingOf(bodyContext).bottom,
+                            ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -327,50 +473,84 @@ class _JobDetailsState extends State<JobDetails> {
   Widget detailsScroll({
     required double contentMax,
     required bool showInlineContact,
+    double footerInset = 0,
   }) => ConstrainedBox(
     constraints: BoxConstraints(maxWidth: contentMax),
     child: CustomScrollView(
       controller: scroll,
       slivers: [
-        SliverAppBar(
-          pinned: true,
-          toolbarHeight: 72,
-          backgroundColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          flexibleSpace: sanadHeaderFill(context),
-          leading: IconButton(
-            tooltip: 'رجوع',
-            onPressed: () => Navigator.pop(context),
-            icon: AppIcon(
-              CupertinoIcons.chevron_right,
-              color: context.sanad.ink,
+        if (kIsWeb)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              child: Row(
+                children: [
+                  const Spacer(),
+                  shareButton(),
+                  const SizedBox(width: 4),
+                  saveButton(),
+                ],
+              ),
             ),
-          ),
-          title: AnimatedSwitcher(
-            duration: motionDuration(context, 180),
-            child: Text(
-              compact ? job.title : 'تفاصيل الفرصة',
-              key: ValueKey(compact),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: context.sanad.ink,
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
+          )
+        else
+          FeedScrollHeader(
+            searchFocused: false,
+            visibility: chromeVisible,
+            child: SizedBox(
+              height: 72 + MediaQuery.paddingOf(context).top,
+              child: AppBar(
+                toolbarHeight: 72,
+                centerTitle: true,
+                leadingWidth: 120,
+                backgroundColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                flexibleSpace: sanadHeaderFill(context),
+                leading: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: IconButton(
+                    tooltip: 'رجوع',
+                    onPressed: () => Navigator.pop(context),
+                    icon: AppIcon(
+                      CupertinoIcons.chevron_right,
+                      color: context.sanad.ink,
+                    ),
+                  ),
+                ),
+                title: AnimatedSwitcher(
+                  duration: motionDuration(context, 180),
+                  child: Text(
+                    compact ? job.title : 'تفاصيل الفرصة',
+                    key: ValueKey(compact),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: context.sanad.ink,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                actions: [
+                  shareButton(),
+                  const SizedBox(width: sanadActionGap),
+                  saveButton(),
+                  const SizedBox(width: 12),
+                ],
               ),
             ),
           ),
-          actions: [
-            shareButton(),
-            const SizedBox(width: 4),
-            saveButton(),
-            const SizedBox(width: 12),
-          ],
-        ),
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 6, 20, 28),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            6,
+            20,
+            28 +
+                footerInset +
+                (kIsWeb ? MediaQuery.paddingOf(context).bottom : 0),
+          ),
           sliver: SliverList.list(
             children: [
               if (feedback != null)
@@ -386,7 +566,7 @@ class _JobDetailsState extends State<JobDetails> {
                 const Padding(
                   padding: EdgeInsets.only(bottom: 16),
                   child: SignalCard(
-                    'هذه الفرصة لم تعد متاحة. فيك ترجع وتستكشف فرصاً جديدة.',
+                    'لم تعد هذه الفرصة متاحة. يمكنك العودة لاستكشاف فرص أخرى.',
                   ),
                 ),
               if (showInlineContact) ...[
@@ -423,7 +603,7 @@ class _JobDetailsState extends State<JobDetails> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      section('شو المطلوب؟'),
+                      section('المتطلبات'),
                       for (final requirement in job.requirements)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 12),
@@ -519,7 +699,7 @@ class _JobDetailsState extends State<JobDetails> {
     ),
   );
 
-  Widget webActionRail() => Padding(
+  Widget webActionRail() => SingleChildScrollView(
     padding: const EdgeInsets.only(top: 88, bottom: 28),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -567,7 +747,7 @@ class _JobDetailsState extends State<JobDetails> {
         ),
         const SizedBox(height: 6),
         Text(
-          'التواصل مباشر مع صاحب الإعلان عبر واتساب أو الإيميل.',
+          'التواصل مباشر مع صاحب الإعلان عبر واتساب أو البريد الإلكتروني.',
           style: TextStyle(
             color: context.sanad.secondary,
             fontSize: 12,
@@ -575,7 +755,17 @@ class _JobDetailsState extends State<JobDetails> {
           ),
         ),
         const SizedBox(height: 14),
-        FilledButton.icon(
+        if (widget.store.accountsEnabled && job.acceptsApplications) ...[
+          SanadPrimaryButton.icon(
+            onPressed: !available
+                ? null
+                : () => openApply(context, widget.store, job),
+            icon: const Icon(CupertinoIcons.paperplane),
+            label: const Text('التقديم على الفرصة'),
+          ),
+          const SizedBox(height: 12),
+        ],
+        SanadPrimaryButton.icon(
           onPressed:
               !available ||
                   contacting ||
@@ -597,9 +787,9 @@ class _JobDetailsState extends State<JobDetails> {
                 : contacting
                 ? 'نتأكد من توفرها…'
                 : job.phone.isNotEmpty
-                ? 'تواصل واتساب'
+                ? 'التواصل عبر واتساب'
                 : job.email.isNotEmpty
-                ? 'تواصل بالإيميل'
+                ? 'تواصل بالبريد الإلكتروني'
                 : 'لا توجد وسيلة تواصل',
           ),
         ),
@@ -612,7 +802,7 @@ class _JobDetailsState extends State<JobDetails> {
               color: context.sanad.primary,
               size: 18,
             ),
-            label: const Text('تواصل بالإيميل'),
+            label: const Text('تواصل بالبريد الإلكتروني'),
           ),
         ],
       ],
@@ -678,14 +868,41 @@ class _JobDetailsState extends State<JobDetails> {
               style: TextStyle(color: context.sanad.secondary),
             ),
           ),
+          if (job.viewsCount > 0) ...[
+            AppIcon(
+              CupertinoIcons.eye,
+              size: 16,
+              color: context.sanad.secondary,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '${job.viewsCount}',
+              style: TextStyle(
+                color: context.sanad.secondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ],
       ),
       const SizedBox(height: 16),
       Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: [tag(job.workMode), tag(job.workType), tag(job.experience)],
+        children: [
+          tag(job.workMode),
+          tag(job.workType),
+          tag(job.experienceLabel),
+        ],
       ),
+      if (job.experienceDetail != null) ...[
+        const SizedBox(height: 8),
+        Text(
+          'تفاصيل الخبرة: ${job.experienceDetail}',
+          style: TextStyle(color: context.sanad.secondary, fontSize: 13),
+        ),
+      ],
     ],
   );
 
@@ -714,10 +931,14 @@ class _JobDetailsState extends State<JobDetails> {
                 fontWeight: FontWeight.w800,
               ),
             ),
-            if (job.hasSalary)
+            if (job.salaryPeriodLabel != null)
               Text(
-                '/ ${job.salaryPeriod}',
-                style: TextStyle(color: context.sanad.secondary, fontSize: 13),
+                job.salaryPeriodLabel!,
+                style: TextStyle(
+                  color: context.sanad.primary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
           ],
         ),
@@ -759,7 +980,7 @@ class _JobDetailsState extends State<JobDetails> {
         OutlinedButton(
           onPressed: !available || openingWebsite ? null : openCompanyWebsite,
           child: openingWebsite
-              ? const SanadLoader(size: 22, label: 'عم نفتح الرابط…')
+              ? const SanadLoader(size: 22, label: 'جارٍ فتح الرابط…')
               : const Text('زيارة موقع الجهة'),
         ),
         if (websiteFeedback != null) ...[
@@ -784,7 +1005,8 @@ class _JobDetailsState extends State<JobDetails> {
         Theme(
           data: Theme.of(context).copyWith(
             splashFactory: NoSplash.splashFactory,
-            highlightColor: context.sanad.tint.withValues(alpha: .55),
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
           ),
           child: ListTile(
             minTileHeight: 52,
@@ -812,7 +1034,8 @@ class _JobDetailsState extends State<JobDetails> {
         Theme(
           data: Theme.of(context).copyWith(
             splashFactory: NoSplash.splashFactory,
-            highlightColor: context.sanad.tint.withValues(alpha: .55),
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
           ),
           child: ListTile(
             minTileHeight: 52,
@@ -871,7 +1094,8 @@ class _JobDetailsState extends State<JobDetails> {
         Theme(
           data: Theme.of(context).copyWith(
             splashFactory: NoSplash.splashFactory,
-            highlightColor: context.sanad.tint.withValues(alpha: .55),
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
           ),
           child: ListTile(
             minTileHeight: 52,
@@ -921,7 +1145,7 @@ class _JobDetailsState extends State<JobDetails> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      FilledButton.tonal(
+                      SanadPrimaryButton.tonal(
                         onPressed: hiding ? null : hideEmployer,
                         child: Text(
                           hiding ? 'جارٍ الحفظ…' : 'تأكيد إخفاء الجهة',
@@ -1003,7 +1227,7 @@ class _JobDetailsState extends State<JobDetails> {
             ),
           ),
         const SizedBox(height: 8),
-        FilledButton(
+        SanadPrimaryButton(
           onPressed: reporting || reportReason == null ? null : sendReport,
           child: Text(reporting ? 'جارٍ الإرسال…' : 'إرسال البلاغ'),
         ),
@@ -1011,15 +1235,15 @@ class _JobDetailsState extends State<JobDetails> {
     ),
   );
 
-  Widget shareButton() => Semantics(
-    button: true,
-    label: 'مشاركة الفرصة',
-    child: IconButton(
+  Widget shareButton() => Builder(
+    builder: (anchorContext) => IconButton(
       tooltip: 'مشاركة الفرصة',
-      onPressed: !available || sharing ? null : shareJob,
+      onPressed: !available || sharing ? null : () => shareJob(anchorContext),
       style: IconButton.styleFrom(
         backgroundColor: context.sanad.surface,
-        minimumSize: const Size(48, 48),
+        minimumSize: compactWebControls(context)
+            ? const Size(44, 44)
+            : const Size(48, 48),
       ),
       icon: sharing
           ? const SanadLoader(size: 22)
@@ -1044,83 +1268,98 @@ class _JobDetailsState extends State<JobDetails> {
         onPressed: saving ? null : save,
         style: IconButton.styleFrom(
           backgroundColor: context.sanad.surface,
-          minimumSize: const Size(48, 48),
+          minimumSize: compactWebControls(context)
+              ? const Size(44, 44)
+              : const Size(48, 48),
         ),
         icon: AnimatedSaveIcon(saved: saved, size: 22),
       ),
     );
   }
 
-  Widget contactDock() => DecoratedBox(
-    decoration: BoxDecoration(
-      color: context.sanad.surface,
-      border: Border(top: BorderSide(color: context.sanad.border)),
-    ),
-    child: SafeArea(
-      top: false,
-      child: Center(
-        heightFactor: 1,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
+  Widget contactDock() =>
+      widget.store.accountsEnabled && job.acceptsApplications
+      ? SafeArea(
+          top: false,
+          bottom: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed:
-                        !available ||
-                            contacting ||
-                            (job.phone.isEmpty && job.email.isEmpty)
-                        ? null
-                        : () => contact(job.phone.isEmpty),
-                    icon: contacting
-                        ? const SanadLoader(size: 26)
-                        : AppIcon(
-                            job.phone.isEmpty
-                                ? CupertinoIcons.envelope
-                                : CupertinoIcons.chat_bubble_2_fill,
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            size: 19,
-                          ),
-                    label: Text(
-                      !available
-                          ? 'الفرصة غير متاحة'
-                          : contacting
-                          ? 'نتأكد من توفرها…'
-                          : job.phone.isNotEmpty
-                          ? 'تواصل واتساب'
-                          : job.email.isNotEmpty
-                          ? 'تواصل بالإيميل'
-                          : 'لا توجد وسيلة تواصل',
-                    ),
-                  ),
-                ),
-                if (job.phone.isNotEmpty && job.email.isNotEmpty) ...[
-                  const SizedBox(width: 10),
-                  IconButton.filledTonal(
-                    tooltip: 'تواصل بالإيميل',
-                    style: IconButton.styleFrom(
-                      minimumSize: const Size(54, 54),
-                      backgroundColor: context.sanad.tint,
-                    ),
-                    onPressed: !available || contacting
-                        ? null
-                        : () => contact(true),
-                    icon: AppIcon(
-                      CupertinoIcons.envelope,
-                      color: context.sanad.primary,
-                      size: 22,
-                    ),
-                  ),
-                ],
-              ],
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            child: SanadPrimaryButton.icon(
+              onPressed: !available
+                  ? null
+                  : () => openApply(context, widget.store, job),
+              icon: const Icon(CupertinoIcons.paperplane),
+              label: Text(
+                available ? 'التقديم على الفرصة' : 'الفرصة غير متاحة',
+              ),
             ),
           ),
-        ),
-      ),
-    ),
-  );
+        )
+      : SafeArea(
+          top: false,
+          bottom: false,
+          child: Center(
+            heightFactor: 1,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SanadPrimaryButton.icon(
+                        onPressed:
+                            !available ||
+                                contacting ||
+                                (job.phone.isEmpty && job.email.isEmpty)
+                            ? null
+                            : () => contact(job.phone.isEmpty),
+                        icon: contacting
+                            ? const SanadLoader(size: 26)
+                            : AppIcon(
+                                job.phone.isEmpty
+                                    ? CupertinoIcons.envelope
+                                    : CupertinoIcons.chat_bubble_2_fill,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                size: 19,
+                              ),
+                        label: Text(
+                          !available
+                              ? 'الفرصة غير متاحة'
+                              : contacting
+                              ? 'نتأكد من توفرها…'
+                              : job.phone.isNotEmpty
+                              ? 'التواصل عبر واتساب'
+                              : job.email.isNotEmpty
+                              ? 'تواصل بالبريد الإلكتروني'
+                              : 'لا توجد وسيلة تواصل',
+                        ),
+                      ),
+                    ),
+                    if (job.phone.isNotEmpty && job.email.isNotEmpty) ...[
+                      const SizedBox(width: 10),
+                      IconButton.filledTonal(
+                        tooltip: 'تواصل بالبريد الإلكتروني',
+                        style: IconButton.styleFrom(
+                          minimumSize: const Size(54, 54),
+                          backgroundColor: context.sanad.tint,
+                        ),
+                        onPressed: !available || contacting
+                            ? null
+                            : () => contact(true),
+                        icon: AppIcon(
+                          CupertinoIcons.envelope,
+                          color: context.sanad.primary,
+                          size: 22,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
 
   Widget tag(String value) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),

@@ -24,6 +24,7 @@ class SanadLogo extends StatefulWidget {
     this.onDark = false,
     this.highContrast = false,
     this.bare = false,
+    this.circle = false,
     this.hero = false,
   });
 
@@ -31,7 +32,7 @@ class SanadLogo extends StatefulWidget {
   static const contrastAsset = 'assets/images/sanad-logo-contrast.png';
   static const heroTag = 'sanad.brand.logo';
   final double size;
-  final bool animated, onDark, highContrast, bare, hero;
+  final bool animated, onDark, highContrast, bare, circle, hero;
 
   @override
   State<SanadLogo> createState() => _SanadLogoState();
@@ -49,6 +50,8 @@ class _SanadLogoState extends State<SanadLogo>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    _visible = lifecycle == null || lifecycle == AppLifecycleState.resumed;
   }
 
   @override
@@ -97,9 +100,12 @@ class _SanadLogoState extends State<SanadLogo>
         child: AnimatedBuilder(
           animation: _motion,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(widget.size / 4),
+            borderRadius: BorderRadius.circular(
+              widget.circle ? widget.size / 2 : widget.size / 4,
+            ),
             child: DecoratedBox(
               decoration: BoxDecoration(
+                shape: widget.circle ? BoxShape.circle : BoxShape.rectangle,
                 gradient: widget.bare
                     ? null
                     : LinearGradient(
@@ -112,7 +118,10 @@ class _SanadLogoState extends State<SanadLogo>
               ),
               child: Image.asset(
                 widget.highContrast ? SanadLogo.contrastAsset : SanadLogo.asset,
-                color: !widget.highContrast && context.sanad.isDark
+                // Bare marks keep original colors — dark srcIn flattens the
+                // transparent logo into an unreadable blot next to the title.
+                color:
+                    !widget.bare && !widget.highContrast && context.sanad.isDark
                     ? context.sanad.primary
                     : null,
                 colorBlendMode: BlendMode.srcIn,
@@ -269,17 +278,34 @@ class SanadLoader extends StatelessWidget {
 }
 
 /// A single entry gesture, never a repeating attention animation.
-class SanadReveal extends StatelessWidget {
-  const SanadReveal({super.key, required this.child, this.order = 0});
+///
+/// [animate] is read once when the element is created, so a list can show an
+/// item without the entry again when it scrolls back into view.
+class SanadReveal extends StatefulWidget {
+  const SanadReveal({
+    super.key,
+    required this.child,
+    this.order = 0,
+    this.animate = true,
+  });
   final Widget child;
   final int order;
+  final bool animate;
+
+  @override
+  State<SanadReveal> createState() => _SanadRevealState();
+}
+
+class _SanadRevealState extends State<SanadReveal> {
+  late final bool _animate = widget.animate;
 
   @override
   Widget build(BuildContext context) {
-    if (MediaQuery.disableAnimationsOf(context)) return child;
+    final child = widget.child;
+    if (!_animate || MediaQuery.disableAnimationsOf(context)) return child;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 420 + order.clamp(0, 5) * 65),
+      duration: Duration(milliseconds: 420 + widget.order.clamp(0, 5) * 65),
       curve: Curves.easeOutCubic,
       child: child,
       builder: (context, value, child) => Opacity(
@@ -317,6 +343,7 @@ class SanadStepTrack extends StatelessWidget {
               Positioned.fill(child: ColoredBox(color: context.sanad.tint)),
               FractionallySizedBox(
                 widthFactor: progress,
+                alignment: AlignmentDirectional.centerStart,
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),

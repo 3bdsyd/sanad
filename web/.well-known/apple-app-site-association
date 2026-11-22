@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "UY8ST73K5R.com.jobsnad.snad",
+        "paths": [ "/jobs/*" ]
+      }
+    ]
+  }
+}

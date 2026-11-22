@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 /// App-owned iOS features. Other platforms can keep their Flutter equivalents.
 abstract final class NativeBridge {
-  static const _channel = MethodChannel('app.fursa/native');
+  static const _channel = MethodChannel('com.jobsnad.snad/native');
   static final _symbols = <String, Future<Uint8List?>>{};
 
   static bool get available =>

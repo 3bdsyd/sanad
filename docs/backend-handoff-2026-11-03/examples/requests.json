@@ -1,0 +1,82 @@
+{
+  "createJob": {
+    "device_id": "contract-test-device-only",
+    "title": "محاسب مالي — مثال اختبار",
+    "company_name": "جهة اختبار محلية",
+    "country": "الإمارات",
+    "state": "دبي",
+    "job_field_id": 1,
+    "job_type": "دوام كامل",
+    "work_type": "في المقر",
+    "experience": "متوسطة",
+    "description": "وصف تجريبي واضح لمسؤوليات الوظيفة وشروط العمل، ليس إعلان إنتاج.",
+    "requirements": "معرفة ببرامج المحاسبة\nالتعاون مع الفريق",
+    "url": "https://employer.example.test/jobs",
+    "phone": "+390212345678",
+    "email": "employer@example.test",
+    "currency": "AED",
+    "salary_period": "شهري",
+    "salary_min": 3000,
+    "salary_max": 5000,
+    "listing_duration_days": 30
+  },
+  "createJapanJob": {
+    "device_id": "contract-test-device-only",
+    "title": "محاسب مالي — مثال اختبار",
+    "company_name": "جهة اختبار محلية",
+    "country": "اليابان",
+    "state": "طوكيو",
+    "job_field_id": 1,
+    "job_type": "دوام كامل",
+    "work_type": "في المقر",
+    "experience": "متوسطة",
+    "description": "وصف تجريبي واضح لمسؤوليات الوظيفة وشروط العمل، ليس إعلان إنتاج.",
+    "requirements": "معرفة ببرامج المحاسبة\nالتعاون مع الفريق",
+    "url": "https://employer.example.test/jobs",
+    "phone": "+390212345678",
+    "email": "employer@example.test",
+    "currency": "JPY",
+    "salary_period": "شهري",
+    "salary_min": 200000,
+    "salary_max": 300000,
+    "listing_duration_days": 30
+  },
+  "toggleFavorite": {
+    "device_id": "contract-test-device-only",
+    "job_id": 970001
+  },
+  "reportJob": {
+    "device_id": "contract-test-device-only",
+    "job_id": 970001,
+    "reason": "محتوى غير مناسب"
+  },
+  "markNoticeRead": {
+    "device_id": "contract-test-device-only"
+  },
+  "registerPush": {
+    "device_id": "contract-test-device-only",
+    "platform": "ios",
+    "fcm_token": "TEST_TOKEN_REPLACE_ON_STAGING"
+  },
+  "visitWeb": {
+    "device_id": "contract-test-device-only",
+    "platform": "web"
+  },
+  "fcmMessage": {
+    "message": {
+      "token": "TEST_TOKEN_REPLACE_ON_STAGING",
+      "notification": {
+        "title": "تحديث الإعلان",
+        "body": "تم نشر الإعلان."
+      },
+      "data": {
+        "job_id": "970001"
+      },
+      "android": {
+        "notification": {
+          "channel_id": "sanad_updates"
+        }
+      }
+    }
+  }
+}

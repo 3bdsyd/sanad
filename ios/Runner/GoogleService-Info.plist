@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>app.fursa.fursa</string>
+	<string>com.jobsnad.snad</string>
 	<key>PROJECT_ID</key>
 	<string>snd-project-8794b</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:377548025897:ios:070cb8c44eb4f8526bac38</string>
+	<string>1:377548025897:ios:cd3a2efd884c58a36bac38</string>
 </dict>
 </plist>

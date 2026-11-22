@@ -21,7 +21,7 @@ class SanadColors extends ThemeExtension<SanadColors> {
     isDark: false,
     primary: Color(0xFF20508A),
     ink: Color(0xFF12233F),
-    secondary: Color(0xFF577395),
+    secondary: Color(0xFF405F80),
     background: Color(0xFFF2F7FC),
     surface: Color(0xFFFFFFFF),
     border: Color(0xFFDCE8F5),

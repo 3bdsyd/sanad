@@ -32,6 +32,17 @@ class NativeNavigation extends StatefulWidget {
 class _NativeNavigationState extends State<NativeNavigation> {
   MethodChannel? _channel;
   double? _nativeHeight;
+  bool _dark = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final dark = context.sanad.isDark;
+    if (_dark != dark) {
+      _dark = dark;
+      unawaited(_syncAppearance());
+    }
+  }
 
   @override
   void didUpdateWidget(covariant NativeNavigation oldWidget) {
@@ -48,6 +59,16 @@ class _NativeNavigationState extends State<NativeNavigation> {
       // The platform view may be disappearing during a route transition.
     } on PlatformException {
       // A disposed native view does not need further selection updates.
+    }
+  }
+
+  Future<void> _syncAppearance() async {
+    try {
+      await _channel?.invokeMethod<void>('setAppearance', _dark);
+    } on MissingPluginException {
+      // A new platform view receives the effective theme during creation.
+    } on PlatformException {
+      // A disposed native view does not need appearance updates.
     }
   }
 
@@ -71,7 +92,7 @@ class _NativeNavigationState extends State<NativeNavigation> {
   void _onPlatformViewCreated(int id) {
     if (!mounted) return;
     _channel?.setMethodCallHandler(null);
-    _channel = MethodChannel('app.fursa/navigation/$id');
+    _channel = MethodChannel('com.jobsnad.snad/navigation/$id');
     _channel!.setMethodCallHandler((call) async {
       if (!mounted) return;
       if (call.method == 'onSelected' && call.arguments is int) {
@@ -82,6 +103,7 @@ class _NativeNavigationState extends State<NativeNavigation> {
       }
     });
     unawaited(_syncSelection());
+    unawaited(_syncAppearance());
     // Initial native layout can precede channel handler registration.
     unawaited(_readHeight());
   }
@@ -99,9 +121,12 @@ class _NativeNavigationState extends State<NativeNavigation> {
       return SizedBox(
         height: _nativeHeight ?? 49 + MediaQuery.paddingOf(context).bottom,
         child: UiKitView(
-          viewType: 'app.fursa/navigation',
+          viewType: 'com.jobsnad.snad/navigation',
           layoutDirection: TextDirection.rtl,
-          creationParams: {'selectedIndex': widget.selectedIndex},
+          creationParams: {
+            'selectedIndex': widget.selectedIndex,
+            'dark': _dark,
+          },
           creationParamsCodec: const StandardMessageCodec(),
           onPlatformViewCreated: _onPlatformViewCreated,
           // UIKit owns taps and press-and-slide, including Liquid Glass morphs.
@@ -132,7 +157,7 @@ class _FlutterGlassBar extends StatefulWidget {
 }
 
 class _FlutterGlassBarState extends State<_FlutterGlassBar> {
-  static const _labels = ['الفرص', 'المحفوظة', 'أضف فرصة'];
+  static const _labels = ['الفرص', 'المحفوظة', 'إعلاناتك'];
   static const _icons = [
     CupertinoIcons.house,
     CupertinoIcons.heart,

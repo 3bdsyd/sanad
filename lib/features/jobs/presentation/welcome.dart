@@ -5,75 +5,78 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/design.dart';
+import '../../../core/robot_speech.dart';
 import '../../../core/theme_controls.dart';
 import '../../../core/web_layout.dart';
 
 /// One welcome page with a direct path into browsing, without an account.
 class WelcomePage extends StatelessWidget {
-  const WelcomePage({super.key, required this.onContinue});
+  const WelcomePage({super.key, required this.onContinue, this.onLogin});
   final VoidCallback onContinue;
+  final VoidCallback? onLogin;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: ReferenceBackdrop(
-      child: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (kIsWeb && constraints.maxWidth >= WebLayout.compactMax) {
-              return _WebLanding(
-                onContinue: onContinue,
-                wide: constraints.maxWidth >= WebLayout.mediumMax,
-              );
-            }
-            final compact = constraints.maxHeight < 720;
-            return Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 560),
-                        child: Column(
-                          children: [
-                            const _Header(),
-                            Padding(
-                              padding: EdgeInsets.only(top: compact ? 8 : 22),
-                              child: Column(
-                                children: [
-                                  SanadReveal(
-                                    order: 1,
-                                    child: _RobotHero(compact: compact),
-                                  ),
-                                  SizedBox(height: compact ? 8 : 18),
-                                  const SanadReveal(
-                                    order: 2,
-                                    child: _WelcomeCopy(),
-                                  ),
-                                ],
+  Widget build(BuildContext context) => RobotSystemBars(
+    child: Scaffold(
+      body: ReferenceBackdrop(
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              if (kIsWeb && constraints.maxWidth >= WebLayout.compactMax) {
+                return _WebLanding(
+                  onContinue: onContinue,
+                  onLogin: onLogin,
+                  wide: constraints.maxWidth >= WebLayout.mediumMax,
+                );
+              }
+              final compact = constraints.maxHeight < 720;
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 560),
+                    child: Column(
+                      children: [
+                        const _Header(),
+                        Expanded(
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: SizedBox(
+                                width: math.min(560, constraints.maxWidth - 48),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SanadReveal(
+                                      order: 1,
+                                      child: _RobotHero(compact: compact),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const SanadReveal(
+                                      order: 2,
+                                      child: _WelcomeCopy(),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 10),
+                        SanadReveal(
+                          order: 3,
+                          child: _WelcomeAction(
+                            onContinue: onContinue,
+                            onLogin: onLogin,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 10, 24, 20),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 560),
-                      child: SanadReveal(
-                        order: 3,
-                        child: _WelcomeAction(onContinue: onContinue),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     ),
@@ -82,8 +85,13 @@ class WelcomePage extends StatelessWidget {
 
 /// Wide web landing: copy + CTA beside the hero, filling the viewport.
 class _WebLanding extends StatelessWidget {
-  const _WebLanding({required this.onContinue, required this.wide});
+  const _WebLanding({
+    required this.onContinue,
+    required this.wide,
+    this.onLogin,
+  });
   final VoidCallback onContinue;
+  final VoidCallback? onLogin;
   final bool wide;
 
   @override
@@ -100,11 +108,7 @@ class _WebLanding extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      const Expanded(child: _Header()),
-                    ],
-                  ),
+                  Row(children: [const Expanded(child: _Header())]),
                   SizedBox(height: wide ? 48 : 32),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -116,55 +120,16 @@ class _WebLanding extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'فرص بسوريا',
-                                style: TextStyle(
-                                  color: context.sanad.primary,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 14),
-                              Text.rich(
-                                TextSpan(
-                                  children: [
-                                    const TextSpan(text: 'مستقبلك المهني\n'),
-                                    TextSpan(
-                                      text: 'بيبدأ من هون',
-                                      style: TextStyle(
-                                        color: context.sanad.primary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                style: TextStyle(
-                                  fontSize: wide ? 44 : 36,
-                                  height: 1.25,
-                                  fontWeight: FontWeight.w800,
-                                  color: context.sanad.ink,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 420,
-                                ),
-                                child: Text(
-                                  'اكتشف فرص بمدينتك ومجالك، وتواصل مباشرة مع صاحب الفرصة بلا حساب.',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    height: 1.75,
-                                    color: context.sanad.secondary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
+                              const _WelcomeCopy(),
                               const SizedBox(height: 28),
                               ConstrainedBox(
                                 constraints: const BoxConstraints(
                                   maxWidth: 320,
                                 ),
-                                child: _WelcomeAction(onContinue: onContinue),
+                                child: _WelcomeAction(
+                                  onContinue: onContinue,
+                                  onLogin: onLogin,
+                                ),
                               ),
                             ],
                           ),
@@ -196,7 +161,7 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      const SanadLogo(size: 40, hero: true),
+      const SanadLogo(size: 40, highContrast: true, circle: true, hero: true),
       const SizedBox(width: 10),
       Expanded(
         child: Column(
@@ -213,7 +178,7 @@ class _Header extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              'للخطوة الجاية',
+              'لفرص العمل',
               style: TextStyle(fontSize: 10, color: context.sanad.secondary),
             ),
           ],
@@ -437,7 +402,7 @@ class _OpportunityCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'فرص مناسبة إلك',
+                'فرص عمل متاحة',
                 style: TextStyle(
                   color: context.sanad.ink,
                   fontSize: 12,
@@ -446,7 +411,7 @@ class _OpportunityCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                'حسب مدينتك ومجالك',
+                'حسب الموقع والتخصص',
                 style: TextStyle(color: context.sanad.secondary, fontSize: 10),
               ),
             ],
@@ -462,37 +427,26 @@ class _WelcomeCopy extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
     children: [
-      Text.rich(
-        TextSpan(
-          children: [
-            const TextSpan(text: 'مستقبلك المهني\n'),
-            TextSpan(
-              text: 'بيبدأ من هون',
-              style: TextStyle(color: context.sanad.primary),
-            ),
-          ],
-        ),
+      Text(
+        'فرص العمل\nوالتواصل المهني',
         textAlign: TextAlign.center,
         style: TextStyle(
-          fontSize: 34,
-          height: 1.28,
+          fontSize: 26,
+          height: 1.4,
           fontWeight: FontWeight.w700,
           color: context.sanad.ink,
         ),
       ),
       const SizedBox(height: 10),
-      ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 350),
-        child: Text(
-          'اكتشف فرص بمدينتك ومجالك، وتواصل مباشرة مع صاحب الفرصة بلا حساب.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            height: 1.7,
-            color: context.sanad.secondary,
-            fontWeight: FontWeight.w500,
-          ),
+      Text(
+        'اكتشف فرصاً في مدينتك ومجالك، وتواصل مباشرة مع صاحب الفرصة دون حساب.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 15,
+          height: 1.7,
+          color: context.sanad.secondary,
         ),
       ),
     ],
@@ -500,22 +454,33 @@ class _WelcomeCopy extends StatelessWidget {
 }
 
 class _WelcomeAction extends StatelessWidget {
-  const _WelcomeAction({required this.onContinue});
+  const _WelcomeAction({required this.onContinue, this.onLogin});
   final VoidCallback onContinue;
+  final VoidCallback? onLogin;
 
   @override
   Widget build(BuildContext context) => Column(
     children: [
       SizedBox(
         width: double.infinity,
-        child: FilledButton(
+        child: SanadPrimaryButton(
           onPressed: onContinue,
-          child: const Text('بلّش هلّق'),
+          child: const Text('ابدأ الاستخدام'),
         ),
       ),
+      if (onLogin != null) ...[
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: onLogin,
+            child: const Text('تسجيل الدخول أو إنشاء حساب'),
+          ),
+        ),
+      ],
       const SizedBox(height: 12),
       Text(
-        'فرص بسوريا · تواصل مباشر · بلا تسجيل',
+        'تصفّح الفرص بحرية · سجّل الدخول للتقديم والحفظ',
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 11, color: context.sanad.secondary),
       ),

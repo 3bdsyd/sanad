@@ -1,0 +1,355 @@
+{
+  "jobFields": {
+    "success": true,
+    "data": [
+      {
+        "id": 1,
+        "name_ar": "تقنية",
+        "name_en": "Technology",
+        "slug": "technology",
+        "icon": "",
+        "is_active": true
+      }
+    ]
+  },
+  "jobsPage": {
+    "success": true,
+    "data": [
+      {
+        "id": 970001,
+        "title": "محاسب مالي — مثال اختبار",
+        "company_name": "جهة اختبار محلية",
+        "country": "الإمارات",
+        "state": "دبي",
+        "job_field": {
+          "id": 1,
+          "name_ar": "تقنية",
+          "name_en": "Technology",
+          "slug": "technology",
+          "icon": "",
+          "is_active": true
+        },
+        "job_type": "دوام كامل",
+        "work_type": "في المقر",
+        "experience": "متوسطة",
+        "description": "وصف تجريبي واضح لمسؤوليات الوظيفة وشروط العمل، ليس إعلان إنتاج.",
+        "requirements": "معرفة ببرامج المحاسبة\nالتعاون مع الفريق",
+        "url": "https://employer.example.test/jobs",
+        "contact": {
+          "phone": "+390212345678",
+          "email": "employer@example.test"
+        },
+        "salary": {
+          "currency": "AED",
+          "period": "شهرياً",
+          "min": 3000,
+          "max": 5000
+        },
+        "listing_duration_days": 30,
+        "created_at": "2035-01-01T00:00:00Z",
+        "expires_at": "2035-01-31T00:00:00Z",
+        "status": "published",
+        "is_active": true,
+        "views_count": 0
+      }
+    ],
+    "meta": {
+      "current_page": 1,
+      "last_page": 1,
+      "per_page": 24,
+      "total": 1
+    }
+  },
+  "emptyPage": {
+    "success": true,
+    "data": [],
+    "meta": {
+      "current_page": 1,
+      "last_page": 1,
+      "per_page": 24,
+      "total": 0
+    }
+  },
+  "jobDetail": {
+    "success": true,
+    "data": {
+      "id": 970001,
+      "title": "محاسب مالي — مثال اختبار",
+      "company_name": "جهة اختبار محلية",
+      "country": "الإمارات",
+      "state": "دبي",
+      "job_field": {
+        "id": 1,
+        "name_ar": "تقنية",
+        "name_en": "Technology",
+        "slug": "technology",
+        "icon": "",
+        "is_active": true
+      },
+      "job_type": "دوام كامل",
+      "work_type": "في المقر",
+      "experience": "متوسطة",
+      "description": "وصف تجريبي واضح لمسؤوليات الوظيفة وشروط العمل، ليس إعلان إنتاج.",
+      "requirements": "معرفة ببرامج المحاسبة\nالتعاون مع الفريق",
+      "url": "https://employer.example.test/jobs",
+      "contact": {
+        "phone": "+390212345678",
+        "email": "employer@example.test"
+      },
+      "salary": {
+        "currency": "AED",
+        "period": "شهرياً",
+        "min": 3000,
+        "max": 5000
+      },
+      "listing_duration_days": 30,
+      "created_at": "2035-01-01T00:00:00Z",
+      "expires_at": "2035-01-31T00:00:00Z",
+      "status": "published",
+      "is_active": true,
+      "views_count": 0
+    }
+  },
+  "createJob": {
+    "success": true,
+    "message": "تم إرسال الوظيفة للمراجعة.",
+    "data": {
+      "id": 970001,
+      "title": "محاسب مالي — مثال اختبار",
+      "company_name": "جهة اختبار محلية",
+      "country": "الإمارات",
+      "state": "دبي",
+      "job_field": {
+        "id": 1,
+        "name_ar": "تقنية",
+        "name_en": "Technology",
+        "slug": "technology",
+        "icon": "",
+        "is_active": true
+      },
+      "job_type": "دوام كامل",
+      "work_type": "في المقر",
+      "experience": "متوسطة",
+      "description": "وصف تجريبي واضح لمسؤوليات الوظيفة وشروط العمل، ليس إعلان إنتاج.",
+      "requirements": "معرفة ببرامج المحاسبة\nالتعاون مع الفريق",
+      "url": "https://employer.example.test/jobs",
+      "contact": {
+        "phone": "+390212345678",
+        "email": "employer@example.test"
+      },
+      "salary": {
+        "currency": "AED",
+        "period": "شهرياً",
+        "min": 3000,
+        "max": 5000
+      },
+      "listing_duration_days": 30,
+      "created_at": "2035-01-01T00:00:00Z",
+      "expires_at": "2035-01-31T00:00:00Z",
+      "status": "pending",
+      "is_active": true,
+      "views_count": 0
+    }
+  },
+  "myJobs": {
+    "success": true,
+    "data": [
+      {
+        "id": 970001,
+        "title": "محاسب مالي — مثال اختبار",
+        "company_name": "جهة اختبار محلية",
+        "country": "الإمارات",
+        "state": "دبي",
+        "job_field": {
+          "id": 1,
+          "name_ar": "تقنية",
+          "name_en": "Technology",
+          "slug": "technology",
+          "icon": "",
+          "is_active": true
+        },
+        "job_type": "دوام كامل",
+        "work_type": "في المقر",
+        "experience": "متوسطة",
+        "description": "وصف تجريبي واضح لمسؤوليات الوظيفة وشروط العمل، ليس إعلان إنتاج.",
+        "requirements": "معرفة ببرامج المحاسبة\nالتعاون مع الفريق",
+        "url": "https://employer.example.test/jobs",
+        "contact": {
+          "phone": "+390212345678",
+          "email": "employer@example.test"
+        },
+        "salary": {
+          "currency": "AED",
+          "period": "شهرياً",
+          "min": 3000,
+          "max": 5000
+        },
+        "listing_duration_days": 30,
+        "created_at": "2035-01-01T00:00:00Z",
+        "expires_at": "2035-01-31T00:00:00Z",
+        "status": "pending",
+        "is_active": true,
+        "views_count": 0
+      }
+    ]
+  },
+  "jobLocations": {
+    "success": true,
+    "data": {
+      "country": "الإمارات",
+      "cities": [
+        "أبوظبي",
+        "دبي"
+      ]
+    }
+  },
+  "emptyLocations": {
+    "success": true,
+    "data": {
+      "country": "الإمارات",
+      "cities": []
+    }
+  },
+  "favorites": {
+    "success": true,
+    "data": [
+      {
+        "id": 17,
+        "job_id": 970001,
+        "created_at": "2035-01-01T00:00:00Z",
+        "job": {
+          "id": 970001,
+          "title": "محاسب مالي — مثال اختبار",
+          "company_name": "جهة اختبار محلية",
+          "country": "الإمارات",
+          "state": "دبي",
+          "job_field": {
+            "id": 1,
+            "name_ar": "تقنية",
+            "name_en": "Technology",
+            "slug": "technology",
+            "icon": "",
+            "is_active": true
+          },
+          "job_type": "دوام كامل",
+          "work_type": "في المقر",
+          "experience": "متوسطة",
+          "description": "وصف تجريبي واضح لمسؤوليات الوظيفة وشروط العمل، ليس إعلان إنتاج.",
+          "requirements": "معرفة ببرامج المحاسبة\nالتعاون مع الفريق",
+          "url": "https://employer.example.test/jobs",
+          "contact": {
+            "phone": "+390212345678",
+            "email": "employer@example.test"
+          },
+          "salary": {
+            "currency": "AED",
+            "period": "شهرياً",
+            "min": 3000,
+            "max": 5000
+          },
+          "listing_duration_days": 30,
+          "created_at": "2035-01-01T00:00:00Z",
+          "expires_at": "2035-01-31T00:00:00Z",
+          "status": "published",
+          "is_active": true,
+          "views_count": 0
+        }
+      }
+    ]
+  },
+  "favoriteAdded": {
+    "success": true,
+    "is_added": true
+  },
+  "favoriteRemoved": {
+    "success": true,
+    "is_added": false
+  },
+  "reportAccepted": {
+    "success": true,
+    "message": "تم استلام البلاغ."
+  },
+  "notifications": {
+    "success": true,
+    "data": [
+      {
+        "id": "notice-test-1",
+        "title": "تحديث الإعلان",
+        "body": "تم نشر الإعلان.",
+        "is_read": false,
+        "read_at": null,
+        "created_at": "2035-01-01T00:00:00Z",
+        "job_id": 970001
+      }
+    ],
+    "unread_count": 1
+  },
+  "success": {
+    "success": true
+  },
+  "maintenanceOff": {
+    "success": true,
+    "maintenance": false
+  },
+  "maintenanceOn": {
+    "success": true,
+    "maintenance": true,
+    "message": "صيانة مؤقتة"
+  },
+  "noUpdate": {
+    "success": true,
+    "update_available": false,
+    "force_update": false,
+    "latest_version": null,
+    "store_url": null
+  },
+  "optionalUpdateAndroid": {
+    "success": true,
+    "update_available": true,
+    "force_update": false,
+    "latest_version": "1.1.0",
+    "store_url": "https://play.google.com/store/apps/details?id=com.jobsnad.snad"
+  },
+  "requiredUpdateAndroid": {
+    "success": true,
+    "update_available": true,
+    "force_update": true,
+    "latest_version": "1.1.0",
+    "store_url": "https://play.google.com/store/apps/details?id=com.jobsnad.snad"
+  },
+  "validationError": {
+    "message": "بعض البيانات غير مقبولة.",
+    "errors": {
+      "country": [
+        "اختر بلداً صالحاً."
+      ]
+    }
+  },
+  "notFound": {
+    "success": false,
+    "message": "الفرصة غير متاحة."
+  },
+  "forbidden": {
+    "success": false,
+    "message": "غير مصرح بهذا الإجراء."
+  },
+  "rateLimited": {
+    "success": false,
+    "message": "انتظر قليلاً ثم حاول مجدداً."
+  },
+  "unavailable": {
+    "success": false,
+    "message": "الخدمة غير متاحة مؤقتاً."
+  },
+  "unavailableFavorite": {
+    "success": true,
+    "data": [
+      {
+        "id": 17,
+        "job_id": 970001,
+        "created_at": "2035-01-01T00:00:00Z",
+        "job": null
+      }
+    ]
+  }
+}

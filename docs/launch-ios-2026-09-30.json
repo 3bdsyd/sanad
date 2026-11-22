@@ -1,0 +1,91 @@
+{
+  "audit_date": "2026-09-30",
+  "platform": {
+    "device": "iPhone 17 simulator",
+    "os": "iOS 26.5",
+    "mode": "debug",
+    "data": "demo"
+  },
+  "build": {
+    "status": "passed",
+    "command": "flutter build ios --simulator --debug --no-pub --dart-define=API_BASE_URL=demo",
+    "xcode_seconds": 167.9,
+    "includes": [
+      "effective appearance bridge",
+      "explicit AppBar status-bar contrast",
+      "bundled fallback font",
+      "mobile no-op web history initialization"
+    ]
+  },
+  "results": [
+    {
+      "name": "welcome, three UIKit tabs, catalog-to-detail navigation",
+      "status": "passed",
+      "method": "XCTest",
+      "seconds": 21.492
+    },
+    {
+      "name": "warm custom URL opens details and Back closes route",
+      "status": "passed",
+      "method": "XCTest",
+      "seconds": 9.226
+    },
+    {
+      "name": "same custom URL opens again after closure",
+      "status": "passed",
+      "method": "XCTest",
+      "seconds": 9.267
+    },
+    {
+      "name": "publish form opens native keyboard",
+      "status": "passed",
+      "method": "XCTest",
+      "seconds": 10.088,
+      "limit": "Typing was not exercised; initial iOS keyboard tutorial appeared."
+    },
+    {
+      "name": "manual dark mode on a light system and restore automatic",
+      "status": "passed",
+      "method": "XCTest and screenshot inspection",
+      "seconds": 24.162,
+      "detail": "Native UIKit tab bar and Flutter body match the selected appearance."
+    },
+    {
+      "name": "cold custom URL opens details, final status-bar contrast, Back returns home",
+      "status": "visually_verified",
+      "method": "XCTest opening assertion and screenshot inspection",
+      "detail": "Cold launch opened the expected details; black status-bar text/icons are legible on the light page; Back returned home with all native tabs.",
+      "test_limit": "Overall case failed its final closure assertion because an overbroad job-title selector also matches the same title in the home catalog."
+    },
+    {
+      "name": "native OS Reduce Motion",
+      "status": "unverified",
+      "detail": "Settings automation did not enable the OS flag; value remained 0. No native Reduce Motion runtime claim is made."
+    }
+  ],
+  "screenshots": {
+    "welcome": "screenshots/launch-2026-09-30/ios-welcome.png",
+    "home_light": "screenshots/launch-2026-09-30/ios-home-light.png",
+    "saved_empty": "screenshots/launch-2026-09-30/ios-saved-empty.png",
+    "post": "screenshots/launch-2026-09-30/ios-post.png",
+    "native_keyboard": "screenshots/launch-2026-09-30/ios-post-native-keyboard.png",
+    "manual_dark": "screenshots/launch-2026-09-30/ios-manual-dark-on-light-system.png",
+    "automatic_light": "screenshots/launch-2026-09-30/ios-system-appearance-restored.png",
+    "final_details_statusbar": "screenshots/launch-2026-09-30/ios-details-final-statusbar.png",
+    "final_home_after_back": "screenshots/launch-2026-09-30/ios-final-after-back.png"
+  },
+  "limits": [
+    "Simulator debug build, not a signed physical-device or TestFlight audit.",
+    "Demo data used for native runtime; production writes were not exercised.",
+    "No quantitative release-mode animation frame or memory benchmark.",
+    "Universal-link association production configuration remains a separate launch blocker."
+  ],
+  "cleanup": {
+    "audit_simulator_shutdown_and_deleted": true,
+    "original_user_simulator_preserved_and_booted": true
+  },
+  "production_files_changed_by_native_audit": [
+    "lib/core/native_navigation.dart",
+    "ios/Runner/SnadNativePlugin.swift"
+  ]
+}

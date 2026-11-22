@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      DATABASE_PATH: /data/fursa.sqlite3
+      DATABASE_PATH: /data/snad.sqlite3
       TRUSTED_PROXIES: 172.31.247.3/32
     volumes:
       - jobs_data:/data

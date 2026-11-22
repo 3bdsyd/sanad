@@ -1,12 +1,14 @@
 import 'package:flutter/foundation.dart';
 
 import 'job.dart';
+import 'job_geography.dart';
 
 const _unchanged = Object();
 
 @immutable
 class JobFilters {
   const JobFilters({
+    String? country = 'SY',
     this.city,
     this.category,
     this.workType,
@@ -17,8 +19,10 @@ class JobFilters {
     this.currency,
     this.salaryPeriod,
     this.sort = 'newest',
-  });
+  }) : country = 'SY';
 
+  /// Product scope is Syria, including restored filters from older builds.
+  final String? country;
   final String? city;
   final String? category;
   final String? workType;
@@ -29,8 +33,10 @@ class JobFilters {
   final String? currency;
   final String? salaryPeriod;
   final String sort;
+  String get locationLabel => [countryLabel(country), ?city].join(' · ');
 
   Map<String, dynamic> toJson() => {
+    'country': country,
     'city': city,
     'category': category,
     'workType': workType,
@@ -43,26 +49,31 @@ class JobFilters {
     'sort': sort,
   };
   factory JobFilters.fromJson(Map<String, dynamic> json) {
-    String? text(String key) {
+    String? text(String key, {int maxLength = 80}) {
       final value = json[key];
       if (value is! String) return null;
       final trimmed = value.trim();
-      if (trimmed.isEmpty || trimmed.length > 80) return null;
+      if (trimmed.isEmpty || trimmed.length > maxLength) return null;
       return trimmed;
     }
 
     return JobFilters(
-      city: text('city'),
+      country: 'SY',
+      city:
+          (text('country') == null || countryFor(text('country'))?.code == 'SY')
+          ? text('city', maxLength: 100)
+          : null,
       category: text('category'),
       workType: text('workType'),
       workMode: text('workMode'),
       experience: text('experience'),
       salaryOnly: json['salaryOnly'] == true,
-      currency: text('currency') == 'USD' || text('currency') == 'SYP'
+      currency: jobCurrencyNames.containsKey(text('currency'))
           ? text('currency')
           : null,
-      salaryPeriod: jobSalaryPeriods.contains(text('salaryPeriod'))
-          ? text('salaryPeriod')
+      salaryPeriod:
+          jobSalaryPeriods.contains(normalizeSalaryPeriod(text('salaryPeriod')))
+          ? normalizeSalaryPeriod(text('salaryPeriod'))
           : null,
       minSalary:
           json['minSalary'] is int &&
@@ -87,6 +98,7 @@ class JobFilters {
   ].where((value) => value != null).length;
 
   JobFilters copyWith({
+    Object? country = _unchanged,
     Object? city = _unchanged,
     Object? category = _unchanged,
     Object? workType = _unchanged,
@@ -98,7 +110,12 @@ class JobFilters {
     Object? salaryPeriod = _unchanged,
     String? sort,
   }) => JobFilters(
-    city: identical(city, _unchanged) ? this.city : city as String?,
+    country: identical(country, _unchanged) ? this.country : country as String?,
+    city: identical(city, _unchanged)
+        ? (!identical(country, _unchanged) && country != this.country
+              ? null
+              : this.city)
+        : city as String?,
     category: identical(category, _unchanged)
         ? this.category
         : category as String?,
@@ -124,13 +141,32 @@ class JobFilters {
     sort: sort ?? this.sort,
   );
 
-  bool matches(Job job, String query) {
+  bool matches(Job job, String query) => _matches(job, _searchWords(query));
+
+  static List<String> _searchWords(String query) => normalizeSearch(
+    query,
+  ).split(' ').where((word) => word.isNotEmpty).toList();
+
+  bool _matches(Job job, List<String> words) {
     if (!job.isAvailable) return false;
-    if (city != null && city != job.city) return false;
+    if (country != null &&
+        countryFor(country)?.code != countryFor(job.country)?.code) {
+      return false;
+    }
+    if (city != null && !matchesJobCity(job, city!)) {
+      return false;
+    }
     if (category != null && category != job.category) return false;
     if (workType != null && workType != job.workType) return false;
-    if (workMode != null && workMode != job.workMode) return false;
-    if (experience != null && experience != job.experience) return false;
+    if (workMode != null &&
+        workModeApiValue(workMode) != workModeApiValue(job.workMode)) {
+      return false;
+    }
+    if (experience != null) {
+      if (experienceGroup(experience!) != experienceGroup(job.experience)) {
+        return false;
+      }
+    }
     if (currency != null && currency != job.currency) return false;
     if (salaryPeriod != null && salaryPeriod != job.salaryPeriod) return false;
     if (salaryOnly && !job.hasSalary) return false;
@@ -142,13 +178,12 @@ class JobFilters {
             (job.salaryMax ?? job.salaryMin)! < minSalary!)) {
       return false;
     }
-    final words = normalizeSearch(
-      query,
-    ).split(' ').where((word) => word.isNotEmpty);
-    final haystack = normalizeSearch(
+    if (words.isEmpty) return true;
+    final haystack = _searchText[job] ??= normalizeSearch(
       [
         job.title,
         job.company,
+        countryLabel(job.country),
         job.city,
         job.category,
         job.workType,
@@ -160,8 +195,13 @@ class JobFilters {
     return words.every(haystack.contains);
   }
 
+  /// Normalizing every description is costly; jobs are immutable, so each
+  /// instance keeps its searchable text for the lifetime of the object.
+  static final _searchText = Expando<String>('searchText');
+
   List<Job> apply(Iterable<Job> jobs, String query) {
-    final result = jobs.where((job) => matches(job, query)).toList();
+    final words = _searchWords(query);
+    final result = jobs.where((job) => _matches(job, words)).toList();
     result.sort((a, b) {
       // Never rank dissimilar currencies or salary periods numerically.
       if (sort == 'salary' && currency != null && salaryPeriod != null) {
@@ -174,6 +214,19 @@ class JobFilters {
     });
     return result;
   }
+}
+
+bool matchesJobCity(Job job, String city) {
+  final selected = locationSearchKey(city), place = locationSearchKey(job.city);
+  if (selected == place) return true;
+  if (countryFor(job.country)?.code == 'SY' &&
+      selected == locationSearchKey(governorateOf(job.city) ?? '')) {
+    return true;
+  }
+  return place.startsWith('$selected،') ||
+      place.startsWith('$selected,') ||
+      place.startsWith('$selected -') ||
+      place.startsWith('$selected ');
 }
 
 String normalizeSearch(String value) {

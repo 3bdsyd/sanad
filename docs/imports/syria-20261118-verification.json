@@ -1,0 +1,17 @@
+{
+  "details_verified": 93,
+  "collections": {
+    "/api/jobs": {
+      "verified": 93,
+      "pages": 2,
+      "total": 2338
+    },
+    "/api/filterjob": {
+      "verified": 93,
+      "pages": 2,
+      "total": 2338
+    }
+  },
+  "expiry_caps_verified": 2,
+  "all_passed": true
+}

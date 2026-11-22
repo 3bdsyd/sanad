@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:377548025897:android:a05cdfd42131016f6bac38",
+        "mobilesdk_app_id": "1:377548025897:android:90cc0a4f24dd28c56bac38",
         "android_client_info": {
-          "package_name": "app.fursa.fursa"
+          "package_name": "com.jobsnad.snad"
         }
       },
       "oauth_client": [],

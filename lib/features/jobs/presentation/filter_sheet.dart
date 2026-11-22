@@ -1,18 +1,37 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/design.dart';
 import '../../../core/motion.dart';
+import '../../../core/web_layout.dart';
 import '../data/jobs_store.dart';
 import '../domain/job.dart';
 import '../domain/job_filters.dart';
+import '../domain/job_geography.dart';
+import 'geography_picker.dart';
+import 'location_picker.dart';
+import 'country_flag.dart';
+import '../../platform/presentation/auth_page.dart';
 
 /// A normal page keeps the home context in the navigation stack, while allowing
 /// every filter to remain readable with a keyboard or larger accessibility text.
 Future<JobFilters?> showFilters(BuildContext context, JobsStore store) =>
     openPage<JobFilters>(context, FilterSheet(store: store));
+
+/// Country and optional city are chosen together on a normal page.
+Future<void> showCityFilter(BuildContext context, JobsStore store) async {
+  await openPage<JobFilters>(
+    context,
+    LocationPickerPage(
+      store: store,
+      initial: store.filters,
+      applyToStore: true,
+    ),
+  );
+}
 
 class FilterSheet extends StatefulWidget {
   const FilterSheet({super.key, required this.store});
@@ -33,7 +52,7 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
   final currencyKey = GlobalKey();
   final periodKey = GlobalKey();
   Timer? revealTimer;
-  String? amountError, currencyError, periodError;
+  String? amountError, currencyError, periodError, saveError;
   String? expanded;
   bool save = false, applying = false;
 
@@ -83,6 +102,14 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
   String labelFor(String value) => switch (value) {
     'SYP' => 'ليرة سورية',
     'USD' => 'دولار أمريكي',
+    'AED' => 'درهم إماراتي',
+    'SAR' => 'ريال سعودي',
+    'شهري' => 'شهرياً',
+    'أسبوعي' => 'أسبوعياً',
+    'يومي' => 'يومياً',
+    _ when jobExperienceFilterLevels.contains(value) => experienceDisplayLabel(
+      value,
+    ),
     _ => value,
   };
 
@@ -104,6 +131,11 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 4),
             minVerticalPadding: 12,
+            leading: AppIcon(
+              sanadPickerIcon(label),
+              color: context.sanad.primary,
+              size: 22,
+            ),
             title: Text(label, style: const TextStyle(fontSize: 14)),
             subtitle: Text(
               value == null ? 'الكل' : labelFor(value),
@@ -138,9 +170,7 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                    child: SanadActions(
                       children: [
                         for (final item in <String?>[null, ...values])
                           Semantics(
@@ -160,7 +190,9 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
                                 backgroundColor: value == item
                                     ? context.sanad.tint
                                     : context.sanad.surface,
-                                minimumSize: const Size(48, 48),
+                                minimumSize: compactWebControls(context)
+                                    ? const Size(44, 44)
+                                    : const Size(48, 48),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 14,
                                 ),
@@ -200,6 +232,28 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
     );
   }
 
+  Future<void> changeLocation() async {
+    final result = await openPage<JobFilters>(
+      context,
+      LocationPickerPage(store: widget.store, initial: filters),
+    );
+    if (mounted && result != null) setState(() => filters = result);
+  }
+
+  Future<void> changeCurrency() async {
+    final value = await chooseJobCurrency(
+      context,
+      selected: filters.currency,
+      allowAll: true,
+    );
+    if (mounted && value != null) {
+      setState(() {
+        filters = filters.copyWith(currency: value.isEmpty ? null : value);
+        currencyError = null;
+      });
+    }
+  }
+
   Widget section(String title, List<Widget> children) => Padding(
     padding: const EdgeInsets.only(bottom: 16),
     child: Material(
@@ -228,6 +282,19 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
 
   JobFilters get previewFilters =>
       filters.copyWith(minSalary: int.tryParse(normalizeSearch(minimum.text)));
+
+  String? _countKey;
+  Future<int?>? _countFuture;
+
+  /// Server total for the site's paged catalog, fetched once per selection.
+  Future<int?> get _serverCount {
+    final key = previewFilters.toJson().toString();
+    if (key != _countKey) {
+      _countKey = key;
+      _countFuture = widget.store.countFor(previewFilters);
+    }
+    return _countFuture!;
+  }
 
   Future<void> apply() async {
     if (applying) return;
@@ -261,10 +328,32 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
       _scheduleReveal(currencyError != null ? currencyKey : periodKey);
       return;
     }
+    if (save &&
+            widget.store.accountsEnabled &&
+            !await ensureAccount(
+              context,
+              widget.store.platform,
+              reason: 'لحفظ البحث وإشعارات الفرص الجديدة',
+            ) ||
+        !mounted) {
+      return;
+    }
     setState(() => applying = true);
     final result = filters.copyWith(minSalary: number);
     widget.store.updateFilters(result);
-    if (save) await widget.store.saveSearch();
+    if (save) {
+      try {
+        await widget.store.saveSearch();
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            applying = false;
+            saveError = e.toString();
+          });
+        }
+        return;
+      }
+    }
     if (mounted) Navigator.of(context).pop(result);
   }
 
@@ -279,39 +368,93 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
     });
   }
 
+  Widget bottomAction() => Container(
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+    decoration: BoxDecoration(
+      color: context.sanad.surface,
+      border: Border(top: BorderSide(color: context.sanad.border)),
+    ),
+    child: SizedBox(
+      width: double.infinity,
+      child: ListenableBuilder(
+        listenable: widget.store,
+        builder: (context, _) => SanadPrimaryButton(
+          onPressed: applying ? null : apply,
+          child: applying
+              ? const SanadLoader(size: 26, label: 'جارٍ حفظ اختياراتك…')
+              : AnimatedSwitcher(
+                  duration: motionDuration(context, 180),
+                  child: widget.store.pagedCatalog
+                      ? FutureBuilder<int?>(
+                          key: ValueKey(previewFilters.toJson().toString()),
+                          future: _serverCount,
+                          builder: (context, snapshot) => Text(
+                            snapshot.data == null
+                                ? 'عرض الفرص'
+                                : 'عرض ${snapshot.data} فرصة',
+                          ),
+                        )
+                      : Text(
+                          'عرض ${previewFilters.apply(widget.store.discoverableJobs, widget.store.query).length} فرصة',
+                          key: ValueKey(
+                            previewFilters
+                                .apply(
+                                  widget.store.discoverableJobs,
+                                  widget.store.query,
+                                )
+                                .length,
+                          ),
+                        ),
+                ),
+        ),
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) => ReferenceBackdrop(
     child: Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        foregroundColor: context.sanad.ink,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        flexibleSpace: sanadHeaderFill(context),
-        title: const Text('فلتر الفرص'),
-        leading: IconButton(
-          tooltip: 'رجوع بدون تطبيق',
-          onPressed: applying ? null : () => Navigator.of(context).pop(),
-          icon: AppIcon(CupertinoIcons.chevron_right, color: context.sanad.ink),
-        ),
-        actions: [
-          TextButton(
-            onPressed: applying ? null : reset,
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      appBar: kIsWeb
+          ? null
+          : AppBar(
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              foregroundColor: context.sanad.ink,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              flexibleSpace: sanadHeaderFill(context, blur: false),
+              title: const Text('فلتر الفرص'),
+              leading: IconButton(
+                tooltip: 'رجوع بدون تطبيق',
+                onPressed: applying ? null : () => Navigator.of(context).pop(),
+                icon: AppIcon(
+                  CupertinoIcons.chevron_right,
+                  color: context.sanad.ink,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: applying ? null : reset,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  ),
+                  child: const Text('إعادة ضبط'),
+                ),
+                const SizedBox(width: 8),
+              ],
             ),
-            child: const Text('إعادة ضبط'),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
       body: SafeArea(
         top: false,
+        bottom: !kIsWeb,
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 640),
+            constraints: BoxConstraints(
+              maxWidth: kIsWeb ? WebLayout.contentMax : 640,
+            ),
             child: Column(
               children: [
                 Expanded(
@@ -319,12 +462,36 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
                     controller: scroll,
                     keyboardDismissBehavior:
                         ScrollViewKeyboardDismissBehavior.onDrag,
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      12,
+                      20,
+                      24 + (kIsWeb ? MediaQuery.paddingOf(context).bottom : 0),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        if (kIsWeb) ...[
+                          SanadActionHeader(
+                            title: Text(
+                              'فلتر الفرص',
+                              style: TextStyle(
+                                color: context.sanad.ink,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: applying ? null : reset,
+                                child: const Text('إعادة ضبط'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                        ],
                         Text(
-                          'قرّب النتائج للشغل اللي بدك ياه.',
+                          'اعثر على فرص تلائم احتياجاتك.',
                           style: TextStyle(
                             color: context.sanad.secondary,
                             fontSize: 14,
@@ -340,21 +507,62 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
                           ),
                         const SizedBox(height: 20),
                         section('المكان والمجال', [
-                          choices(
-                            'المحافظة',
-                            filters.city,
-                            widget.store.placeOptions,
-                            (v) => filters = filters.copyWith(city: v),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('البلد والمحافظة'),
+                            leading: countryFor(filters.country) == null
+                                ? const AppIcon(CupertinoIcons.globe, size: 22)
+                                : CountryFlag(
+                                    country: countryFor(filters.country)!,
+                                  ),
+                            subtitle: Text(filters.locationLabel),
+                            trailing: AppIcon(
+                              CupertinoIcons.chevron_left,
+                              color: context.sanad.primary,
+                              size: 18,
+                            ),
+                            onTap: applying ? null : changeLocation,
                           ),
                           Divider(height: 1, color: context.sanad.border),
-                          choices(
-                            'المجال',
-                            filters.category,
-                            widget.store.categoryOptions,
-                            (v) => filters = filters.copyWith(category: v),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: AppIcon(
+                              sanadPickerIcon('المجال'),
+                              color: context.sanad.primary,
+                            ),
+                            title: const Text('المجال'),
+                            subtitle: Text(filters.category ?? 'كل المجالات'),
+                            trailing: AppIcon(
+                              CupertinoIcons.chevron_left,
+                              color: context.sanad.primary,
+                              size: 18,
+                            ),
+                            onTap: applying
+                                ? null
+                                : () async {
+                                    final value = await chooseJobCategory(
+                                      context,
+                                      values: widget.store.categoryOptions,
+                                      selected: filters.category,
+                                      allowAll: true,
+                                      translations: {
+                                        for (final field in widget.store.fields)
+                                          field.nameAr: field.nameEn,
+                                      },
+                                    );
+                                    if (mounted && value != null) {
+                                      setState(
+                                        () => filters = filters.copyWith(
+                                          category: value.isEmpty
+                                              ? null
+                                              : value,
+                                        ),
+                                      );
+                                    }
+                                  },
                           ),
                         ]),
-                        section('طريقة الشغل', [
+                        section('طريقة العمل', [
                           choices(
                             'نوع الدوام',
                             filters.workType,
@@ -372,7 +580,7 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
                           choices(
                             'الخبرة',
                             filters.experience,
-                            widget.store.experienceOptions,
+                            jobExperienceFilterLevels,
                             (v) => filters = filters.copyWith(experience: v),
                           ),
                         ]),
@@ -393,13 +601,38 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
                                   ),
                           ),
                           Divider(height: 1, color: context.sanad.border),
-                          choices(
-                            'عملة الراتب',
-                            filters.currency,
-                            const ['SYP', 'USD'],
-                            (v) => filters = filters.copyWith(currency: v),
-                            sectionKey: currencyKey,
-                            validation: currencyError,
+                          Column(
+                            key: currencyKey,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: const Text('عملة الراتب'),
+                                leading: AppIcon(
+                                  CupertinoIcons.money_dollar_circle,
+                                  color: context.sanad.primary,
+                                  size: 22,
+                                ),
+                                subtitle: Text(
+                                  filters.currency == null
+                                      ? 'كل العملات'
+                                      : currencyLabel(filters.currency!),
+                                ),
+                                onTap: applying ? null : changeCurrency,
+                                trailing: AppIcon(
+                                  CupertinoIcons.chevron_left,
+                                  color: context.sanad.primary,
+                                  size: 18,
+                                ),
+                              ),
+                              if (currencyError != null)
+                                Text(
+                                  currencyError!,
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                                ),
+                            ],
                           ),
                           Divider(height: 1, color: context.sanad.border),
                           choices(
@@ -434,7 +667,7 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            'بنقارن المبالغ فقط لما تتطابق العملة وفترة الراتب.',
+                            'تُقارن الرواتب عندما تتطابق العملة وفترة الراتب.',
                             style: TextStyle(
                               fontSize: 12,
                               color: context.sanad.secondary,
@@ -442,9 +675,7 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
                           ),
                         ]),
                         section('ترتيب النتائج', [
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
+                          SanadActions(
                             children: [
                               for (final option in [
                                 ('newest', 'الأحدث'),
@@ -461,7 +692,9 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
                                             ),
                                           ),
                                     style: OutlinedButton.styleFrom(
-                                      minimumSize: const Size(48, 48),
+                                      minimumSize: compactWebControls(context)
+                                          ? const Size(44, 44)
+                                          : const Size(48, 48),
                                       backgroundColor: filters.sort == option.$1
                                           ? context.sanad.tint
                                           : context.sanad.surface,
@@ -477,15 +710,15 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
                             ],
                           ),
                         ]),
-                        section('ارجع لهالبحث بسهولة', [
+                        section('احفظ هذا البحث للعودة إليه بسهولة', [
                           SwitchListTile.adaptive(
                             contentPadding: EdgeInsets.zero,
                             title: const Text(
-                              'احفظ هالبحث',
+                              'حفظ البحث',
                               style: TextStyle(fontSize: 14),
                             ),
                             subtitle: Text(
-                              'بيضل على هالجهاز، وبتلاقي نتائجه بصفحة «على بالك».',
+                              'سيُحفظ على هذا الجهاز، وستظهر نتائجه في صفحة «المحفوظات».',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: context.sanad.secondary,
@@ -497,47 +730,17 @@ class _FilterSheetState extends State<FilterSheet> with WidgetsBindingObserver {
                                 : (value) => setState(() => save = value),
                           ),
                         ]),
+                        if (saveError != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: SignalCard(saveError!),
+                          ),
+                        if (kIsWeb) bottomAction(),
                       ],
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-                  decoration: BoxDecoration(
-                    color: context.sanad.surface,
-                    border: Border(
-                      top: BorderSide(color: context.sanad.border),
-                    ),
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ListenableBuilder(
-                      listenable: widget.store,
-                      builder: (context, _) => FilledButton(
-                        onPressed: applying ? null : apply,
-                        child: applying
-                            ? const SanadLoader(
-                                size: 26,
-                                label: 'عم نحفظ اختياراتك…',
-                              )
-                            : AnimatedSwitcher(
-                                duration: motionDuration(context, 180),
-                                child: Text(
-                                  'عرض ${previewFilters.apply(widget.store.discoverableJobs, widget.store.query).length} فرصة',
-                                  key: ValueKey(
-                                    previewFilters
-                                        .apply(
-                                          widget.store.discoverableJobs,
-                                          widget.store.query,
-                                        )
-                                        .length,
-                                  ),
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
-                ),
+                if (!kIsWeb) bottomAction(),
               ],
             ),
           ),

@@ -4,13 +4,17 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
+import 'package:flutter/services.dart';
 import 'sanad_brand.dart';
 import 'appearance.dart';
 export 'appearance.dart';
 export 'sanad_brand.dart';
 import 'native_bridge.dart';
-import 'fursa_icons.dart';
-export 'fursa_icons.dart';
+import 'snad_icons.dart';
+import 'web_layout.dart';
+export 'snad_icons.dart';
+export 'primary_button.dart';
 
 const blue = SanadPalette.primary;
 const ink = SanadPalette.ink;
@@ -19,6 +23,26 @@ const background = SanadPalette.background;
 const surface = Colors.white;
 const line = SanadPalette.border;
 const paleBlue = SanadPalette.tint;
+
+/// Keep Android system buttons visible over the page without a coloured strip.
+SystemUiOverlayStyle sanadSystemBars(SanadColors colors) =>
+    (colors.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
+        .copyWith(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: colors.isDark
+              ? Brightness.light
+              : Brightness.dark,
+          statusBarBrightness: colors.isDark
+              ? Brightness.dark
+              : Brightness.light,
+          systemStatusBarContrastEnforced: false,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarDividerColor: Colors.transparent,
+          systemNavigationBarIconBrightness: colors.isDark
+              ? Brightness.light
+              : Brightness.dark,
+          systemNavigationBarContrastEnforced: false,
+        );
 
 /// Frosted header: white on top into a stronger page-blue at the bottom.
 /// Stops stay translucent so BackdropFilter glass reads clearly.
@@ -41,9 +65,9 @@ LinearGradient sanadHeaderGradient(SanadColors colors) {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [
-      Colors.white.withValues(alpha: .7),
-      soft.withValues(alpha: .55),
-      deep.withValues(alpha: .78),
+      Colors.white.withValues(alpha: .56),
+      soft.withValues(alpha: .38),
+      deep.withValues(alpha: .58),
     ],
     stops: const [0, .36, 1],
   );
@@ -87,53 +111,165 @@ LinearGradient sanadHeaderSlice(SanadColors colors, double from, double to) {
 }
 
 /// Glass header chrome shared by home strips and every AppBar.
+///
+/// Pass `blur: false` when nothing scrolls behind the strip (a plain AppBar or
+/// a header above the list): it looks the same, while every BackdropFilter
+/// re-samples the screen on each frame, which is costly on Android GPUs.
 Widget sanadHeaderChrome({
   required BuildContext context,
   Widget? child,
   double from = 0,
   double to = 1,
   bool edge = true,
+  bool blur = true,
+  bool opaque = false,
 }) {
   final colors = context.sanad;
+  final slice = sanadHeaderSlice(colors, from, to);
+  // Composite against a fixed theme colour, never the moving feed underneath.
+  final gradient = opaque
+      ? LinearGradient(
+          begin: slice.begin,
+          end: slice.end,
+          colors: [
+            for (final color in slice.colors)
+              Color.alphaBlend(color, colors.backdropColors[1]),
+          ],
+        )
+      : slice;
+  final tint = DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: gradient,
+      border: edge
+          ? Border(
+              bottom: BorderSide(
+                color: colors.border.withValues(
+                  alpha: colors.isDark ? .35 : .55,
+                ),
+              ),
+            )
+          : null,
+    ),
+    child: child ?? const SizedBox.expand(),
+  );
+  if (!blur || opaque) return tint;
   return ClipRect(
     child: BackdropFilter(
       filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: sanadHeaderSlice(colors, from, to),
-          border: edge
-              ? Border(
-                  bottom: BorderSide(
-                    color: colors.border.withValues(
-                      alpha: colors.isDark ? .35 : .55,
-                    ),
-                  ),
-                )
-              : null,
-        ),
-        child: child ?? const SizedBox.expand(),
-      ),
+      child: tint,
     ),
   );
 }
 
-Widget sanadHeaderFill(BuildContext context) =>
-    sanadHeaderChrome(context: context);
+Widget sanadHeaderFill(BuildContext context, {bool blur = true}) =>
+    sanadHeaderChrome(context: context, blur: blur);
+
+/// Compact controls apply throughout the phone website, including nested routes.
+bool compactWebControls(BuildContext context) =>
+    kIsWeb && MediaQuery.sizeOf(context).width < WebLayout.compactMax;
+
+const sanadActionGap = 12.0;
+
+IconData sanadPickerIcon(String label) => switch (label) {
+  'المجال' => CupertinoIcons.briefcase,
+  'نوع الدوام' => CupertinoIcons.clock,
+  'طريقة العمل' => CupertinoIcons.globe,
+  'متطلبات الخبرة' || 'الخبرة' => Icons.school_outlined,
+  'فترة الراتب' => CupertinoIcons.calendar,
+  _ => CupertinoIcons.slider_horizontal_3,
+};
+
+/// Keeps separate actions apart, including after wrapping onto another line.
+class SanadActions extends StatelessWidget {
+  const SanadActions({
+    super.key,
+    required this.children,
+    this.vertical = false,
+    this.alignment = WrapAlignment.start,
+  });
+
+  final List<Widget> children;
+  final bool vertical;
+  final WrapAlignment alignment;
+
+  @override
+  Widget build(BuildContext context) => vertical
+      ? Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: sanadActionGap,
+          children: children,
+        )
+      : Wrap(
+          spacing: sanadActionGap,
+          runSpacing: sanadActionGap,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          alignment: alignment,
+          children: children,
+        );
+}
+
+/// Stacks the actions below a heading when the viewport or text needs room.
+class SanadActionHeader extends StatelessWidget {
+  const SanadActionHeader({
+    super.key,
+    required this.title,
+    this.actions = const [],
+    this.minimumRowWidth = 480,
+  });
+
+  final Widget title;
+  final List<Widget> actions;
+  final double minimumRowWidth;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      if (actions.isEmpty) return title;
+      final actionGroup = SanadActions(children: actions);
+      final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+      if (constraints.maxWidth < minimumRowWidth * textScale) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          spacing: sanadActionGap,
+          children: [title, actionGroup],
+        );
+      }
+      return Row(
+        children: [
+          Expanded(child: title),
+          const SizedBox(width: sanadActionGap),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth * .6),
+            child: actionGroup,
+          ),
+        ],
+      );
+    },
+  );
+}
 
 /// Shared capsule geometry, a gentle highlight and a tactile content response.
 ButtonStyle sanadButtonStyle({
   Color foreground = blue,
   Color fill = paleBlue,
   bool compact = false,
+  bool dense = false,
   bool dark = false,
 }) => ButtonStyle(
   minimumSize: WidgetStatePropertyAll(
-    Size(compact ? 48 : 56, compact ? 48 : 56),
+    Size(dense ? 44 : (compact ? 48 : 56), dense ? 44 : (compact ? 48 : 56)),
   ),
+  visualDensity: dense ? VisualDensity.standard : null,
   padding: WidgetStatePropertyAll(
-    compact
-        ? const EdgeInsets.all(12)
-        : const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
+    dense
+        ? (compact
+              ? const EdgeInsets.all(10)
+              : const EdgeInsets.symmetric(horizontal: 16, vertical: 10))
+        : (compact
+              ? const EdgeInsets.all(12)
+              : const EdgeInsets.symmetric(horizontal: 22, vertical: 15)),
   ),
   foregroundColor: WidgetStateProperty.resolveWith(
     (states) => states.contains(WidgetState.disabled)
@@ -158,15 +294,17 @@ ButtonStyle sanadButtonStyle({
       width: states.contains(WidgetState.focused) ? 1.6 : 1,
     ),
   ),
-  textStyle: const WidgetStatePropertyAll(
+  tapTargetSize: dense ? MaterialTapTargetSize.shrinkWrap : null,
+  textStyle: WidgetStatePropertyAll(
     TextStyle(
       fontFamily: 'Vazirmatn',
       fontWeight: FontWeight.w700,
       fontSize: 14,
+      height: dense ? 1.3 : null,
     ),
   ),
   animationDuration: const Duration(milliseconds: 220),
-  overlayColor: WidgetStatePropertyAll(foreground.withValues(alpha: .08)),
+  overlayColor: const WidgetStatePropertyAll(Colors.transparent),
   elevation: const WidgetStatePropertyAll(0),
   mouseCursor: WidgetStateProperty.resolveWith(
     (states) => states.contains(WidgetState.disabled)
@@ -196,7 +334,11 @@ ButtonStyle sanadButtonStyle({
     child: child,
   ),
   foregroundBuilder: (context, states, child) => AnimatedScale(
-    scale: states.contains(WidgetState.pressed) ? .965 : 1,
+    scale:
+        !MediaQuery.disableAnimationsOf(context) &&
+            states.contains(WidgetState.pressed)
+        ? .965
+        : 1,
     duration: MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
         : const Duration(milliseconds: 200),
@@ -205,13 +347,19 @@ ButtonStyle sanadButtonStyle({
   ),
 );
 
-ThemeData sanadTheme({Brightness brightness = Brightness.light}) {
+ThemeData sanadTheme({
+  Brightness brightness = Brightness.light,
+  bool compactWeb = false,
+}) {
   final c = brightness == Brightness.dark
       ? SanadColors.dark
       : SanadColors.light;
   final onPrimary = c.isDark ? const Color(0xFF10233C) : Colors.white;
   return ThemeData(
     useMaterial3: true,
+    splashFactory: NoSplash.splashFactory,
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
     brightness: brightness,
     extensions: [c],
     fontFamily: 'Vazirmatn',
@@ -265,7 +413,11 @@ ThemeData sanadTheme({Brightness brightness = Brightness.light}) {
       fillColor: c.surface,
       hintStyle: TextStyle(color: c.secondary),
       labelStyle: TextStyle(color: c.secondary),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
+      isDense: compactWeb,
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: compactWeb ? 14 : 18,
+        vertical: compactWeb ? 12 : 17,
+      ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
         borderSide: BorderSide(color: c.border),
@@ -284,6 +436,7 @@ ThemeData sanadTheme({Brightness brightness = Brightness.light}) {
         foreground: onPrimary,
         fill: c.primary,
         dark: c.isDark,
+        dense: compactWeb,
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -291,6 +444,7 @@ ThemeData sanadTheme({Brightness brightness = Brightness.light}) {
         foreground: c.primary,
         fill: c.tint,
         dark: c.isDark,
+        dense: compactWeb,
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -298,9 +452,13 @@ ThemeData sanadTheme({Brightness brightness = Brightness.light}) {
         foreground: onPrimary,
         fill: c.primary,
         dark: c.isDark,
+        dense: compactWeb,
       ),
     ),
     appBarTheme: AppBarTheme(
+      toolbarHeight: 72,
+      actionsPadding: const EdgeInsets.symmetric(vertical: 10),
+      systemOverlayStyle: sanadSystemBars(c),
       backgroundColor: Colors.transparent,
       foregroundColor: c.ink,
       surfaceTintColor: Colors.transparent,
@@ -320,6 +478,7 @@ ThemeData sanadTheme({Brightness brightness = Brightness.light}) {
         foreground: c.primary,
         fill: c.tint,
         dark: c.isDark,
+        dense: compactWeb,
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -327,13 +486,18 @@ ThemeData sanadTheme({Brightness brightness = Brightness.light}) {
         foreground: c.primary,
         fill: c.tint,
         dark: c.isDark,
+        dense: compactWeb,
       ),
     ),
     dividerTheme: DividerThemeData(color: c.border, thickness: 1, space: 1),
     chipTheme: ChipThemeData(
       backgroundColor: c.tint,
       selectedColor: c.primary.withValues(alpha: .18),
-      labelStyle: TextStyle(color: c.primary, fontWeight: FontWeight.w700),
+      labelStyle: TextStyle(
+        fontFamily: 'Vazirmatn',
+        color: c.primary,
+        fontWeight: FontWeight.w700,
+      ),
       side: BorderSide(
         color: c.isDark ? c.border : Colors.white.withValues(alpha: .65),
       ),
@@ -431,9 +595,9 @@ class NativeIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final iconColor = color ?? context.sanad.ink;
-    final original = FursaIcon.forSymbol(symbol);
+    final original = SnadIcon.forSymbol(symbol);
     if (original != null) {
-      return FursaIcon(
+      return SnadIcon(
         original,
         size: size,
         color: iconColor,
@@ -494,7 +658,7 @@ class _AnimatedSaveIconState extends State<AnimatedSaveIcon>
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: _pulse,
-    child: FursaIcon(
+    child: SnadIcon(
       'heart',
       filled: widget.saved,
       color: widget.saved ? context.sanad.primary : context.sanad.ink,
@@ -572,7 +736,11 @@ class _PressableState extends State<Pressable> {
       onTapUp: (_) => setState(() => down = false),
       onTap: widget.onTap,
       child: AnimatedScale(
-        scale: down ? .978 : (hovered ? 1.006 : 1),
+        scale: MediaQuery.disableAnimationsOf(context)
+            ? 1
+            : down
+            ? .978
+            : (hovered ? 1.006 : 1),
         duration: MediaQuery.disableAnimationsOf(context)
             ? Duration.zero
             : const Duration(milliseconds: 150),

@@ -1,0 +1,11 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.jobsnad.snad",
+    "sha256_cert_fingerprints": [
+      "98:9A:0B:DF:C9:D4:4F:04:D9:89:0A:26:9F:CB:07:7A:81:84:C7:31:B9:89:BF:D3:69:21:88:69:97:63:6A:D7",
+      "F7:A1:24:EE:24:B0:EB:08:EE:68:21:A9:A6:30:24:9E:AD:94:DD:DF:B2:AB:88:2E:62:B5:3F:8A:8D:4E:47:B1"
+    ]
+  }
+}]

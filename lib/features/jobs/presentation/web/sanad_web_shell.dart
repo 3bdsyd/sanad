@@ -19,6 +19,8 @@ class SanadWebShell extends StatelessWidget {
     required this.child,
     this.menuOpen = false,
     this.onToggleMenu,
+    this.noticesUnread = 0,
+    this.overlayHeader = false,
   });
 
   final int section;
@@ -28,100 +30,127 @@ class SanadWebShell extends StatelessWidget {
   final Widget child;
   final bool menuOpen;
   final VoidCallback? onToggleMenu;
+  final int noticesUnread;
+  final bool overlayHeader;
 
   @override
   Widget build(BuildContext context) {
     final breakpoint = WebLayout.of(context);
     final compact = breakpoint == WebBreakpoint.compact;
+    final header = sanadHeaderChrome(
+      context: context,
+      from: 0,
+      to: .55,
+      edge: true,
+      opaque: true,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            WebLayout.pagePadding(breakpoint).left,
+            compact ? 10 : 12,
+            WebLayout.pagePadding(breakpoint).right,
+            12,
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  const SanadLogo(size: 36, highContrast: true, circle: true),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    flex: compact ? 1 : 0,
+                    fit: compact ? FlexFit.tight : FlexFit.loose,
+                    child: Text(
+                      'سند',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: compact ? 22 : 24,
+                        fontWeight: FontWeight.w700,
+                        color: context.sanad.ink,
+                      ),
+                    ),
+                  ),
+                  if (!compact) ...[
+                    const SizedBox(width: 28),
+                    Expanded(
+                      child: _NavLinks(
+                        section: section,
+                        onSection: onSection,
+                        onNotices: onNotices,
+                        onAbout: onAbout,
+                        noticesUnread: noticesUnread,
+                      ),
+                    ),
+                  ] else ...[
+                    const SizedBox(width: sanadActionGap),
+                    const SanadThemePicker(compact: true),
+                    const SizedBox(width: sanadActionGap),
+                    IconButton.filledTonal(
+                      tooltip: menuOpen ? 'إغلاق القائمة' : 'القائمة',
+                      style: IconButton.styleFrom(
+                        backgroundColor: context.sanad.tint,
+                      ),
+                      onPressed: onToggleMenu,
+                      icon: AppIcon(
+                        menuOpen
+                            ? CupertinoIcons.xmark
+                            : CupertinoIcons.line_horizontal_3,
+                        color: context.sanad.primary,
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              MotionSize(
+                duration: motionDuration(context, 240),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                child: compact && menuOpen
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: _CompactMenu(
+                          section: section,
+                          onSection: onSection,
+                          onNotices: onNotices,
+                          onAbout: onAbout,
+                          noticesUnread: noticesUnread,
+                        ),
+                      )
+                    : const SizedBox(width: double.infinity),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: ReferenceBackdrop(
-        child: Column(
-          children: [
-            sanadHeaderChrome(
-              context: context,
-              from: 0,
-              to: .55,
-              edge: true,
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    WebLayout.pagePadding(breakpoint).left,
-                    10,
-                    WebLayout.pagePadding(breakpoint).right,
-                    12,
-                  ),
-                  child: Column(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Chrome briefly reports a 1×1 viewport while attaching Flutter's
+          // first frame. Wait for usable constraints before laying out the chrome.
+          if (constraints.maxWidth <= 1 || constraints.maxHeight <= 1) {
+            return const SizedBox.shrink();
+          }
+          return ReferenceBackdrop(
+            child: overlayHeader
+                ? Stack(
                     children: [
-                      Row(
-                        children: [
-                          const SanadLogo(size: 36, bare: true, hero: true),
-                          const SizedBox(width: 10),
-                          Text(
-                            'سند',
-                            style: TextStyle(
-                              fontSize: compact ? 22 : 24,
-                              fontWeight: FontWeight.w700,
-                              color: context.sanad.ink,
-                            ),
-                          ),
-                          if (!compact) ...[
-                            const SizedBox(width: 28),
-                            Expanded(
-                              child: _NavLinks(
-                                section: section,
-                                onSection: onSection,
-                                onNotices: onNotices,
-                                onAbout: onAbout,
-                              ),
-                            ),
-                          ] else ...[
-                            const Spacer(),
-                            const SanadThemePicker(compact: true),
-                            const SizedBox(width: 6),
-                            IconButton.filledTonal(
-                              tooltip: menuOpen ? 'إغلاق القائمة' : 'القائمة',
-                              style: IconButton.styleFrom(
-                                backgroundColor: context.sanad.tint,
-                              ),
-                              onPressed: onToggleMenu,
-                              icon: AppIcon(
-                                menuOpen
-                                    ? CupertinoIcons.xmark
-                                    : CupertinoIcons.line_horizontal_3,
-                                color: context.sanad.primary,
-                                size: 20,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      MotionSize(
-                        duration: motionDuration(context, 240),
-                        curve: Curves.easeOutCubic,
-                        alignment: Alignment.topCenter,
-                        child: compact && menuOpen
-                            ? Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: _CompactMenu(
-                                  section: section,
-                                  onSection: onSection,
-                                  onNotices: onNotices,
-                                  onAbout: onAbout,
-                                ),
-                              )
-                            : const SizedBox(width: double.infinity),
-                      ),
+                      Positioned.fill(child: child),
+                      Positioned(top: 0, left: 0, right: 0, child: header),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      header,
+                      Expanded(child: child),
                     ],
                   ),
-                ),
-              ),
-            ),
-            Expanded(child: child),
-            _WebFooter(breakpoint: breakpoint),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -133,41 +162,47 @@ class _NavLinks extends StatelessWidget {
     required this.onSection,
     required this.onNotices,
     required this.onAbout,
+    this.noticesUnread = 0,
   });
 
   final int section;
   final ValueChanged<int> onSection;
   final VoidCallback onNotices;
   final VoidCallback onAbout;
+  final int noticesUnread;
 
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      _NavItem(
-        label: 'الفرص',
-        selected: section == 0,
-        onTap: () => onSection(0),
+  Widget build(BuildContext context) => SanadActionHeader(
+    title: SanadActions(
+      children: [
+        _NavItem(
+          label: 'الفرص',
+          selected: section == 0,
+          onTap: () => onSection(0),
+        ),
+        _NavItem(
+          label: 'المحفوظة',
+          selected: section == 1,
+          onTap: () => onSection(1),
+        ),
+        _NavItem(
+          label: 'إعلاناتك',
+          selected: section == 2,
+          onTap: () => onSection(2),
+        ),
+      ],
+    ),
+    actions: [
+      Badge(
+        isLabelVisible: noticesUnread > 0,
+        label: Text('$noticesUnread'),
+        child: TextButton(onPressed: onNotices, child: const Text('المتابعة')),
       ),
-      _NavItem(
-        label: 'المحفوظة',
-        selected: section == 1,
-        onTap: () => onSection(1),
-      ),
-      _NavItem(
-        label: 'أضف فرصة',
-        selected: section == 2,
-        onTap: () => onSection(2),
-      ),
-      const Spacer(),
-      TextButton(onPressed: onNotices, child: const Text('على بالك')),
-      const SizedBox(width: 4),
-      TextButton(onPressed: onAbout, child: const Text('عن سند')),
-      const SizedBox(width: 4),
+      TextButton(onPressed: onAbout, child: const Text('حسابي')),
       const SanadThemePicker(compact: true),
-      const SizedBox(width: 8),
-      FilledButton(
+      SanadPrimaryButton(
         onPressed: () => onSection(2),
-        child: const Text('انشر فرصة'),
+        child: const Text('إعلاناتك'),
       ),
     ],
   );
@@ -212,12 +247,14 @@ class _CompactMenu extends StatelessWidget {
     required this.onSection,
     required this.onNotices,
     required this.onAbout,
+    this.noticesUnread = 0,
   });
 
   final int section;
   final ValueChanged<int> onSection;
   final VoidCallback onNotices;
   final VoidCallback onAbout;
+  final int noticesUnread;
 
   @override
   Widget build(BuildContext context) => Material(
@@ -256,12 +293,16 @@ class _CompactMenu extends StatelessWidget {
           ),
         Divider(height: 1, color: context.sanad.border),
         ListTile(
-          leading: AppIcon(
-            CupertinoIcons.bell,
-            color: context.sanad.secondary,
-            size: 20,
+          leading: Badge(
+            isLabelVisible: noticesUnread > 0,
+            label: Text('$noticesUnread'),
+            child: AppIcon(
+              CupertinoIcons.bell,
+              color: context.sanad.secondary,
+              size: 20,
+            ),
           ),
-          title: const Text('على بالك'),
+          title: const Text('المتابعة'),
           onTap: onNotices,
         ),
         ListTile(
@@ -278,9 +319,9 @@ class _CompactMenu extends StatelessWidget {
   );
 }
 
-class _WebFooter extends StatelessWidget {
-  const _WebFooter({required this.breakpoint});
-  final WebBreakpoint breakpoint;
+/// Placed at the end of each feed's scrollable content, never over the viewport.
+class SanadWebFooter extends StatelessWidget {
+  const SanadWebFooter({super.key});
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
@@ -290,12 +331,13 @@ class _WebFooter extends StatelessWidget {
     ),
     child: Padding(
       padding: EdgeInsets.fromLTRB(
-        WebLayout.pagePadding(breakpoint).left,
+        WebLayout.pagePadding(WebLayout.of(context)).left,
         16,
-        WebLayout.pagePadding(breakpoint).right,
-        18,
+        WebLayout.pagePadding(WebLayout.of(context)).right,
+        18 + MediaQuery.paddingOf(context).bottom,
       ),
       child: Center(
+        heightFactor: 1,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: WebLayout.contentMax),
           child: Wrap(
@@ -305,11 +347,10 @@ class _WebFooter extends StatelessWidget {
             runSpacing: 10,
             children: [
               Text(
-                'سند · فرص بسوريا، تواصل مباشر بلا حساب',
+                'سند · فرص عمل دولية، وتواصل مباشر دون حساب',
                 style: TextStyle(color: context.sanad.secondary, fontSize: 12),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
+              SanadActions(
                 children: [
                   if (AppLinks.hasPrivacy)
                     TextButton(

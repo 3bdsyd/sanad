@@ -16,10 +16,10 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		A01234567890123456789001 /* SnadNativePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234567890123456789002 /* SnadNativePlugin.swift */; };
 		A8F4F501D3AA36D3070DCBE8 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 02939B127C2E598691E8FCA2 /* GoogleService-Info.plist */; };
-		F01234567890123456789001 /* FursaNativePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01234567890123456789002 /* FursaNativePlugin.swift */; };
 		F01234567890123456789003 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F01234567890123456789004 /* PrivacyInfo.xcprivacy */; };
-		FA8AD0000000000000000001 /* FursaIconCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA8AD0000000000000000002 /* FursaIconCatalog.swift */; };
+		FA8AD0000000000000000001 /* SnadIconCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA8AD0000000000000000002 /* SnadIconCatalog.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,10 +64,10 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		F01234567890123456789002 /* FursaNativePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FursaNativePlugin.swift; sourceTree = "<group>"; };
+		A01234567890123456789002 /* SnadNativePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnadNativePlugin.swift; sourceTree = "<group>"; };
 		F01234567890123456789004 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F01234567890123456789005 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
-		FA8AD0000000000000000002 /* FursaIconCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FursaIconCatalog.swift; sourceTree = "<group>"; };
+		FA8AD0000000000000000002 /* SnadIconCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnadIconCatalog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,8 +132,8 @@
 				1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */,
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
-				F01234567890123456789002 /* FursaNativePlugin.swift */,
-				FA8AD0000000000000000002 /* FursaIconCatalog.swift */,
+				A01234567890123456789002 /* SnadNativePlugin.swift */,
+				FA8AD0000000000000000002 /* SnadIconCatalog.swift */,
 				F01234567890123456789004 /* PrivacyInfo.xcprivacy */,
 				F01234567890123456789005 /* Runner.entitlements */,
 				7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */,
@@ -202,6 +202,14 @@
 					97C146ED1CF9000F007C117D = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 1100;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -216,7 +224,7 @@
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			packageReferences = (
-				781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "FlutterGeneratedPluginSwiftPackage" */,
+				781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage" */,
 			);
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
 			projectDirPath = "";
@@ -299,8 +307,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
-				F01234567890123456789001 /* FursaNativePlugin.swift in Sources */,
-				FA8AD0000000000000000001 /* FursaIconCatalog.swift in Sources */,
+				A01234567890123456789001 /* SnadNativePlugin.swift in Sources */,
+				FA8AD0000000000000000001 /* SnadIconCatalog.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */,
 			);
@@ -396,13 +404,15 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = UY8ST73K5R;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.fursa.fursa;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jobsnad.snad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -417,8 +427,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.fursa.fursa.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jobsnad.snad.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -434,8 +445,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.fursa.fursa.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jobsnad.snad.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
@@ -449,8 +461,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.fursa.fursa.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jobsnad.snad.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
@@ -576,13 +589,15 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = UY8ST73K5R;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.fursa.fursa;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jobsnad.snad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -599,13 +614,15 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = UY8ST73K5R;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.fursa.fursa;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jobsnad.snad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -649,7 +666,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "FlutterGeneratedPluginSwiftPackage" */ = {
+		781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage;
 		};

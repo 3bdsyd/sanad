@@ -17,12 +17,13 @@ class SanadThemePicker extends StatelessWidget {
       listenable: controller,
       builder: (context, _) {
         if (compact) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
           return IconButton.filledTonal(
-            tooltip: 'المظهر: ${controller.label}',
+            tooltip: isDark ? 'تفعيل المظهر الفاتح' : 'تفعيل المظهر الداكن',
             style: IconButton.styleFrom(backgroundColor: context.sanad.tint),
-            onPressed: controller.cycle,
+            onPressed: () => controller.toggle(Theme.of(context).brightness),
             icon: AppIcon(
-              controller.icon,
+              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
               color: context.sanad.primary,
               size: 20,
             ),
@@ -41,13 +42,11 @@ class SanadThemePicker extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'اختَر فاتح أو داكن، أو خلّي سند يتبع مظهر جهازك.',
+              'اختر المظهر الفاتح أو الداكن، أو اجعل سند يتبع إعداد جهازك.',
               style: TextStyle(color: context.sanad.secondary, height: 1.6),
             ),
             const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            SanadActions(
               children: [
                 for (final option in const [
                   (ThemeMode.system, 'تلقائي', Icons.brightness_auto_rounded),

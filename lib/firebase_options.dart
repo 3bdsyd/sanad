@@ -51,18 +51,17 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAbv8wbwYkIG8KMscguRjQogUgOsQK9C6M',
-    appId: '1:377548025897:android:a05cdfd42131016f6bac38',
+    appId: '1:377548025897:android:90cc0a4f24dd28c56bac38',
     messagingSenderId: '377548025897',
     projectId: 'snd-project-8794b',
     storageBucket: 'snd-project-8794b.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAklGtpiIGhUdvevFGNDR9VGGqn7-jSjtM',
-    appId: '1:377548025897:ios:070cb8c44eb4f8526bac38',
+    appId: '1:377548025897:ios:cd3a2efd884c58a36bac38',
     messagingSenderId: '377548025897',
     projectId: 'snd-project-8794b',
     storageBucket: 'snd-project-8794b.firebasestorage.app',
-    iosBundleId: 'app.fursa.fursa',
+    iosBundleId: 'com.jobsnad.snad',
   );
 }

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 
 
 def main():
-    database = os.environ.get("DATABASE_PATH", "./data/fursa.sqlite3")
+    database = os.environ.get("DATABASE_PATH", "./data/snad.sqlite3")
     cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat(timespec="seconds").replace("+00:00", "Z")
     with sqlite3.connect(database) as db:
         db.execute("PRAGMA foreign_keys=ON")

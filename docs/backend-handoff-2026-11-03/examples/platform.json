@@ -1,0 +1,285 @@
+{
+  "session": {
+    "access_token": "TEST_ONLY_ACCESS_REPLACE_IN_STAGING",
+    "token_type": "Bearer",
+    "access_expires_at": "2035-01-01T12:15:00Z",
+    "refresh_token": "TEST_ONLY_REFRESH_REPLACE_IN_STAGING",
+    "refresh_expires_at": "2035-01-31T12:00:00Z",
+    "user": {
+      "id": "member-test-1",
+      "name": "مستخدم الاختبار",
+      "email": "candidate@example.test",
+      "headline": "مطور تطبيقات",
+      "phone": "+963944000000",
+      "country": "SY",
+      "providers": [
+        "email"
+      ],
+      "summary": "أعمل على تطوير تطبيقات ميسّرة وسريعة مع اهتمام بتجربة الاستخدام.",
+      "skills": [
+        "Flutter",
+        "Dart"
+      ],
+      "languages": [
+        "العربية",
+        "الإنجليزية"
+      ],
+      "experience_years": 3
+    }
+  },
+  "member": {
+    "id": "member-test-1",
+    "name": "مستخدم الاختبار",
+    "email": "candidate@example.test",
+    "headline": "مطور تطبيقات",
+    "phone": "+963944000000",
+    "country": "SY",
+    "providers": [
+      "email"
+    ],
+    "summary": "أعمل على تطوير تطبيقات ميسّرة وسريعة مع اهتمام بتجربة الاستخدام.",
+    "skills": [
+      "Flutter",
+      "Dart"
+    ],
+    "languages": [
+      "العربية",
+      "الإنجليزية"
+    ],
+    "experience_years": 3
+  },
+  "job": {
+    "id": 970001,
+    "title": "محاسب مالي — مثال اختبار",
+    "company_name": "جهة اختبار محلية",
+    "country": "الإمارات",
+    "state": "دبي",
+    "job_field": {
+      "id": 1,
+      "name_ar": "تقنية",
+      "name_en": "Technology",
+      "slug": "technology",
+      "icon": "",
+      "is_active": true
+    },
+    "job_type": "دوام كامل",
+    "work_type": "في المقر",
+    "experience": "متوسطة",
+    "description": "وصف تجريبي واضح لمسؤوليات الوظيفة وشروط العمل، ليس إعلان إنتاج.",
+    "requirements": "معرفة ببرامج المحاسبة\nالتعاون مع الفريق",
+    "url": "https://employer.example.test/jobs",
+    "contact": {
+      "phone": "+390212345678",
+      "email": "employer@example.test"
+    },
+    "salary": {
+      "currency": "AED",
+      "period": "شهرياً",
+      "min": 3000,
+      "max": 5000
+    },
+    "listing_duration_days": 30,
+    "created_at": "2035-01-01T10:00:00Z",
+    "expires_at": "2035-01-31T10:00:00Z",
+    "status": "published",
+    "is_active": true,
+    "views_count": 0,
+    "accepts_applications": true
+  },
+  "own_job": {
+    "id": 970001,
+    "title": "محاسب مالي — مثال اختبار",
+    "company_name": "جهة اختبار محلية",
+    "country": "الإمارات",
+    "state": "دبي",
+    "job_field": {
+      "id": 1,
+      "name_ar": "تقنية",
+      "name_en": "Technology",
+      "slug": "technology",
+      "icon": "",
+      "is_active": true
+    },
+    "job_type": "دوام كامل",
+    "work_type": "في المقر",
+    "experience": "متوسطة",
+    "description": "وصف تجريبي واضح لمسؤوليات الوظيفة وشروط العمل، ليس إعلان إنتاج.",
+    "requirements": "معرفة ببرامج المحاسبة\nالتعاون مع الفريق",
+    "url": "https://employer.example.test/jobs",
+    "contact": {
+      "phone": "+390212345678",
+      "email": "employer@example.test"
+    },
+    "salary": {
+      "currency": "AED",
+      "period": "شهرياً",
+      "min": 3000,
+      "max": 5000
+    },
+    "listing_duration_days": 30,
+    "created_at": "2035-01-01T10:00:00Z",
+    "expires_at": "2035-01-31T10:00:00Z",
+    "status": "pending",
+    "is_active": true,
+    "views_count": 0,
+    "accepts_applications": true,
+    "applications_count": 0,
+    "rejection_reason": null
+  },
+  "application": {
+    "id": "application-test-1",
+    "job": {
+      "id": 970001,
+      "title": "محاسب مالي — مثال اختبار",
+      "company_name": "جهة اختبار محلية",
+      "country": "الإمارات",
+      "state": "دبي",
+      "job_field": {
+        "id": 1,
+        "name_ar": "تقنية",
+        "name_en": "Technology",
+        "slug": "technology",
+        "icon": "",
+        "is_active": true
+      },
+      "job_type": "دوام كامل",
+      "work_type": "في المقر",
+      "experience": "متوسطة",
+      "description": "وصف تجريبي واضح لمسؤوليات الوظيفة وشروط العمل، ليس إعلان إنتاج.",
+      "requirements": "معرفة ببرامج المحاسبة\nالتعاون مع الفريق",
+      "url": "https://employer.example.test/jobs",
+      "contact": {
+        "phone": "+390212345678",
+        "email": "employer@example.test"
+      },
+      "salary": {
+        "currency": "AED",
+        "period": "شهرياً",
+        "min": 3000,
+        "max": 5000
+      },
+      "listing_duration_days": 30,
+      "created_at": "2035-01-01T10:00:00Z",
+      "expires_at": "2035-01-31T10:00:00Z",
+      "status": "published",
+      "is_active": true,
+      "views_count": 0,
+      "accepts_applications": true
+    },
+    "applicant": {
+      "id": "member-test-1",
+      "name": "مستخدم الاختبار",
+      "email": "candidate@example.test",
+      "headline": "مطور تطبيقات",
+      "phone": "+963944000000",
+      "country": "SY",
+      "providers": [
+        "email"
+      ],
+      "summary": "أعمل على تطوير تطبيقات ميسّرة وسريعة مع اهتمام بتجربة الاستخدام.",
+      "skills": [
+        "Flutter",
+        "Dart"
+      ],
+      "languages": [
+        "العربية",
+        "الإنجليزية"
+      ],
+      "experience_years": 3
+    },
+    "status": "submitted",
+    "note": "أرغب في التقدم لهذه الفرصة.",
+    "conversation_id": null,
+    "viewer_role": "candidate",
+    "version": 1,
+    "created_at": "2035-01-01T11:00:00Z",
+    "updated_at": "2035-01-01T11:00:00Z",
+    "history": [
+      {
+        "status": "submitted",
+        "at": "2035-01-01T11:00:00Z"
+      }
+    ]
+  },
+  "conversation": {
+    "id": "conversation-test-1",
+    "job_id": 970001,
+    "application_id": "application-test-1",
+    "job_title": "محاسب مالي — مثال اختبار",
+    "peer": {
+      "id": "employer-test-1",
+      "name": "صاحب فرصة الاختبار",
+      "email": "employer@example.test",
+      "headline": "مطور تطبيقات",
+      "phone": "+963944000000",
+      "country": "SY",
+      "providers": [
+        "email"
+      ],
+      "summary": "أعمل على تطوير تطبيقات ميسّرة وسريعة مع اهتمام بتجربة الاستخدام.",
+      "skills": [
+        "Flutter",
+        "Dart"
+      ],
+      "languages": [
+        "العربية",
+        "الإنجليزية"
+      ],
+      "experience_years": 3
+    },
+    "last_message": {
+      "id": "message-test-1",
+      "client_id": "client-test-1",
+      "sender_id": "member-test-1",
+      "text": "مرحباً، يسعدني مناقشة تفاصيل الفرصة.",
+      "created_at": "2035-01-01T12:00:00Z",
+      "delivery_state": "sent"
+    },
+    "unread_count": 0,
+    "can_send": true,
+    "blocked_by_me": false,
+    "updated_at": "2035-01-01T12:00:00Z"
+  },
+  "message": {
+    "id": "message-test-1",
+    "client_id": "client-test-1",
+    "sender_id": "member-test-1",
+    "text": "مرحباً، يسعدني مناقشة تفاصيل الفرصة.",
+    "created_at": "2035-01-01T12:00:00Z",
+    "delivery_state": "sent"
+  },
+  "complaint": {
+    "id": "complaint-test-1",
+    "text": "وصف مشكلة اختبارية لمتابعة الدعم.",
+    "image_url": null,
+    "conversation_id": null,
+    "status": "open",
+    "response": "",
+    "created_at": "2035-01-01T12:00:00Z",
+    "updated_at": "2035-01-01T12:00:00Z"
+  },
+  "search": {
+    "id": "search-test-1",
+    "name": "تقنية في ألمانيا",
+    "query": "Flutter",
+    "filters": {
+      "country": "DE",
+      "city": "برلين",
+      "sort": "newest"
+    }
+  },
+  "notice": {
+    "id": "notice-test-1",
+    "title": "تم تحديث طلبك",
+    "body": "طلبك قيد الدراسة لدى جهة العمل.",
+    "is_read": false,
+    "read_at": null,
+    "created_at": "2035-01-01T12:00:00Z",
+    "payload": {
+      "event_id": "event-test-1",
+      "destination": "application",
+      "entity_id": "application-test-1",
+      "recipient_id": "member-test-1"
+    }
+  }
+}

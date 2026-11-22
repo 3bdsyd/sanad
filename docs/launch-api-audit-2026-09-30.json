@@ -1,0 +1,677 @@
+{
+  "checked_at_utc": "2026-09-30T17:03:12.355272+00:00",
+  "base": "https://admin.jobsnad.com",
+  "scope": "GET/OPTIONS only; no POST/DELETE or publishing. Detail GET requests may increment server-side view counts.",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "headers": {},
+      "status": 404,
+      "elapsed_ms": 2902,
+      "bytes": 9815,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "exception": "str",
+        "file": "str",
+        "line": "int"
+      },
+      "error_fields": [],
+      "debug_exception_exposed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/jobs?page=1&per_page=50",
+      "headers": {},
+      "status": 200,
+      "elapsed_ms": 1665,
+      "bytes": 3223,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool",
+        "data": {
+          "type": "list",
+          "length": 2,
+          "first_item_keys": [
+            "id",
+            "device_id",
+            "title",
+            "company_name",
+            "views_count",
+            "url",
+            "country",
+            "state",
+            "job_field",
+            "job_type",
+            "work_type",
+            "experience",
+            "description",
+            "requirements",
+            "contact",
+            "salary",
+            "listing_duration_days",
+            "expires_at",
+            "is_active",
+            "created_at"
+          ]
+        },
+        "meta": {
+          "current_page": "int",
+          "last_page": "int",
+          "total": "int"
+        }
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false,
+      "meta": {
+        "current_page": 1,
+        "last_page": 1,
+        "total": 2
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/job-fields",
+      "headers": {},
+      "status": 200,
+      "elapsed_ms": 1895,
+      "bytes": 15123,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool",
+        "data": {
+          "type": "list",
+          "length": 45,
+          "first_item_keys": [
+            "id",
+            "name",
+            "name_ar",
+            "name_en",
+            "slug",
+            "icon",
+            "is_active",
+            "created_at"
+          ]
+        }
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/app/maintenance",
+      "headers": {},
+      "status": 200,
+      "elapsed_ms": 1138,
+      "bytes": 66,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool",
+        "maintenance": "bool",
+        "ends_at": "NoneType"
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/my-jobs",
+      "headers": {},
+      "status": 200,
+      "elapsed_ms": 2151,
+      "bytes": 26,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool",
+        "data": {
+          "type": "list",
+          "length": 0,
+          "first_item_keys": []
+        }
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/my-jobs",
+      "headers": {},
+      "status": 400,
+      "elapsed_ms": 1332,
+      "bytes": 174,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool"
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "headers": {},
+      "status": 200,
+      "elapsed_ms": 1645,
+      "bytes": 26,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool",
+        "data": {
+          "type": "list",
+          "length": 0,
+          "first_item_keys": []
+        }
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "headers": {},
+      "status": 200,
+      "elapsed_ms": 997,
+      "bytes": 26,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool",
+        "data": {
+          "type": "list",
+          "length": 0,
+          "first_item_keys": []
+        }
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "headers": {},
+      "status": 200,
+      "elapsed_ms": 1022,
+      "bytes": 615,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool",
+        "unread_count": "int",
+        "data": {
+          "current_page": "int",
+          "data": {
+            "type": "list",
+            "length": 0,
+            "first_item_keys": []
+          },
+          "first_page_url": "str",
+          "from": "NoneType",
+          "last_page": "int",
+          "last_page_url": "str",
+          "links": {
+            "type": "list",
+            "length": 3,
+            "first_item_keys": [
+              "url",
+              "label",
+              "page",
+              "active"
+            ]
+          },
+          "next_page_url": "NoneType",
+          "path": "str",
+          "per_page": "int",
+          "prev_page_url": "NoneType",
+          "to": "NoneType",
+          "total": "int"
+        }
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "headers": {},
+      "status": 400,
+      "elapsed_ms": 1137,
+      "bytes": 73,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool"
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/jobs/2",
+      "headers": {},
+      "status": 200,
+      "elapsed_ms": 1375,
+      "bytes": 1526,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool",
+        "data": {
+          "id": "int",
+          "device_id": "str",
+          "title": "str",
+          "company_name": "str",
+          "views_count": "int",
+          "url": "NoneType",
+          "country": "str",
+          "state": "str",
+          "job_field": {
+            "id": "int",
+            "name": "str",
+            "name_ar": "str",
+            "name_en": "str",
+            "slug": "str",
+            "icon": "str",
+            "is_active": "bool",
+            "created_at": "str"
+          },
+          "job_type": "str",
+          "work_type": "str",
+          "experience": "str",
+          "description": "str",
+          "requirements": "NoneType",
+          "contact": {
+            "phone": "str",
+            "email": "NoneType"
+          },
+          "salary": {
+            "currency": "str",
+            "period": "str",
+            "min": "int",
+            "max": "int"
+          },
+          "listing_duration_days": "int",
+          "expires_at": "str",
+          "is_active": "bool",
+          "created_at": "str"
+        }
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/jobs/00000000-0000-0000-0000-000000000000",
+      "headers": {},
+      "status": 404,
+      "elapsed_ms": 1242,
+      "bytes": 11106,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "exception": "str",
+        "file": "str",
+        "line": "int"
+      },
+      "error_fields": [],
+      "debug_exception_exposed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/jobs?page=1&per_page=1",
+      "headers": {
+        "Origin": "https://jobsnad.com"
+      },
+      "status": 200,
+      "elapsed_ms": 1509,
+      "bytes": 1578,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool",
+        "data": {
+          "type": "list",
+          "length": 1,
+          "first_item_keys": [
+            "id",
+            "device_id",
+            "title",
+            "company_name",
+            "views_count",
+            "url",
+            "country",
+            "state",
+            "job_field",
+            "job_type",
+            "work_type",
+            "experience",
+            "description",
+            "requirements",
+            "contact",
+            "salary",
+            "listing_duration_days",
+            "expires_at",
+            "is_active",
+            "created_at"
+          ]
+        },
+        "meta": {
+          "current_page": "int",
+          "last_page": "int",
+          "total": "int"
+        }
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false,
+      "meta": {
+        "current_page": 1,
+        "last_page": 2,
+        "total": 2
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/favorites",
+      "headers": {
+        "Origin": "https://jobsnad.com",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type,x-device-id"
+      },
+      "status": 204,
+      "elapsed_ms": 920,
+      "bytes": 0,
+      "response_headers": {
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "POST",
+        "access-control-allow-headers": "content-type,x-device-id",
+        "vary": "Access-Control-Request-Method, Access-Control-Request-Headers",
+        "server": "hcdn"
+      },
+      "json": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/jobs?page=1&per_page=1",
+      "headers": {
+        "Origin": "https://www.jobsnad.com"
+      },
+      "status": 200,
+      "elapsed_ms": 1180,
+      "bytes": 1578,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool",
+        "data": {
+          "type": "list",
+          "length": 1,
+          "first_item_keys": [
+            "id",
+            "device_id",
+            "title",
+            "company_name",
+            "views_count",
+            "url",
+            "country",
+            "state",
+            "job_field",
+            "job_type",
+            "work_type",
+            "experience",
+            "description",
+            "requirements",
+            "contact",
+            "salary",
+            "listing_duration_days",
+            "expires_at",
+            "is_active",
+            "created_at"
+          ]
+        },
+        "meta": {
+          "current_page": "int",
+          "last_page": "int",
+          "total": "int"
+        }
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false,
+      "meta": {
+        "current_page": 1,
+        "last_page": 2,
+        "total": 2
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/favorites",
+      "headers": {
+        "Origin": "https://www.jobsnad.com",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type,x-device-id"
+      },
+      "status": 204,
+      "elapsed_ms": 1197,
+      "bytes": 0,
+      "response_headers": {
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "POST",
+        "access-control-allow-headers": "content-type,x-device-id",
+        "vary": "Access-Control-Request-Method, Access-Control-Request-Headers",
+        "server": "hcdn"
+      },
+      "json": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/jobs?page=1&per_page=1",
+      "headers": {
+        "Origin": "https://untrusted-launch-audit.invalid"
+      },
+      "status": 200,
+      "elapsed_ms": 1263,
+      "bytes": 1578,
+      "response_headers": {
+        "content-type": "application/json",
+        "vary": "Accept-Encoding",
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "server": "hcdn"
+      },
+      "json_shape": {
+        "success": "bool",
+        "data": {
+          "type": "list",
+          "length": 1,
+          "first_item_keys": [
+            "id",
+            "device_id",
+            "title",
+            "company_name",
+            "views_count",
+            "url",
+            "country",
+            "state",
+            "job_field",
+            "job_type",
+            "work_type",
+            "experience",
+            "description",
+            "requirements",
+            "contact",
+            "salary",
+            "listing_duration_days",
+            "expires_at",
+            "is_active",
+            "created_at"
+          ]
+        },
+        "meta": {
+          "current_page": "int",
+          "last_page": "int",
+          "total": "int"
+        }
+      },
+      "error_fields": [],
+      "debug_exception_exposed": false,
+      "meta": {
+        "current_page": 1,
+        "last_page": 2,
+        "total": 2
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/favorites",
+      "headers": {
+        "Origin": "https://untrusted-launch-audit.invalid",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type,x-device-id"
+      },
+      "status": 204,
+      "elapsed_ms": 1207,
+      "bytes": 0,
+      "response_headers": {
+        "cache-control": "no-cache, private",
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "POST",
+        "access-control-allow-headers": "content-type,x-device-id",
+        "vary": "Access-Control-Request-Method, Access-Control-Request-Headers",
+        "server": "hcdn"
+      },
+      "json": false
+    }
+  ],
+  "public_identity_metadata": {
+    "rows_checked": 2,
+    "rows_with_nonempty_device_id": 2,
+    "owner_ids_logged": false,
+    "ownership_impersonation_attempted": false
+  },
+  "website_requests": [
+    {
+      "method": "GET",
+      "url": "https://jobsnad.com/",
+      "status": 200,
+      "elapsed_ms": 1146,
+      "bytes": 3217,
+      "content_type": "text/html",
+      "location": null,
+      "hsts": null,
+      "json": false,
+      "support_privacy_links": [],
+      "flutter_bootstrap_present": true,
+      "title_present": true
+    },
+    {
+      "method": "GET",
+      "url": "https://jobsnad.com/.well-known/apple-app-site-association",
+      "status": 200,
+      "elapsed_ms": 965,
+      "bytes": 153,
+      "content_type": "application/json",
+      "location": null,
+      "hsts": null,
+      "json": true,
+      "app_ids": [
+        "TEAMID.com.jobsnad.snad"
+      ],
+      "placeholder_found": true
+    },
+    {
+      "method": "GET",
+      "url": "https://jobsnad.com/.well-known/assetlinks.json",
+      "status": 200,
+      "elapsed_ms": 1088,
+      "bytes": 236,
+      "content_type": "application/json",
+      "location": null,
+      "hsts": null,
+      "json": true,
+      "packages": [
+        "com.jobsnad.snad"
+      ],
+      "fingerprint_counts": [
+        1
+      ],
+      "placeholder_found": true
+    }
+  ]
+}

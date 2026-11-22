@@ -17,40 +17,146 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#20508A">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- Theme-color for browsers that use it; Safari also samples the DOM edge. -->
+  <meta name="theme-color" content="#DFEBF8">
+  <meta name="color-scheme" content="light">
+  <script>
+    (function () {
+      let mode = 'system';
+      try {
+        const saved = localStorage.getItem('flutter.snad.theme.mode');
+        mode = saved ? JSON.parse(saved) : mode;
+      } catch (_) {}
+      const dark = mode === 'dark' || (mode !== 'light' &&
+        matchMedia('(prefers-color-scheme: dark)').matches);
+      const scheme = dark ? 'dark' : 'light';
+      const color = dark ? '#162537' : '#DFEBF8';
+      document.documentElement.dataset.sanadTheme = scheme;
+      document.documentElement.style.colorScheme = scheme;
+      document.querySelector('meta[name="theme-color"]').content = color;
+      document.querySelector('meta[name="color-scheme"]').content = scheme;
+    })();
+  </script>
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="فرص عمل في سوريا. تصفح بلا حساب وتواصل مباشرة مع المعلن.">
+  <meta name="description" content="سند لفرص العمل الدولية. ابحث حسب البلد والتخصص وتواصل مباشرة مع الجهات المعلنة دون إنشاء حساب.">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="سند">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <!-- Tab icon. New filename so Safari drops the cached Hostinger mark. -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/sanad-tab.png?v=12">
+  <link rel="icon" href="/favicon.ico?v=12" sizes="any">
+  <link rel="apple-touch-icon" href="/icons/Icon-192.png?v=12">
 
-  <title>سند | سندك للخطوة الجاية</title>
+  <title>سند | فرص العمل والتواصل المهني</title>
   <link rel="manifest" href="manifest.json">
   <style>
-    html, body { margin: 0; background: #F2F7FC; }
-    @media (prefers-color-scheme: dark) {
-      html, body { background: #0D1523; }
-      #sanad-launch { background: #0D1523; }
+    :root { --sanad-header-color: #DFEBF8; }
+    html, body {
+      margin: 0;
+      width: 100%; height: 100%; overflow: hidden;
+      overscroll-behavior: none;
+      background: #DFEBF8;
+      color-scheme: inherit;
+    }
+    #sanad-viewport {
+      position: absolute; top: env(safe-area-inset-top, 0px);
+      left: env(safe-area-inset-left, 0px);
+      right: env(safe-area-inset-right, 0px);
+      height: calc(100vh - env(safe-area-inset-top, 0px));
+      height: calc(100lvh - env(safe-area-inset-top, 0px));
+      overflow: hidden;
+    }
+    #sanad-app { width: 100%; height: 100%; overflow: hidden; }
+    #sanad-header-edge { display: none; }
+    @media (min-width: 720px) {
+      /* Expose the header's empty top padding outside Flutter's canvas so
+         Safari can sample a fixed, opaque edge for its desktop tab bar.
+         Keep this top-only: the bottom toolbar must show scrolling content. */
+      #sanad-header-edge {
+        display: block; position: fixed; top: 0; left: 0; right: 0;
+        height: calc(12px + env(safe-area-inset-top, 0px));
+        background: var(--sanad-header-color);
+        pointer-events: none; z-index: 2;
+      }
     }
     #sanad-launch {
-      position: fixed; inset: 0; display: grid; place-items: center;
+      position: absolute; inset: 0; display: grid; place-items: center;
       background: #F2F7FC; pointer-events: none; z-index: 1;
     }
     #sanad-launch img { width: 96px; height: 96px; border-radius: 24px; }
+    :root[data-sanad-theme="dark"] { --sanad-header-color: #162537; }
+    html[data-sanad-theme="dark"], html[data-sanad-theme="dark"] body { background: #162537; }
+    html[data-sanad-theme="dark"] #sanad-launch { background: #0D1523; }
+    #sanad-app { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    #sanad-app input, #sanad-app textarea, #sanad-app [contenteditable="true"] {
+      -webkit-user-select: text; user-select: text; -webkit-touch-callout: default;
+    }
   </style>
 </head>
 <body>
-  <div id="sanad-launch" aria-hidden="true">
-    <img src="icons/Icon-192.png" width="96" height="96" alt="">
+  <div id="sanad-viewport">
+    <!-- Flutter handles Arabic direction internally; its DOM coordinate system
+         (including accessibility and text editing) starts at the left edge. -->
+    <div id="sanad-app" dir="ltr"></div>
+    <div id="sanad-launch" aria-hidden="true">
+      <img src="icons/Icon-192.png" width="96" height="96" alt="">
+    </div>
   </div>
+  <div id="sanad-header-edge" aria-hidden="true"></div>
   <script>
+    // Paint real scrolling content under Safari's translucent bottom toolbar.
+    // Tell Flutter how much is obscured so SafeArea protects fixed controls.
+    (function () {
+      const host = document.getElementById('sanad-viewport');
+      const viewport = window.visualViewport;
+      const phoneSafari = /iPhone|iPod/.test(navigator.userAgent) &&
+        !window.matchMedia('(display-mode: standalone)').matches;
+      let frame;
+      function resize() {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(function () {
+          // Let native pinch zoom magnify the existing layout.
+          if (viewport && Math.abs(viewport.scale - 1) > 0.01) return;
+          host.style.height = '';
+          // iPhone Safari can end even its large viewport inside the floating
+          // toolbar. Give the canvas a full screen of paint; the inset below
+          // still keeps controls within the actual visible viewport.
+          if (phoneSafari) {
+            const portrait = window.matchMedia('(orientation: portrait)').matches;
+            const screenHeight = portrait
+              ? Math.max(screen.width, screen.height)
+              : Math.min(screen.width, screen.height);
+            const top = parseFloat(getComputedStyle(host).top) || 0;
+            host.style.height = Math.max(1, screenHeight - top) + 'px';
+          }
+          const visibleBottom = viewport
+            ? viewport.offsetTop + viewport.height : innerHeight;
+          let bounds = host.getBoundingClientRect();
+          const active = document.activeElement;
+          const editing = active && (active.matches('input, textarea') ||
+            active.isContentEditable);
+          // The custom Flutter host has no keyboard insets of its own.
+          if (editing && bounds.bottom - visibleBottom > 150) {
+            host.style.height = Math.max(1, visibleBottom - bounds.top) + 'px';
+            bounds = host.getBoundingClientRect();
+          }
+          const inset = Math.max(0, bounds.bottom - visibleBottom);
+          document.documentElement.setAttribute('data-sanad-bottom-inset', inset);
+          window.dispatchEvent(new Event('sanad-viewport-change'));
+        });
+      }
+      window.addEventListener('resize', resize);
+      document.addEventListener('focusin', resize);
+      document.addEventListener('focusout', resize);
+      viewport?.addEventListener('resize', resize);
+      viewport?.addEventListener('scroll', resize);
+      resize();
+    })();
     // Flutter dispatches this event after presenting its first rasterized frame.
     // Its initial logo has the same dimensions and position as this mark.
     window.addEventListener('flutter-first-frame', function () {
@@ -65,6 +171,6 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
-  <script src="flutter_bootstrap.js" async></script>
+  <script src="flutter_bootstrap.js?v=20261104a" async></script>
 </body>
 </html>

@@ -1,8 +1,10 @@
 import 'dart:ui' as ui;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'design.dart';
+import 'web_nav_history.dart';
 
 Duration motionDuration(BuildContext context, [int milliseconds = 280]) =>
     MediaQuery.disableAnimationsOf(context)
@@ -38,31 +40,65 @@ class MotionSize extends StatelessWidget {
 }
 
 /// A regular page keeps the task and its back path clear, without a modal layer.
-Future<T?> openPage<T>(BuildContext context, Widget page) {
-  final direction = Directionality.of(context) == TextDirection.rtl
-      ? -1.0
-      : 1.0;
-  return Navigator.of(context).push<T>(
-    PageRouteBuilder<T>(
-      transitionDuration: motionDuration(context, 380),
-      reverseTransitionDuration: motionDuration(context, 300),
-      pageBuilder: (_, _, _) => page,
-      transitionsBuilder: (_, animation, _, child) {
-        final progress = animation.drive(
-          CurveTween(curve: Curves.easeOutQuart),
-        );
-        return FadeTransition(
-          opacity: progress,
-          child: SlideTransition(
-            position: progress.drive(
-              Tween(begin: Offset(direction * .035, 0), end: Offset.zero),
-            ),
-            child: child,
-          ),
-        );
+///
+/// On iOS this uses [CupertinoPageRoute] so the edge-swipe pop gesture works.
+/// On web, each push is mirrored into the browser History API so the back
+/// button closes the page instead of leaving the site.
+Future<T?> openPage<T>(
+  BuildContext context,
+  Widget page, {
+  String? webPath,
+}) async {
+  final traversal = WebNavHistory.instance.pendingTraversal;
+  if (traversal != null) {
+    await traversal;
+    if (!context.mounted) return null;
+  }
+  final useCupertino =
+      !kIsWeb &&
+      defaultTargetPlatform == TargetPlatform.iOS &&
+      !MediaQuery.disableAnimationsOf(context);
+  if (kIsWeb) {
+    WebNavHistory.instance.didPushPage(
+      path: webPath,
+      reopen: () async {
+        if (context.mounted) await openPage<T>(context, page, webPath: webPath);
       },
-    ),
-  );
+    );
+  }
+  try {
+    if (useCupertino) {
+      return await Navigator.of(
+        context,
+      ).push<T>(CupertinoPageRoute<T>(builder: (_) => page));
+    }
+    final direction = Directionality.of(context) == TextDirection.rtl
+        ? -1.0
+        : 1.0;
+    return await Navigator.of(context).push<T>(
+      PageRouteBuilder<T>(
+        transitionDuration: motionDuration(context, 380),
+        reverseTransitionDuration: motionDuration(context, 300),
+        pageBuilder: (_, _, _) => page,
+        transitionsBuilder: (_, animation, _, child) {
+          final progress = animation.drive(
+            CurveTween(curve: Curves.easeOutQuart),
+          );
+          return FadeTransition(
+            opacity: progress,
+            child: SlideTransition(
+              position: progress.drive(
+                Tween(begin: Offset(direction * .035, 0), end: Offset.zero),
+              ),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+  } finally {
+    if (kIsWeb) WebNavHistory.instance.didPopPageByApp();
+  }
 }
 
 /// Soft fade between welcome and home so the brand [Hero] can fly with it.
@@ -218,6 +254,16 @@ Future<void> openFromCard(
   GlobalKey? key,
   Widget page,
 ) async {
+  final traversal = WebNavHistory.instance.pendingTraversal;
+  if (traversal != null) {
+    await traversal;
+    if (!context.mounted) return;
+  }
+  // Card morph disables the iOS edge-swipe pop; prefer the gesture on iPhone.
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+    await openPage<void>(context, page);
+    return;
+  }
   final reduceMotion = MediaQuery.disableAnimationsOf(context);
   final snapshot = key == null || reduceMotion
       ? null
@@ -278,8 +324,19 @@ Future<void> openFromCard(
       ),
     ),
   );
+  if (kIsWeb) {
+    WebNavHistory.instance.didPushPage(
+      reopen: () async {
+        if (context.mounted) await openPage<void>(context, page);
+      },
+    );
+  }
   try {
-    await Navigator.of(context).push(route);
+    try {
+      await Navigator.of(context).push(route);
+    } finally {
+      if (kIsWeb) WebNavHistory.instance.didPopPageByApp();
+    }
     // Popping resolves push before the reverse transition has finished.
     await route.completed;
   } finally {
@@ -350,7 +407,8 @@ class SignalCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (onClose != null)
+            if (onClose != null) ...[
+              const SizedBox(width: sanadActionGap),
               IconButton(
                 onPressed: onClose,
                 tooltip: 'إغلاق الملاحظة',
@@ -361,6 +419,7 @@ class SignalCard extends StatelessWidget {
                   size: 18,
                 ),
               ),
+            ],
           ],
         ),
       ),

@@ -1,9 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="سند"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-7383022949817999~4373927991"/>
+        <meta-data android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
+            android:value="true"/>
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="sanad_updates"/>
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -21,9 +30,32 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!-- App Links: shared https://jobsnad.com/jobs/{id} opens the app when installed. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="https"
+                    android:host="jobsnad.com"
+                    android:pathPrefix="/jobs"/>
+                <data
+                    android:scheme="https"
+                    android:host="www.jobsnad.com"
+                    android:pathPrefix="/jobs"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="sanad" android:host="jobs"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

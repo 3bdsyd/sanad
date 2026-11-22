@@ -1,0 +1,119 @@
+{
+  "target": "https://jobsnad.com",
+  "checkedAt": "2026-09-30T17:23:53.011Z",
+  "scope": "Fresh desktop browser; only GET/HEAD/OPTIONS allowed; no contacts or publishing",
+  "blockedWrites": [],
+  "requests": [
+    {
+      "method": "GET",
+      "host": "jobsnad.com",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "jobsnad.com",
+      "path": "/icons/Icon-192.png",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "jobsnad.com",
+      "path": "/flutter_bootstrap.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "jobsnad.com",
+      "path": "/main.dart.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "jobsnad.com",
+      "path": "/assets/FontManifest.json",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "jobsnad.com",
+      "path": "/favicon.ico",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "jobsnad.com",
+      "path": "/assets/fonts/MaterialIcons-Regular.otf",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "jobsnad.com",
+      "path": "/assets/assets/fonts/Vazirmatn-Bold.ttf",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "jobsnad.com",
+      "path": "/assets/packages/cupertino_icons/assets/CupertinoIcons.ttf",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "jobsnad.com",
+      "path": "/assets/assets/fonts/Vazirmatn-Regular.ttf",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "jobsnad.com",
+      "path": "/sanad-tab.png",
+      "status": 200
+    }
+  ],
+  "jsErrors": [],
+  "consoleErrors": [],
+  "checks": {
+    "documentStatus": 200
+  },
+  "failure": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('flt-semantics-placeholder')\u001b[22m\n",
+  "startupDiagnostic": {
+    "requests": [
+      "jobsnad.com/",
+      "jobsnad.com/icons/Icon-192.png",
+      "jobsnad.com/flutter_bootstrap.js",
+      "www.gstatic.com/flutter-canvaskit/0cd610717bde95fd88343c64f81c11ba4e5c0010/chromium/canvaskit.wasm",
+      "www.gstatic.com/flutter-canvaskit/0cd610717bde95fd88343c64f81c11ba4e5c0010/chromium/canvaskit.js",
+      "jobsnad.com/main.dart.js",
+      "jobsnad.com/assets/FontManifest.json",
+      "jobsnad.com/favicon.ico",
+      "fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Me4GZLCzYlKw.woff2",
+      "jobsnad.com/assets/fonts/MaterialIcons-Regular.otf",
+      "jobsnad.com/assets/assets/fonts/Vazirmatn-Regular.ttf",
+      "jobsnad.com/assets/assets/fonts/Vazirmatn-Bold.ttf",
+      "jobsnad.com/assets/packages/cupertino_icons/assets/CupertinoIcons.ttf",
+      "jobsnad.com/sanad-tab.png"
+    ],
+    "failed": [
+      {
+        "path": "fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Me4GZLCzYlKw.woff2",
+        "error": "net::ERR_CONNECTION_CLOSED"
+      }
+    ],
+    "errors": [],
+    "blockedWrites": [],
+    "bodyText": "",
+    "flutterTags": [],
+    "title": "سند | سندك للخطوة الجاية",
+    "screenshot": "/private/tmp/sanad-launch-review/deployed-startup.png"
+  },
+  "assessment": {
+    "startup": "The deployed site remained on its branded splash in two fresh Chrome contexts (30-second readiness wait, then independent 25-second diagnostic).",
+    "publicJobs": "Not assessable: no Flutter UI or API requests reached readiness.",
+    "aboutPrivacySupport": "Not assessable: navigation never became available; this does not prove policy/support URLs are missing.",
+    "javascript": "No uncaught JavaScript errors observed.",
+    "network": "An external fonts.gstatic.com Roboto request failed with ERR_CONNECTION_CLOSED; CanvasKit was requested from www.gstatic.com. The exact startup-blocking dependency is not established.",
+    "mutationSafety": "Every non-GET/HEAD/OPTIONS request was blocked by routing; no non-read requests were observed or transmitted.",
+    "scopeLimit": "This demonstrates failed startup in this test environment, not a claim that every user or network sees the same failure."
+  }
+}

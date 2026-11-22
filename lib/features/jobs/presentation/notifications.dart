@@ -5,18 +5,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/design.dart';
 import '../../../core/motion.dart';
+import '../../../core/push_notifications.dart';
 import '../../../core/sanad_refresh.dart';
-import '../../../core/web_layout.dart';
+import '../../ads/data/banner_ad_session.dart';
+import '../../ads/domain/ad_config.dart';
+import '../../ads/presentation/screen_banner.dart';
 import '../data/jobs_store.dart';
 import '../domain/job.dart';
-import '../domain/job_filters.dart';
+import '../../platform/presentation/notification_destination.dart';
+import '../../platform/domain/platform_models.dart' show object;
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({
     super.key,
     required this.store,
     required this.onJob,
+    this.initialSection = 0,
+    this.initialNewOnly = false,
+    this.focusJobIds,
+    this.bannerSession,
   });
+  final BannerAdSession? bannerSession;
+  final int initialSection;
+  final bool initialNewOnly;
+  final Set<String>? focusJobIds;
   final JobsStore store;
   final FutureOr<void> Function(Job) onJob;
 
@@ -28,8 +40,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
   final scroll = ScrollController();
   final refreshKey = GlobalKey<SanadRefreshState>();
   final feedbackKey = GlobalKey();
-  bool refreshing = false, onlyUnread = false;
+  bool refreshing = false;
+  late bool onlyUnread = widget.initialNewOnly;
+  late int section = widget.initialSection;
+  bool showPushSettings = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(store.refreshSavedSearchMatches());
+    });
+  }
+
   final expandedSubmissions = <String>{};
+  final confirmingWithdrawals = <String>{};
+  final withdrawingSubmissions = <String>{};
   String? openingId, feedback;
   JobsStore get store => widget.store;
 
@@ -56,6 +82,26 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Future<void> refresh() async => refreshKey.currentState?.refresh();
 
+  Future<void> withdrawSubmission(Submission submission) async {
+    final id = submission.id;
+    if (!withdrawingSubmissions.add(id)) return;
+    setState(() {});
+    try {
+      await store.withdraw(submission);
+      if (mounted) {
+        setState(() {
+          confirmingWithdrawals.remove(id);
+          expandedSubmissions.remove(id);
+          feedback = 'تم سحب الإعلان وحذفه من قائمة إعلاناتك.';
+        });
+      }
+    } catch (_) {
+      message('تعذّر سحب الإعلان. حاول مرة أخرى.');
+    } finally {
+      if (mounted) setState(() => withdrawingSubmissions.remove(id));
+    }
+  }
+
   Future<String?> refreshResults() async {
     if (refreshing || store.loading) return 'التحديث جارٍ. انتظر اكتماله.';
     if (store.busy) {
@@ -68,6 +114,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     var failedSubmissions = false;
     try {
       await store.refresh();
+      await store.refreshSavedSearchMatches(force: true);
       for (final submission in store.submissions.toList()) {
         try {
           await store.refreshSubmission(submission);
@@ -92,8 +139,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Future<void> openJob(Job job) async {
     if (openingId != null || refreshing) return;
-    if (!store.discoverableJobs.any((current) => current.id == job.id)) {
-      message('هذه الفرصة لم تعد متاحة. حدّث النتائج لتشوف الفرص الحالية.');
+    if (!store.savedSearchMatches.any((current) => current.id == job.id)) {
+      message('لم تعد هذه الفرصة متاحة. حدّث النتائج لعرض الفرص الحالية.');
       return;
     }
     setState(() => openingId = job.id);
@@ -110,27 +157,35 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
-  List<Job> get matchedJobs {
-    final filters = store.savedSearches
-        .map(
-          (search) => (
-            filters: JobFilters.fromJson(
-              Map<String, dynamic>.from(search['filters'] as Map),
-            ),
-            query: search['query'] as String,
-          ),
-        )
-        .toList();
-    final matches = store.discoverableJobs
-        .where(
-          (job) => filters.any(
-            (search) => search.filters.matches(job, search.query),
-          ),
-        )
-        .toList();
-    matches.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return matches;
-  }
+  List<Job> get matchedJobs => store.savedSearchMatches;
+
+  Widget _pushStatus() => ListenableBuilder(
+    listenable: store.push,
+    builder: (context, _) {
+      final status = store.push.state;
+      if (status == PushState.ready) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Text(switch (status) {
+              PushState.denied =>
+                'إشعارات الهاتف معطّلة. يمكنك تفعيلها من إعدادات الجهاز > سند > الإشعارات.',
+              PushState.failed =>
+                'تعذّر تفعيل إشعارات الهاتف. تحقق من الاتصال وأعد المحاولة.',
+              PushState.connecting => 'جارٍ إعداد إشعارات الهاتف…',
+              _ => 'فعّل إشعارات الهاتف لاستلام تحديثات الفرص والإعلانات.',
+            }, textAlign: TextAlign.center),
+            if (status != PushState.connecting)
+              TextButton(
+                onPressed: () => store.push.start(requestAgain: true),
+                child: const Text('تفعيل الإشعارات'),
+              ),
+          ],
+        ),
+      );
+    },
+  );
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
@@ -138,331 +193,300 @@ class _NotificationsPageState extends State<NotificationsPage> {
     builder: (context, _) {
       final matches = matchedJobs;
       final unread = matches
-          .where((job) => !store.isUpdateRead('job-${job.id}'))
+          .where((job) => store.isNewSavedMatch(job.id))
           .length;
-      final visible = onlyUnread
-          ? matches
-                .where((job) => !store.isUpdateRead('job-${job.id}'))
-                .toList()
-          : matches;
+      final visible = matches
+          .where(
+            (job) =>
+                (!onlyUnread || store.isNewSavedMatch(job.id)) &&
+                (!onlyUnread ||
+                    widget.focusJobIds == null ||
+                    widget.focusJobIds!.contains(job.id)),
+          )
+          .toList();
+      final hasContent = switch (section) {
+        0 => visible.isNotEmpty,
+        1 => store.submissions.isNotEmpty,
+        _ => store.notices.isNotEmpty,
+      };
+      final labels = ['الفرص المطابقة', 'إعلاناتي', 'تنبيهات سند'];
+      final counts = [unread, store.submissions.length, store.noticesUnread];
       return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: context.sanad.isDark
-            ? SystemUiOverlayStyle.light
-            : SystemUiOverlayStyle.dark,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: ReferenceBackdrop(
-            child: SafeArea(
-              top: false,
-              bottom: false,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: kIsWeb ? WebLayout.readingMax : 720,
-                  ),
-                  child: SanadRefresh(
-                    key: refreshKey,
-                    enabled: !refreshing && !store.loading && !store.busy,
-                    topInset: MediaQuery.paddingOf(context).top,
-                    onRefresh: refreshResults,
-                    loadingLabel: 'عم نراجع الفرص وإعلاناتك…',
-                    successLabel: store.isDemo
-                        ? 'تحدّثت المتابعة التجريبية'
-                        : 'صارت متابعتك محدّثة',
-                    child: CustomScrollView(
-                      controller: scroll,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      slivers: [
-                        SliverAppBar(
-                          pinned: true,
-                          toolbarHeight: 76,
-                          backgroundColor: Colors.transparent,
-                          surfaceTintColor: Colors.transparent,
-                          elevation: 0,
-                          scrolledUnderElevation: 0,
-                          flexibleSpace: sanadHeaderFill(context),
-                          leadingWidth: 76,
-                          leading: Padding(
-                            padding: const EdgeInsetsDirectional.only(
-                              start: 20,
-                            ),
-                            child: Center(
-                              child: IconButton(
-                                tooltip: 'رجوع',
-                                onPressed: () => Navigator.pop(context),
-                                icon: AppIcon(
-                                  CupertinoIcons.chevron_right,
-                                  color: context.sanad.ink,
-                                ),
-                              ),
-                            ),
-                          ),
-                          title: Column(
-                            mainAxisSize: MainAxisSize.min,
+        value: sanadSystemBars(context.sanad),
+        child: ReferenceBackdrop(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              title: const Text('الإشعارات'),
+              flexibleSpace: sanadHeaderFill(context, blur: false),
+              actions: [
+                IconButton(
+                  tooltip: 'تحديث الإشعارات',
+                  onPressed: refreshing || store.loading || store.busy
+                      ? null
+                      : refresh,
+                  icon: refreshing
+                      ? const SanadLoader(size: 22)
+                      : const AppIcon(CupertinoIcons.arrow_clockwise, size: 21),
+                ),
+                const SizedBox(width: 12),
+              ],
+            ),
+            bottomNavigationBar:
+                AdConfig.supported && !store.isDemo && hasContent
+                ? SafeArea(
+                    top: false,
+                    child: ScreenBanner(
+                      placement: 'notifications_banner',
+                      contextKey: 'notifications',
+                      session: widget.bannerSession,
+                    ),
+                  )
+                : null,
+            body: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 760),
+                child: SanadRefresh(
+                  key: refreshKey,
+                  enabled: !refreshing && !store.loading && !store.busy,
+                  onRefresh: refreshResults,
+                  loadingLabel: 'جارٍ تحديث الإشعارات…',
+                  successLabel: 'تم تحديث الإشعارات',
+                  child: CustomScrollView(
+                    controller: scroll,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.all(20),
+                        sliver: SliverToBoxAdapter(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Text(
-                                'على بالك',
-                                style: TextStyle(
-                                  color: context.sanad.ink,
-                                  fontSize: kIsWeb ? 22 : 20,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                              SanadActions(
+                                children: [
+                                  for (
+                                    var index = 0;
+                                    index < labels.length;
+                                    index++
+                                  )
+                                    modeChip(
+                                      '${labels[index]}${counts[index] > 0 ? ' · ${counts[index]}' : ''}',
+                                      selected: section == index,
+                                      onTap: () =>
+                                          setState(() => section = index),
+                                    ),
+                                ],
                               ),
-                              Text(
-                                'متابعة الفرص والإعلانات',
-                                style: TextStyle(
-                                  color: context.sanad.secondary,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                          actions: [
-                            Padding(
-                              padding: const EdgeInsetsDirectional.only(end: 8),
-                              child: IconButton.filledTonal(
-                                tooltip: 'تحديث المتابعة',
-                                style: IconButton.styleFrom(
-                                  backgroundColor: context.sanad.tint,
-                                ),
-                                onPressed:
-                                    refreshing || store.loading || store.busy
-                                    ? null
-                                    : refresh,
-                                icon: refreshing || store.loading
-                                    ? const SanadLoader(size: 22)
-                                    : AppIcon(
-                                        CupertinoIcons.arrow_clockwise,
-                                        color: context.sanad.primary,
-                                        size: 20,
-                                      ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(20, 6, 20, 20),
-                          sliver: SliverToBoxAdapter(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SanadReveal(child: intro(unread)),
-                                if (feedback != null) ...[
-                                  const SizedBox(height: 16),
-                                  SignalCard(
+                              const SizedBox(height: 20),
+                              Text(switch (section) {
+                                0 =>
+                                  'أحدث فرص العمل التي تطابق عمليات البحث المحفوظة.',
+                                1 =>
+                                  'حالة مراجعة ونشر الإعلانات التي أضفتها من هذا الجهاز.',
+                                _ => 'الإشعارات والتحديثات الواردة من سند.',
+                              }, style: TextStyle(color: context.sanad.secondary)),
+                              if (feedback != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+                                  child: SignalCard(
                                     key: feedbackKey,
                                     feedback!,
                                     onClose: () =>
                                         setState(() => feedback = null),
-                                    action: refresh,
                                   ),
-                                ],
-                                if (store.error != null) ...[
-                                  const SizedBox(height: 16),
-                                  SignalCard(
+                                ),
+                              if (store.error != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+                                  child: SignalCard(
                                     store.error!,
                                     action: refresh,
                                     onClose: store.clearError,
                                   ),
-                                ],
-                                if (store.isOffline) ...[
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'عم تشوف آخر نتائج محفوظة. حدّثها عند عودة الاتصال.',
-                                    style: TextStyle(
-                                      color: context.sanad.secondary,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                                if (store.isDemo) ...[
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'نسخة عرض • النتائج والإعلانات تجريبية',
-                                    style: TextStyle(
-                                      color: context.sanad.secondary,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                                const SizedBox(height: 30),
-                                if (store.notices.isNotEmpty) ...[
-                                  sectionHeading(
-                                    'من سند',
-                                    'تنبيهات وصلت لهذا الجهاز',
-                                    CupertinoIcons.bell,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  for (final notice in store.notices.take(8))
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 10,
-                                      ),
-                                      child: SignalCard(
-                                        notice.text,
-                                        actionLabel: 'تمت القراءة',
-                                        action: notice.read
-                                            ? null
-                                            : () => store.markNoticeRead(
-                                                notice.id,
-                                              ),
-                                      ),
-                                    ),
-                                  const SizedBox(height: 18),
-                                ],
-                                sectionHeading(
-                                  'على قياس بحثك',
-                                  'فرص من عمليات البحث اللي حفظتها',
-                                  CupertinoIcons.search,
                                 ),
+                              if (section == 0) ...[
                                 const SizedBox(height: 16),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
+                                SanadActions(
                                   children: [
                                     modeChip(
-                                      'الكل · ${matches.length}',
+                                      'الجميع',
                                       selected: !onlyUnread,
                                       onTap: () =>
                                           setState(() => onlyUnread = false),
                                     ),
                                     modeChip(
-                                      'الجديدة عليك · $unread',
+                                      'الجديدة · $unread',
                                       selected: onlyUnread,
                                       onTap: () =>
                                           setState(() => onlyUnread = true),
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        if (visible.isEmpty)
-                          SliverPadding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            sliver: SliverToBoxAdapter(
-                              child: SanadReveal(
-                                key: ValueKey('empty-$onlyUnread'),
-                                child: emptyMatches(matches.isNotEmpty),
-                              ),
-                            ),
-                          )
-                        else
-                          SliverPadding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            sliver: SliverList.builder(
-                              itemCount: visible.length,
-                              itemBuilder: (context, index) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: SanadReveal(
-                                  key: ValueKey(
-                                    '${visible[index].id}-$onlyUnread',
+                                if (store.savedMatchesLoading)
+                                  const Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: SanadLoader(size: 28),
                                   ),
-                                  order: index,
-                                  child: jobTile(visible[index]),
-                                ),
-                              ),
-                            ),
-                          ),
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(20, 26, 20, 12),
-                          sliver: SliverToBoxAdapter(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                sectionHeading(
-                                  'من طرفك',
-                                  'حالة كل فرصة أضفتها من هذا الجهاز.',
-                                  CupertinoIcons.doc_text,
-                                ),
-                                if (store.submissions.isEmpty) ...[
-                                  const SizedBox(height: 14),
-                                  panel(
-                                    child: Row(
-                                      children: [
-                                        iconTile(CupertinoIcons.doc_text),
-                                        const SizedBox(width: 14),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'بعد ما نشرت فرصة',
-                                                style: TextStyle(
-                                                  color: context.sanad.ink,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                'لما تضيف إعلان، بتتابع مراجعته وحالته هون.',
-                                                style: TextStyle(
-                                                  color:
-                                                      context.sanad.secondary,
-                                                  fontSize: 12,
-                                                  height: 1.7,
-                                                ),
-                                              ),
-                                            ],
+                                if (store.savedMatchesError != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: SignalCard(
+                                      store.savedMatchesError!,
+                                      action: () =>
+                                          store.refreshSavedSearchMatches(
+                                            force: true,
                                           ),
-                                        ),
-                                      ],
                                     ),
                                   ),
-                                ],
+                                const SizedBox(height: 16),
+                                if (visible.isEmpty)
+                                  emptyMatches(matches.isNotEmpty),
                               ],
+                              if (section == 1 && store.submissions.isEmpty)
+                                panel(
+                                  child: const Text(
+                                    'لم تضف إعلانات بعد. يمكنك إضافة فرصة من القسم المخصص، ثم متابعة حالتها هنا.',
+                                  ),
+                                ),
+                              if (section == 2 && store.notices.isEmpty)
+                                panel(
+                                  child: const Text(
+                                    'لا توجد تنبيهات من سند حالياً.',
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (section == 0)
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          sliver: SliverList.builder(
+                            itemCount: visible.length,
+                            itemBuilder: (context, index) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: jobTile(visible[index]),
                             ),
                           ),
                         ),
+                      if (section == 1)
                         SliverPadding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           sliver: SliverList.builder(
                             itemCount: store.submissions.length,
                             itemBuilder: (context, index) => Padding(
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: SanadReveal(
-                                key: ValueKey(store.submissions[index].job.id),
-                                order: index,
-                                child: submissionTile(store.submissions[index]),
-                              ),
+                              child: submissionTile(store.submissions[index]),
                             ),
                           ),
                         ),
+                      if (section == 2)
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          sliver: SliverList.builder(
+                            itemCount: store.notices.length,
+                            itemBuilder: (context, index) {
+                              final notice = store.notices[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: SignalCard(
+                                  notice.text,
+                                  actionLabel: notice.payload.isEmpty
+                                      ? 'تحديد كمقروء'
+                                      : 'عرض التحديث',
+                                  action: notice.payload.isNotEmpty
+                                      ? () async {
+                                          try {
+                                            await store.markNoticeRead(
+                                              notice.id,
+                                            );
+                                            if (context.mounted) {
+                                              await openNotificationDestination(
+                                                context,
+                                                store,
+                                                notice.payload,
+                                              );
+                                            }
+                                          } catch (e) {
+                                            message(e.toString());
+                                          }
+                                        }
+                                      : notice.read
+                                      ? null
+                                      : () => store.markNoticeRead(notice.id),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      if (store.accountsEnabled &&
+                          store.platform.signedIn &&
+                          object(
+                                store.platform.snapshot(switch (section) {
+                                  0 => '/me/saved-search-matches',
+                                  1 => '/me/jobs',
+                                  _ => '/me/notifications',
+                                })['meta'],
+                              )['next_cursor'] !=
+                              null)
                         SliverToBoxAdapter(
-                          child: SafeArea(
-                            top: false,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                26,
-                                20,
-                                26,
-                                28,
-                              ),
-                              child: Column(
-                                children: [
-                                  localNotice(),
-                                  if (store.lastUpdated != null) ...[
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'آخر تحديث ${time(store.lastUpdated!)}',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: context.sanad.secondary,
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: OutlinedButton(
+                              onPressed: refreshing
+                                  ? null
+                                  : () async {
+                                      setState(() => refreshing = true);
+                                      try {
+                                        await store.platform.loadMore(
+                                          switch (section) {
+                                            0 => '/me/saved-search-matches',
+                                            1 => '/me/jobs',
+                                            _ => '/me/notifications',
+                                          },
+                                        );
+                                      } catch (e) {
+                                        message(e.toString());
+                                      } finally {
+                                        if (mounted) {
+                                          setState(() => refreshing = false);
+                                        }
+                                      }
+                                    },
+                              child: const Text('عرض المزيد'),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      SliverToBoxAdapter(
+                        child: SafeArea(
+                          top: false,
+                          minimum: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              if (!kIsWeb)
+                                ListTile(
+                                  title: const Text('إعدادات إشعارات الهاتف'),
+                                  leading: const AppIcon(
+                                    CupertinoIcons.bell,
+                                    size: 20,
+                                  ),
+                                  trailing: AppIcon(
+                                    showPushSettings
+                                        ? CupertinoIcons.chevron_up
+                                        : CupertinoIcons.chevron_down,
+                                    size: 16,
+                                  ),
+                                  onTap: () => setState(
+                                    () => showPushSettings = !showPushSettings,
+                                  ),
+                                ),
+                              if (showPushSettings) _pushStatus(),
+                              localNotice(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -471,119 +495,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ),
       );
     },
-  );
-
-  Widget intro(int unread) {
-    final colors = context.sanad;
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: colors.isDark
-              ? [colors.surface, colors.tint, colors.background]
-              : const [Color(0xFFFFFFFF), Color(0xFFE7F0FA), Color(0xFFD3E6F7)],
-        ),
-        border: Border.all(color: colors.border),
-        boxShadow: [
-          BoxShadow(
-            color: colors.primary.withValues(alpha: colors.isDark ? .18 : .08),
-            blurRadius: 28,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: .1),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: colors.primary.withValues(alpha: .14),
-                  ),
-                ),
-                child: AppIcon(
-                  CupertinoIcons.bell,
-                  color: colors.primary,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      unread > 0
-                          ? 'في فرص ناطرة تشوفها'
-                          : 'خطوتك الجاية، على بالك',
-                      style: TextStyle(
-                        color: colors.ink,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'نتائج تهمّك، ومتابعة لإعلاناتك بمكان واحد.',
-                      style: TextStyle(
-                        color: colors.secondary,
-                        height: 1.55,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              summaryCount('$unread', 'غير مقروءة'),
-              summaryCount('${store.savedSearches.length}', 'بحث محفوظ'),
-              summaryCount('${store.submissions.length}', 'من إعلاناتك'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget summaryCount(String count, String label) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-    decoration: BoxDecoration(
-      color: context.sanad.surface.withValues(alpha: .88),
-      border: Border.all(color: context.sanad.border),
-      borderRadius: BorderRadius.circular(18),
-    ),
-    child: Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: '$count  ',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: context.sanad.primary,
-            ),
-          ),
-          TextSpan(
-            text: label,
-            style: TextStyle(color: context.sanad.secondary, fontSize: 12),
-          ),
-        ],
-      ),
-    ),
   );
 
   Widget sectionHeading(String title, String subtitle, IconData icon) => Row(
@@ -646,7 +557,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       const SizedBox(width: 7),
       Flexible(
         child: Text(
-          'المتابعة داخل التطبيق، وتتحدّث بالسحب أو عند فتحه.',
+          'تُحدّث المتابعة داخل التطبيق عند السحب أو فتح الصفحة.',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: context.sanad.secondary,
@@ -681,10 +592,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
         const SizedBox(height: 18),
         Text(
           hasMatches
-              ? 'صرت مطّلع على كل الفرص'
+              ? 'اطّلعت على جميع الفرص الجديدة'
               : store.savedSearches.isEmpty
-              ? 'خلّي الفرص المناسبة قريبة'
-              : 'بحثك محفوظ، ولسّه ناطرين التطابق',
+              ? 'لا توجد عمليات بحث محفوظة'
+              : 'لا توجد فرص مطابقة حالياً',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 17,
@@ -695,10 +606,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
         const SizedBox(height: 8),
         Text(
           hasMatches
-              ? 'فيك ترجع لكل النتائج بأي وقت.'
+              ? 'يمكنك العودة إلى جميع النتائج في أي وقت.'
               : store.savedSearches.isEmpty
-              ? 'احفظ بحثك من الرئيسية. الفرص اللي بتناسبه بتجتمع هون لحتى تراجعها بسهولة.'
-              : 'ما في فرص مطابقة حالياً. حدّث النتائج لاحقاً أو جرّب فلاتر أوسع من الرئيسية.',
+              ? 'احفظ بحثك من الصفحة الرئيسية، وستظهر هنا الفرص المطابقة لتراجعها بسهولة.'
+              : 'لا توجد فرص مطابقة حالياً. حدّث النتائج لاحقاً أو استخدم عوامل تصفية أوسع من الصفحة الرئيسية.',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: context.sanad.secondary,
@@ -707,7 +618,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ),
         ),
         const SizedBox(height: 20),
-        FilledButton.tonal(
+        SanadPrimaryButton.tonal(
           onPressed: hasMatches
               ? () => setState(() => onlyUnread = false)
               : () => Navigator.pop(context),
@@ -868,11 +779,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
             'published' => 'إعلانك ظاهر حالياً للباحثين عن فرصة.',
             'rejected' =>
               'إعلانك غير ظاهر للباحثين. راجع تفاصيله من صفحة إعلاناتك.',
-            'withdrawn' => 'سحبت هالإعلان وما عاد ظاهر للباحثين.',
-            'expired' => 'خلصت مدة الإعلان وما عاد ظاهر ضمن الفرص المتاحة.',
-            _ => 'إعلانك بانتظار المراجعة. بيظهر للباحثين بعد الموافقة.',
+            'withdrawn' => 'سُحب هذا الإعلان ولم يعد ظاهراً للباحثين.',
+            'expired' => 'انتهت مدة الإعلان ولم يعد ضمن الفرص المتاحة.',
+            _ => 'إعلانك بانتظار المراجعة. سيظهر للباحثين عن عمل بعد الموافقة.',
           };
     final expanded = expandedSubmissions.contains(submission.job.id);
+    final confirming = confirmingWithdrawals.contains(submission.id);
+    final withdrawing = withdrawingSubmissions.contains(submission.id);
     return panel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -982,6 +895,53 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   )
                 : const SizedBox(width: double.infinity),
           ),
+          if (!submission.isDemo && state != 'withdrawn') ...[
+            const SizedBox(height: 8),
+            if (!confirming)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton(
+                  onPressed: withdrawing
+                      ? null
+                      : () => setState(
+                          () => confirmingWithdrawals.add(submission.id),
+                        ),
+                  child: const Text('سحب الإعلان'),
+                ),
+              )
+            else
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'سيُحذف الإعلان من نتائج البحث وإعلاناتك على هذا الجهاز. لا يمكن التراجع عن هذه الخطوة.',
+                    style: TextStyle(fontSize: 12, height: 1.7),
+                  ),
+                  const SizedBox(height: 4),
+                  SanadActions(
+                    children: [
+                      TextButton(
+                        onPressed: withdrawing
+                            ? null
+                            : () => setState(
+                                () =>
+                                    confirmingWithdrawals.remove(submission.id),
+                              ),
+                        child: const Text('إلغاء'),
+                      ),
+                      TextButton(
+                        onPressed: withdrawing
+                            ? null
+                            : () => withdrawSubmission(submission),
+                        child: Text(
+                          withdrawing ? 'جارٍ السحب…' : 'تأكيد السحب',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+          ],
         ],
       ),
     );

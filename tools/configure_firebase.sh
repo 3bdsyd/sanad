@@ -25,13 +25,13 @@ else
   exit 69
 fi
 
-printf 'Configuring Sanad (app.fursa.fursa) for Firebase project %s.\n' "$1"
+printf 'Configuring Snad (com.jobsnad.snad) for Firebase project %s.\n' "$1"
 "${sanad_flutterfire[@]}" configure \
   --project="$1" \
   --platforms=ios,android \
-  --ios-bundle-id=app.fursa.fursa \
+  --ios-bundle-id=com.jobsnad.snad \
   --ios-target=Runner \
-  --android-package-name=app.fursa.fursa \
+  --android-package-name=com.jobsnad.snad \
   --out=lib/firebase_options.dart \
   --ios-out=ios/Runner/GoogleService-Info.plist \
   --android-out=android/app/google-services.json \

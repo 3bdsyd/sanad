@@ -1,12 +1,15 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/app_links.dart';
 import '../../../core/design.dart';
 import '../../../core/motion.dart';
 import '../../../core/theme_controls.dart';
+import '../../../core/web_layout.dart';
 import '../data/jobs_store.dart';
 import 'welcome.dart';
+import '../../ads/data/ads_controller.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key, required this.store});
@@ -25,7 +28,7 @@ class _AboutPageState extends State<AboutPage> {
         mode: LaunchMode.externalApplication,
       )) {
         if (mounted) {
-          setState(() => feedback = 'ما قدرنا نفتح الرابط. جرّب مرة تانية.');
+          setState(() => feedback = 'تعذّر فتح الرابط. حاول مرة أخرى.');
         }
       }
     } catch (_) {
@@ -39,10 +42,14 @@ class _AboutPageState extends State<AboutPage> {
     setState(() => busy = true);
     try {
       await widget.store.unhideAllEmployers();
-      if (mounted) setState(() => feedback = 'رجّعنا الجهات المخفية لنتائجك.');
+      if (mounted) {
+        setState(
+          () => feedback = 'تمت استعادة الجهات المخفية إلى نتائج البحث.',
+        );
+      }
     } catch (_) {
       if (mounted) {
-        setState(() => feedback = 'ما قدرنا نستعيد الجهات. جرّب مرة تانية.');
+        setState(() => feedback = 'تعذّر استعادة الجهات. حاول مرة أخرى.');
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -53,35 +60,55 @@ class _AboutPageState extends State<AboutPage> {
   Widget build(BuildContext context) => ReferenceBackdrop(
     child: Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        flexibleSpace: sanadHeaderFill(context),
-        title: const Text('عن سند'),
-        leading: IconButton(
-          tooltip: 'رجوع',
-          onPressed: () => Navigator.pop(context),
-          icon: const AppIcon(CupertinoIcons.chevron_right),
-        ),
-      ),
+      appBar: kIsWeb
+          ? null
+          : AppBar(
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              flexibleSpace: sanadHeaderFill(context, blur: false),
+              title: const Text('عن سند'),
+              leading: IconButton(
+                tooltip: 'رجوع',
+                onPressed: () => Navigator.pop(context),
+                icon: const AppIcon(CupertinoIcons.chevron_right),
+              ),
+            ),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 680),
+          constraints: BoxConstraints(
+            maxWidth: kIsWeb ? WebLayout.contentMax : 680,
+          ),
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 30),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              12,
+              20,
+              30 + (kIsWeb ? MediaQuery.paddingOf(context).bottom : 0),
+            ),
             children: [
+              if (kIsWeb) ...[
+                Text(
+                  'عن سند',
+                  style: TextStyle(
+                    color: context.sanad.ink,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 18),
+              ],
               const Center(child: SanadLogo(size: 88)),
               const SizedBox(height: 18),
               const Text(
-                'سندك للخطوة الجاية.',
+                'منصة فرص العمل والتواصل المهني.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 27, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               Text(
-                'سند بيقرّب الباحث عن عمل من صاحب الفرصة. تصفّح، احفظ، وتواصل بدون حساب.',
+                'يقرّب سند الباحثين عن عمل من أصحاب الفرص. تصفّح الفرص واحفظها وتواصل دون حساب.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: context.sanad.secondary),
               ),
@@ -93,7 +120,7 @@ class _AboutPageState extends State<AboutPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'خصوصيتك، ببساطة',
+                      'حماية الخصوصية',
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
@@ -101,7 +128,7 @@ class _AboutPageState extends State<AboutPage> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'المحفوظات والفلاتر على جهازك. عند نشر إعلان، تُرسل تفاصيله ووسيلة التواصل إلى خدمة سند وتظهر بعد الموافقة. لا نطلب موقعك الدقيق أو جهات اتصالك.',
+                      'الفلاتر وتفضيلاتك على جهازك، والمحفوظات مرتبطة بخدمة سند أيضاً. عند نشر إعلان، تُرسل تفاصيله ووسيلة التواصل وتظهر بعد الموافقة. لا نطلب موقعك الدقيق أو جهات اتصالك.',
                       style: TextStyle(color: context.sanad.secondary),
                     ),
                     const SizedBox(height: 12),
@@ -118,7 +145,7 @@ class _AboutPageState extends State<AboutPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'خطوتك بأمان',
+                      'إرشادات التقديم الآمن',
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
@@ -148,37 +175,69 @@ class _AboutPageState extends State<AboutPage> {
                   ),
                 ),
               const SizedBox(height: 18),
-              if (AppLinks.hasPrivacy)
-                TextButton.icon(
-                  onPressed: () => openLink(AppLinks.privacy),
-                  icon: const AppIcon(CupertinoIcons.lock_shield, size: 18),
-                  label: const Text('سياسة الخصوصية الكاملة'),
+              ListenableBuilder(
+                listenable: AdsController.instance,
+                builder: (context, _) => SanadActions(
+                  vertical: true,
+                  children: [
+                    if (AdsController.instance.privacyRequired)
+                      TextButton.icon(
+                        onPressed: () async {
+                          final success = await AdsController.instance
+                              .editPrivacy();
+                          if (mounted && !success) {
+                            setState(
+                              () => feedback =
+                                  'تعذّر فتح خيارات الإعلانات. حاول مجدداً.',
+                            );
+                          }
+                        },
+                        icon: const AppIcon(
+                          CupertinoIcons.lock_shield,
+                          size: 18,
+                        ),
+                        label: const Text('خيارات خصوصية الإعلانات'),
+                      ),
+                    if (AppLinks.hasPrivacy)
+                      TextButton.icon(
+                        onPressed: () => openLink(AppLinks.privacy),
+                        icon: const AppIcon(
+                          CupertinoIcons.lock_shield,
+                          size: 18,
+                        ),
+                        label: const Text('سياسة الخصوصية الكاملة'),
+                      ),
+                    if (AppLinks.hasSupport)
+                      TextButton.icon(
+                        onPressed: () => openLink(AppLinks.support),
+                        icon: const AppIcon(
+                          CupertinoIcons.chat_bubble,
+                          size: 18,
+                        ),
+                        label: const Text('تواصل مع فريق سند'),
+                      ),
+                    if (widget.store.hiddenEmployerCount > 0)
+                      TextButton(
+                        onPressed: busy ? null : restore,
+                        child: Text(
+                          busy
+                              ? 'جارٍ الاستعادة…'
+                              : 'إظهار ${widget.store.hiddenEmployerCount} جهة مخفية',
+                        ),
+                      ),
+                    TextButton.icon(
+                      onPressed: () => openPage<void>(
+                        context,
+                        Builder(
+                          builder: (c) =>
+                              WelcomePage(onContinue: () => Navigator.pop(c)),
+                        ),
+                      ),
+                      icon: const AppIcon(CupertinoIcons.sparkles, size: 18),
+                      label: const Text('شاشة البداية'),
+                    ),
+                  ],
                 ),
-              if (AppLinks.hasSupport)
-                TextButton.icon(
-                  onPressed: () => openLink(AppLinks.support),
-                  icon: const AppIcon(CupertinoIcons.chat_bubble, size: 18),
-                  label: const Text('تواصل مع فريق سند'),
-                ),
-              if (widget.store.hiddenEmployerCount > 0)
-                TextButton(
-                  onPressed: busy ? null : restore,
-                  child: Text(
-                    busy
-                        ? 'عم نستعيد…'
-                        : 'إظهار ${widget.store.hiddenEmployerCount} جهة مخفية',
-                  ),
-                ),
-              TextButton.icon(
-                onPressed: () => openPage<void>(
-                  context,
-                  Builder(
-                    builder: (c) =>
-                        WelcomePage(onContinue: () => Navigator.pop(c)),
-                  ),
-                ),
-                icon: const AppIcon(CupertinoIcons.sparkles, size: 18),
-                label: const Text('شاشة البداية'),
               ),
             ],
           ),

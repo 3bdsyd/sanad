@@ -1,4 +1,4 @@
-"""Fursa's small WSGI API. Production entry point: app:application."""
+"""Snad's small WSGI API. Production entry point: app:application."""
 
 import hashlib
 import hmac
@@ -9,6 +9,7 @@ import os
 import re
 import secrets
 import sqlite3
+from job_geography import CURRENCIES, country_name
 import time
 import uuid
 from contextlib import closing
@@ -29,8 +30,9 @@ MAX_BODY = 24_576
 
 
 class ApiError(Exception):
-    def __init__(self, status, code, message, field=None):
+    def __init__(self, status, code, message, field=None, retry_after=None):
         self.status, self.code, self.message, self.field = status, code, message, field
+        self.retry_after = retry_after
 
 
 def utc_now():
@@ -107,7 +109,7 @@ def company_website(value):
 
 
 def validate_job(data):
-    allowed = {"title", "company", "companyWebsite", "city", "category", "workType", "workMode", "experience", "salaryMin", "salaryMax", "salaryPeriod", "currency", "description", "requirements", "phone", "email", "contactConsent", "expiresInDays"}
+    allowed = {"title", "company", "companyWebsite", "country", "city", "category", "workType", "workMode", "experience", "salaryMin", "salaryMax", "salaryPeriod", "currency", "description", "requirements", "phone", "email", "contactConsent", "expiresInDays"}
     if set(data) - allowed:
         raise ApiError(422, "unknown_field", "توجد حقول غير مدعومة.")
     if data.get("contactConsent") is not True:
@@ -126,11 +128,15 @@ def validate_job(data):
         "workType": enum_value(data, "workType", WORK_TYPES),
         "workMode": enum_value(data, "workMode", WORK_MODES),
         "experience": enum_value(data, "experience", EXPERIENCES),
-        "currency": enum_value(data, "currency", ["SYP", "USD"], "SYP"),
+        "currency": enum_value(data, "currency", CURRENCIES, "SYP"),
         "salaryPeriod": enum_value(data, "salaryPeriod", SALARY_PERIODS, "شهري"),
         "salaryMin": salary_value(data.get("salaryMin"), "salaryMin"),
         "salaryMax": salary_value(data.get("salaryMax"), "salaryMax"),
     }
+    try:
+        result['country'] = country_name(data.get('country', 'SY'))
+    except ValueError:
+        raise ApiError(422, 'invalid_country', 'اختر بلداً من القائمة.', 'country')
     if result["salaryMin"] is not None and result["salaryMax"] is not None and result["salaryMin"] > result["salaryMax"]:
         raise ApiError(422, "invalid_salary", "الحد الأعلى يجب أن يكون أكبر من الحد الأدنى.", "salaryMax")
     requirements = data.get("requirements", [])
@@ -163,9 +169,13 @@ def unique_object(pairs):
     return result
 
 
-class FursaApp:
+def reject_nonfinite(value):
+    raise ValueError("non-finite JSON number")
+
+
+class SnadApp:
     def __init__(self, database=None, admin_token=None, origins=None, trusted_proxies=None):
-        self.database = database or os.environ.get("DATABASE_PATH", "./data/fursa.sqlite3")
+        self.database = database or os.environ.get("DATABASE_PATH", "./data/snad.sqlite3")
         self.admin_token = admin_token or os.environ.get("ADMIN_TOKEN", "")
         if len(self.admin_token) < 32 or self.admin_token.startswith("replace-"):
             raise RuntimeError("ADMIN_TOKEN must be a unique secret with at least 32 characters.")
@@ -204,6 +214,9 @@ class FursaApp:
             if db.execute("PRAGMA user_version").fetchone()[0] < 2:
                 db.execute("UPDATE jobs SET payload=json_set(payload, '$.companyWebsite', '') WHERE json_type(payload, '$.companyWebsite') IS NULL")
                 db.execute("PRAGMA user_version=2")
+            if db.execute("PRAGMA user_version").fetchone()[0] < 3:
+                db.execute("UPDATE jobs SET payload=json_set(payload, '$.country', 'سوريا') WHERE json_extract(payload, '$.country') IS NULL")
+                db.execute("PRAGMA user_version=3")
             db.commit()
         os.chmod(self.database, 0o600)
 
@@ -247,7 +260,7 @@ class FursaApp:
             db.execute("INSERT INTO rate_limits(key,count,expires) VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1", (key, now + seconds))
             count = db.execute("SELECT count FROM rate_limits WHERE key=?", (key,)).fetchone()[0]
         if count > maximum:
-            raise ApiError(429, "rate_limited", "وصلت للحد المسموح. جرّب لاحقاً.")
+            raise ApiError(429, "rate_limited", "وصلت للحد المسموح. جرّب لاحقاً.", retry_after=seconds - now % seconds)
 
     @staticmethod
     def body(env):
@@ -262,7 +275,7 @@ class FursaApp:
         if length > MAX_BODY:
             raise ApiError(413, "body_too_large", "حجم الطلب كبير جداً.")
         try:
-            data = json.loads(env["wsgi.input"].read(length).decode("utf-8"), object_pairs_hook=unique_object)
+            data = json.loads(env["wsgi.input"].read(length).decode("utf-8"), object_pairs_hook=unique_object, parse_constant=reject_nonfinite)
             if not isinstance(data, dict):
                 raise ValueError("object required")
             return data
@@ -284,6 +297,7 @@ class FursaApp:
     def view(row, private=False):
         payload = json.loads(row["payload"])
         payload.setdefault("companyWebsite", "")
+        payload.setdefault("country", "سوريا")
         status = "expired" if row["status"] in ("pending", "published") and row["expires_at"] <= iso(utc_now()) else row["status"]
         payload.update(id=row["id"], status=status, createdAt=row["created_at"], expiresAt=row["expires_at"])
         payload["employerKey"] = contact_keys(payload)[0]
@@ -312,7 +326,7 @@ class FursaApp:
         if any(len(values) != 1 for values in raw_query.values()):
             raise ApiError(422, "invalid_filter", "أرسل قيمة واحدة لكل فلتر.")
         query = {key: values[0] for key, values in raw_query.items()}
-        permitted = {"page", "pageSize", "sort", "q", "city", "category", "workType", "workMode", "experience", "currency", "salaryMin", "salaryMax", "salaryPeriod"}
+        permitted = {"page", "pageSize", "sort", "q", "country", "city", "category", "workType", "workMode", "experience", "currency", "salaryMin", "salaryMax", "salaryPeriod"}
         if admin:
             permitted.add("status")
         if set(query) - permitted:
@@ -327,7 +341,19 @@ class FursaApp:
         else:
             clauses += ["status='published'", "expires_at > ?"]
             values.append(iso(utc_now()))
-        for field, options in [("city", CITIES), ("category", CATEGORIES), ("workType", WORK_TYPES), ("workMode", WORK_MODES), ("experience", EXPERIENCES), ("currency", ["SYP", "USD"]), ("salaryPeriod", SALARY_PERIODS)]:
+        if 'country' in query:
+            try:
+                country = country_name(query['country'])
+            except ValueError:
+                raise ApiError(422, 'invalid_country', 'اختر بلداً من القائمة.', 'country')
+            clauses.append("COALESCE(json_extract(payload, '$.country'), 'سوريا')=?")
+            values.append(country)
+        if 'city' in query:
+            city = clean_text(query['city'], 'city', 1, 100)
+            escaped = city.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+            clauses.append("(json_extract(payload, '$.city')=? OR json_extract(payload, '$.city') LIKE ? ESCAPE '\\' OR json_extract(payload, '$.city') LIKE ? ESCAPE '\\' OR json_extract(payload, '$.city') LIKE ? ESCAPE '\\')")
+            values.extend([city, escaped+'،%', escaped+',%', escaped+' %'])
+        for field, options in [("category", CATEGORIES), ("workType", WORK_TYPES), ("workMode", WORK_MODES), ("experience", EXPERIENCES), ("currency", CURRENCIES), ("salaryPeriod", SALARY_PERIODS)]:
             if field in query:
                 value = enum_value(query, field, options)
                 clauses.append(f"json_extract(payload, '$.{field}')=?")
@@ -364,6 +390,19 @@ class FursaApp:
             self.limit(db, env, "read", 180, 60)
         if path == "/v1/jobs" and method == "GET":
             return 200, self.list_jobs(db, env)
+        if path == '/v1/job-locations' and method == 'GET':
+            try:
+                query = parse_qs(env.get('QUERY_STRING', ''), max_num_fields=2)
+            except ValueError:
+                raise ApiError(400, 'invalid_query', 'عدد الفلاتر كبير جداً.')
+            if set(query) != {'country'} or len(query['country']) != 1:
+                raise ApiError(422, 'invalid_filter', 'أرسل بلداً واحداً لاقتراحات المدن.')
+            try:
+                country = country_name(query.get('country', [''])[0])
+            except ValueError:
+                raise ApiError(422, 'invalid_country', 'اختر بلداً من القائمة.', 'country')
+            rows = db.execute("SELECT DISTINCT json_extract(payload, '$.city') city FROM jobs WHERE status='published' AND expires_at>? AND COALESCE(json_extract(payload, '$.country'), 'سوريا')=? ORDER BY city", [iso(utc_now()), country]).fetchall()
+            return 200, {'data': {'country': country, 'cities': [row['city'] for row in rows]}}
         if path == "/v1/jobs" and method == "POST":
             self.limit(db, env, "post", 5, 3600)
             job = validate_job(self.body(env))
@@ -388,10 +427,12 @@ class FursaApp:
             if set(data) != {"reason"}:
                 raise ApiError(422, "invalid_field", "أرسل سبب البلاغ فقط.")
             reason = clean_text(data.get("reason"), "reason", 5, 1000)
-            row = db.execute("SELECT id FROM jobs WHERE id=? AND status='published' AND expires_at>?", (match[1], iso(utc_now()))).fetchone()
-            if not row:
-                raise ApiError(404, "not_found", "هذه الفرصة غير متاحة.")
             with db:
+                # Keep withdrawal/moderation from racing the existence check.
+                db.execute("BEGIN IMMEDIATE")
+                row = db.execute("SELECT id FROM jobs WHERE id=? AND status='published' AND expires_at>?", (match[1], iso(utc_now()))).fetchone()
+                if not row:
+                    raise ApiError(404, "not_found", "هذه الفرصة غير متاحة.")
                 db.execute("INSERT INTO reports VALUES(?,?,?,?)", (str(uuid.uuid4()), match[1], reason, iso(utc_now())))
             return 201, {"success": True}
         match = re.fullmatch(rf"/v1/submissions/({UUID_PATTERN})", path)
@@ -465,7 +506,7 @@ class FursaApp:
             if error.field:
                 payload["error"]["field"] = error.field
             if status == 429:
-                headers.append(("Retry-After", "60"))
+                headers.append(("Retry-After", str(error.retry_after or 60)))
         except sqlite3.OperationalError:
             logging.exception("Database unavailable")
             status, payload = 503, {"error": {"code": "unavailable", "message": "الخدمة مشغولة حالياً. حاول مجدداً."}}
@@ -480,14 +521,14 @@ class FursaApp:
 
 
 # Do not load a permissive fallback: production refuses to start without its secret.
-application = FursaApp() if __name__ != "__main__" and os.environ.get("FURSA_TEST_IMPORT") != "1" else None
+application = SnadApp() if __name__ != "__main__" and os.environ.get("SNAD_TEST_IMPORT") != "1" else None
 
 
 if __name__ == "__main__":
     from wsgiref.simple_server import make_server
 
     logging.basicConfig(level=logging.INFO)
-    app = FursaApp()
+    app = SnadApp()
     host = os.environ.get("DEV_HOST", "127.0.0.1")
     port = int(os.environ.get("PORT", "8080"))
     print(f"Local development only: http://{host}:{port}", flush=True)

@@ -1,6 +1,17 @@
 allprojects {
     repositories {
         google()
+        // Opt-in official Google CDN for networks returning 404 from dl.google.com.
+        if (providers.gradleProperty("snadGoogleDownloadFallback").orNull == "true") {
+            maven {
+                name = "SanadGoogleDownloadFallback"
+                url = uri("https://redirector.gvt1.com/edgedl/android/maven2/")
+                content {
+                    includeGroupByRegex("com\\.google\\..*")
+                    includeGroupByRegex("androidx\\..*")
+                }
+            }
+        }
         mavenCentral()
     }
 }

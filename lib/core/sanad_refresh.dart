@@ -15,8 +15,8 @@ class SanadRefresh extends StatefulWidget {
     required this.onRefresh,
     required this.child,
     this.enabled = true,
-    this.successLabel = 'صارت النتائج محدّثة',
-    this.loadingLabel = 'عم نلاقي الجديد…',
+    this.successLabel = 'تم تحديث النتائج',
+    this.loadingLabel = 'جارٍ تحميل النتائج الجديدة…',
     this.topInset = 0,
     this.indicatorTop,
   });
@@ -112,7 +112,7 @@ class SanadRefreshState extends State<SanadRefresh> {
     try {
       error = await widget.onRefresh();
     } catch (_) {
-      error = 'تعذّر التحديث. تأكد من الاتصال وجرّب مرة تانية.';
+      error = 'تعذّر التحديث. تحقق من الاتصال وحاول مرة أخرى.';
     } finally {
       if (mounted) {
         setState(() {
@@ -147,10 +147,10 @@ class SanadRefreshState extends State<SanadRefresh> {
         : _complete
         ? _error == null
               ? widget.successLabel
-              : 'ما اكتمل التحديث'
+              : 'لم يكتمل التحديث'
         : armed
-        ? 'فلّت، وسند بيجيب الجديد'
-        : 'اسحب شوي… للجديد';
+        ? 'أفلت لتحديث النتائج'
+        : 'اسحب للأسفل لتحديث النتائج';
     final indicator = MotionSize(
       duration: motionDuration(context, _pulling ? 80 : 240),
       curve: Curves.easeOutCubic,

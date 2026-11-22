@@ -7,6 +7,14 @@
       "type": "dart",
       "program": "lib/main.dart",
       "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "سند — Profile",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "${workspaceFolder}",
+      "flutterMode": "profile"
     }
   ]
 }

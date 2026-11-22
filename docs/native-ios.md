@@ -2,7 +2,7 @@
 
 The iOS navigation bar is a real UIKit platform view, registered in
 [AppDelegate.swift](../ios/Runner/AppDelegate.swift). Its implementation lives in
-[FursaNativePlugin.swift](../ios/Runner/FursaNativePlugin.swift).
+[SnadNativePlugin.swift](../ios/Runner/SnadNativePlugin.swift).
 
 ## Native navigation
 
@@ -24,7 +24,7 @@ The three icons are original Sanad vector glyphs (home, heart and plus),
 rendered by Core Graphics into 22-point template artwork. Their 24-unit paths,
 1.7-point rounded strokes without decorative accent fills come from the same JSON source as
 Flutter. [generate_ui_icons.py](../tools/generate_ui_icons.py) generates both
-Dart geometry and [FursaIconCatalog.swift](../ios/Runner/FursaIconCatalog.swift),
+Dart geometry and [SnadIconCatalog.swift](../ios/Runner/SnadIconCatalog.swift),
 which is registered in the Runner Sources build phase. UIKit still owns
 labels, glass and selection, and cannot enlarge an SF Symbol configuration on
 top of the explicit artwork. Three destinations
@@ -36,8 +36,8 @@ selection. Native selection reports back to Flutter; programmatic Flutter tab
 changes also synchronize the system selection. UIKit owns Reduce Motion,
 VoiceOver and selection feedback for the native tab bar.
 
-The platform-view identifier is `app.fursa/navigation`. Each view uses its own
-`app.fursa/navigation/<viewId>` method channel:
+The platform-view identifier is `com.jobsnad.snad/navigation`. Each view uses its own
+`com.jobsnad.snad/navigation/<viewId>` method channel:
 
 | Direction | Method | Argument/result |
 | --- | --- | --- |
@@ -58,7 +58,7 @@ approximation rather than Apple's Liquid Glass rendering.
 
 ## Symbols and haptics
 
-[NativeBridge](../lib/core/native_bridge.dart) uses `app.fursa/native`:
+[NativeBridge](../lib/core/native_bridge.dart) uses `com.jobsnad.snad/native`:
 
 - `symbol(name, size: 24, color: ...)` requests a transparent, 3× PNG of an SF
   Symbol. Dart caches the result. Missing symbols or unsupported platforms
@@ -126,20 +126,20 @@ The script requires Pillow on the development machine, not at app runtime. iOS
 icons are opaque RGB PNGs; iOS applies its own icon mask. Do not add baked-in
 round corners to the iOS asset catalog.
 
-The generated personal `DEVELOPMENT_TEAM` was removed. To install a signed
-iPhone build or publish, open `ios/Runner.xcworkspace`, choose the actual team's
-signing identity and a registered bundle ID, then build with the production API:
+For a signed iPhone build or archive, open `ios/Runner.xcworkspace` and choose
+the production owner's paid Apple Developer team and registered bundle ID.
+The first release is `1.0.0+1`. Production API, support and privacy URLs are
+included by default; no production JSON file or Dart defines are required.
 
 ```sh
-flutter build ipa --release \
-  --dart-define=API_BASE_URL=https://YOUR_API_HOST \
-  --dart-define=SUPPORT_URL=https://YOUR_SITE/support \
-  --dart-define=PRIVACY_URL=https://YOUR_SITE/privacy
+flutter build ios --release --no-codesign
+open ios/Runner.xcworkspace
 ```
 
-The hostnames above are placeholders. Live release builds require all three
-HTTPS URLs. Never distribute a production build with an empty `API_BASE_URL`,
-which intentionally enables local demo mode.
+Use Product → Archive, then Validate and Distribute in Xcode when the owner
+is ready to upload. See [first manual release](first-app-store-release.md).
+Only the explicit `API_BASE_URL=demo` override enables demo mode.
+
 
 ## Verification
 
@@ -150,7 +150,7 @@ an arm64 iOS Simulator type-check against the installed iOS 26.5 SDK and Flutter
 framework; the native-navigation Dart file passed analysis.
 
 A temporary XCTest UI runner outside the repository verified the actual UIKit
-bar on an isolated iPhone 17 / iOS 26.5 simulator named **Fursa Reference Preview**
+bar on an isolated iPhone 17 / iOS 26.5 simulator named **Snad Reference Preview**
 (`2C07C081-9785-4835-BEC1-B3156A7F7BE9`). It found exactly three UITabBar buttons
 and tapped Saved, Add Opportunity and Opportunities, asserting the selected
 state after every tap. The final native-tab check passed. The original-vector revision passed a second
@@ -175,7 +175,7 @@ not separately exercised and are not claimed by that tap check.
 After native navigation changes, type-check the Swift bridge and build the
 actual simulator app. Dart analysis alone cannot validate the UIKit integration.
 The Sanad change keeps the existing AppDelegate plugin registration and adds
-the generated `FursaIconCatalog.swift` to Runner Sources. Technical `app.fursa.*`
+the generated `SnadIconCatalog.swift` to Runner Sources. Technical `com.jobsnad.snad.*`
 identifiers and storage namespaces remain stable so rebranding does not lose
 saved jobs or announcement management credentials.
 
@@ -217,3 +217,12 @@ are not evidence for the replacement UITabBar.
 - [URL Launcher platform configuration](https://pub.dev/packages/url_launcher)
 - [Apple: privacy manifest files](https://developer.apple.com/documentation/bundleresources/privacy-manifest-files)
 - [Apple: collected data types](https://developer.apple.com/documentation/bundleresources/app-privacy-configuration/nsprivacycollecteddatatypes/nsprivacycollecteddatatype)
+
+
+## Local iPhone install — 22 November 2026
+
+Prepared `1.0.0+1` with default production API/support/privacy settings; no production JSON file is required. Analysis and 25 focused default-settings, Syria-scope, access and experience checks passed. iOS Release compiled successfully.
+
+Installed a separate «سند تجربة» on Abdulrahman's iPhone 13 (`com.abdulrahman.snad.preview`) from an isolated temporary source copy, using his free team and Google test ads. Verified codesign, matching device, TeamIdentifier, TimeToLive=7, version/build and provisioning expiration 29 November 2026 at 17:19 Damascus time. Production signing settings remain separate.
+
+Installation succeeded. The first launch was denied by iOS security, which requires checking developer trust on the phone; local codesign verification passed. Successful app launch and on-device user flows have not yet been confirmed. No App Store upload or submission occurred.

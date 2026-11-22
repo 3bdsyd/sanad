@@ -1,0 +1,3511 @@
+{
+  "sources": {
+    "cldr": "Unicode CLDR 48.0.0, unicode-org/cldr-json",
+    "phone": "Google libphonenumber PhoneNumberMetadata.xml, retrieved 2026-11-03",
+    "phoneSha256": "b6491939ddaeb9d585a34fe0f0ebd096e83c5ac9a1c5d6dddf38ba4b162b28ca"
+  },
+  "countries": [
+    {
+      "code": "AC",
+      "name": "جزيرة أسينشيون",
+      "englishName": "Ascension Island",
+      "currency": "SHP",
+      "dialCode": "247",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزيرة أسينشيون",
+        "Ascension Island",
+        "AC"
+      ]
+    },
+    {
+      "code": "AD",
+      "name": "أندورا",
+      "englishName": "Andorra",
+      "currency": "EUR",
+      "dialCode": "376",
+      "nationalPrefix": "",
+      "aliases": [
+        "أندورا",
+        "Andorra",
+        "AD"
+      ]
+    },
+    {
+      "code": "AE",
+      "name": "الإمارات",
+      "englishName": "United Arab Emirates",
+      "currency": "AED",
+      "dialCode": "971",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الإمارات العربية المتحدة",
+        "United Arab Emirates",
+        "AE",
+        "UAE"
+      ]
+    },
+    {
+      "code": "AF",
+      "name": "أفغانستان",
+      "englishName": "Afghanistan",
+      "currency": "AFN",
+      "dialCode": "93",
+      "nationalPrefix": "0",
+      "aliases": [
+        "أفغانستان",
+        "Afghanistan",
+        "AF"
+      ]
+    },
+    {
+      "code": "AG",
+      "name": "أنتيغوا وبربودا",
+      "englishName": "Antigua & Barbuda",
+      "currency": "XCD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "أنتيغوا وبربودا",
+        "Antigua & Barbuda",
+        "AG"
+      ]
+    },
+    {
+      "code": "AI",
+      "name": "أنغويلا",
+      "englishName": "Anguilla",
+      "currency": "XCD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "أنغويلا",
+        "Anguilla",
+        "AI"
+      ]
+    },
+    {
+      "code": "AL",
+      "name": "ألبانيا",
+      "englishName": "Albania",
+      "currency": "ALL",
+      "dialCode": "355",
+      "nationalPrefix": "0",
+      "aliases": [
+        "ألبانيا",
+        "Albania",
+        "AL"
+      ]
+    },
+    {
+      "code": "AM",
+      "name": "أرمينيا",
+      "englishName": "Armenia",
+      "currency": "AMD",
+      "dialCode": "374",
+      "nationalPrefix": "0",
+      "aliases": [
+        "أرمينيا",
+        "Armenia",
+        "AM"
+      ]
+    },
+    {
+      "code": "AO",
+      "name": "أنغولا",
+      "englishName": "Angola",
+      "currency": "AOA",
+      "dialCode": "244",
+      "nationalPrefix": "",
+      "aliases": [
+        "أنغولا",
+        "Angola",
+        "AO"
+      ]
+    },
+    {
+      "code": "AQ",
+      "name": "أنتاركتيكا",
+      "englishName": "Antarctica",
+      "currency": "USD",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "أنتاركتيكا",
+        "Antarctica",
+        "AQ"
+      ]
+    },
+    {
+      "code": "AR",
+      "name": "الأرجنتين",
+      "englishName": "Argentina",
+      "currency": "ARS",
+      "dialCode": "54",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الأرجنتين",
+        "Argentina",
+        "AR"
+      ]
+    },
+    {
+      "code": "AS",
+      "name": "ساموا الأمريكية",
+      "englishName": "American Samoa",
+      "currency": "USD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "ساموا الأمريكية",
+        "American Samoa",
+        "AS"
+      ]
+    },
+    {
+      "code": "AT",
+      "name": "النمسا",
+      "englishName": "Austria",
+      "currency": "EUR",
+      "dialCode": "43",
+      "nationalPrefix": "0",
+      "aliases": [
+        "النمسا",
+        "Austria",
+        "AT"
+      ]
+    },
+    {
+      "code": "AU",
+      "name": "أستراليا",
+      "englishName": "Australia",
+      "currency": "AUD",
+      "dialCode": "61",
+      "nationalPrefix": "0",
+      "aliases": [
+        "أستراليا",
+        "Australia",
+        "AU"
+      ]
+    },
+    {
+      "code": "AW",
+      "name": "أروبا",
+      "englishName": "Aruba",
+      "currency": "AWG",
+      "dialCode": "297",
+      "nationalPrefix": "",
+      "aliases": [
+        "أروبا",
+        "Aruba",
+        "AW"
+      ]
+    },
+    {
+      "code": "AX",
+      "name": "جزر آلاند",
+      "englishName": "Åland Islands",
+      "currency": "EUR",
+      "dialCode": "358",
+      "nationalPrefix": "0",
+      "aliases": [
+        "جزر آلاند",
+        "Åland Islands",
+        "AX"
+      ]
+    },
+    {
+      "code": "AZ",
+      "name": "أذربيجان",
+      "englishName": "Azerbaijan",
+      "currency": "AZN",
+      "dialCode": "994",
+      "nationalPrefix": "0",
+      "aliases": [
+        "أذربيجان",
+        "Azerbaijan",
+        "AZ"
+      ]
+    },
+    {
+      "code": "BA",
+      "name": "البوسنة والهرسك",
+      "englishName": "Bosnia & Herzegovina",
+      "currency": "BAM",
+      "dialCode": "387",
+      "nationalPrefix": "0",
+      "aliases": [
+        "البوسنة والهرسك",
+        "Bosnia & Herzegovina",
+        "BA"
+      ]
+    },
+    {
+      "code": "BB",
+      "name": "بربادوس",
+      "englishName": "Barbados",
+      "currency": "BBD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "بربادوس",
+        "Barbados",
+        "BB"
+      ]
+    },
+    {
+      "code": "BD",
+      "name": "بنغلاديش",
+      "englishName": "Bangladesh",
+      "currency": "BDT",
+      "dialCode": "880",
+      "nationalPrefix": "0",
+      "aliases": [
+        "بنغلاديش",
+        "Bangladesh",
+        "BD"
+      ]
+    },
+    {
+      "code": "BE",
+      "name": "بلجيكا",
+      "englishName": "Belgium",
+      "currency": "EUR",
+      "dialCode": "32",
+      "nationalPrefix": "0",
+      "aliases": [
+        "بلجيكا",
+        "Belgium",
+        "BE"
+      ]
+    },
+    {
+      "code": "BF",
+      "name": "بوركينا فاسو",
+      "englishName": "Burkina Faso",
+      "currency": "XOF",
+      "dialCode": "226",
+      "nationalPrefix": "",
+      "aliases": [
+        "بوركينا فاسو",
+        "Burkina Faso",
+        "BF"
+      ]
+    },
+    {
+      "code": "BG",
+      "name": "بلغاريا",
+      "englishName": "Bulgaria",
+      "currency": "EUR",
+      "dialCode": "359",
+      "nationalPrefix": "0",
+      "aliases": [
+        "بلغاريا",
+        "Bulgaria",
+        "BG"
+      ]
+    },
+    {
+      "code": "BH",
+      "name": "البحرين",
+      "englishName": "Bahrain",
+      "currency": "BHD",
+      "dialCode": "973",
+      "nationalPrefix": "",
+      "aliases": [
+        "البحرين",
+        "Bahrain",
+        "BH"
+      ]
+    },
+    {
+      "code": "BI",
+      "name": "بوروندي",
+      "englishName": "Burundi",
+      "currency": "BIF",
+      "dialCode": "257",
+      "nationalPrefix": "",
+      "aliases": [
+        "بوروندي",
+        "Burundi",
+        "BI"
+      ]
+    },
+    {
+      "code": "BJ",
+      "name": "بنين",
+      "englishName": "Benin",
+      "currency": "XOF",
+      "dialCode": "229",
+      "nationalPrefix": "",
+      "aliases": [
+        "بنين",
+        "Benin",
+        "BJ"
+      ]
+    },
+    {
+      "code": "BL",
+      "name": "سان بارتليمي",
+      "englishName": "St. Barthélemy",
+      "currency": "EUR",
+      "dialCode": "590",
+      "nationalPrefix": "0",
+      "aliases": [
+        "سان بارتليمي",
+        "St. Barthélemy",
+        "BL"
+      ]
+    },
+    {
+      "code": "BM",
+      "name": "برمودا",
+      "englishName": "Bermuda",
+      "currency": "BMD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "برمودا",
+        "Bermuda",
+        "BM"
+      ]
+    },
+    {
+      "code": "BN",
+      "name": "بروناي",
+      "englishName": "Brunei",
+      "currency": "BND",
+      "dialCode": "673",
+      "nationalPrefix": "",
+      "aliases": [
+        "بروناي",
+        "Brunei",
+        "BN"
+      ]
+    },
+    {
+      "code": "BO",
+      "name": "بوليفيا",
+      "englishName": "Bolivia",
+      "currency": "BOB",
+      "dialCode": "591",
+      "nationalPrefix": "0",
+      "aliases": [
+        "بوليفيا",
+        "Bolivia",
+        "BO"
+      ]
+    },
+    {
+      "code": "BQ",
+      "name": "هولندا الكاريبية",
+      "englishName": "Caribbean Netherlands",
+      "currency": "USD",
+      "dialCode": "599",
+      "nationalPrefix": "",
+      "aliases": [
+        "هولندا الكاريبية",
+        "Caribbean Netherlands",
+        "BQ"
+      ]
+    },
+    {
+      "code": "BR",
+      "name": "البرازيل",
+      "englishName": "Brazil",
+      "currency": "BRL",
+      "dialCode": "55",
+      "nationalPrefix": "0",
+      "aliases": [
+        "البرازيل",
+        "Brazil",
+        "BR"
+      ]
+    },
+    {
+      "code": "BS",
+      "name": "جزر البهاما",
+      "englishName": "Bahamas",
+      "currency": "BSD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "جزر البهاما",
+        "Bahamas",
+        "BS"
+      ]
+    },
+    {
+      "code": "BT",
+      "name": "بوتان",
+      "englishName": "Bhutan",
+      "currency": "BTN",
+      "dialCode": "975",
+      "nationalPrefix": "",
+      "aliases": [
+        "بوتان",
+        "Bhutan",
+        "BT"
+      ]
+    },
+    {
+      "code": "BV",
+      "name": "جزيرة بوفيه",
+      "englishName": "Bouvet Island",
+      "currency": "NOK",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزيرة بوفيه",
+        "Bouvet Island",
+        "BV"
+      ]
+    },
+    {
+      "code": "BW",
+      "name": "بوتسوانا",
+      "englishName": "Botswana",
+      "currency": "BWP",
+      "dialCode": "267",
+      "nationalPrefix": "",
+      "aliases": [
+        "بوتسوانا",
+        "Botswana",
+        "BW"
+      ]
+    },
+    {
+      "code": "BY",
+      "name": "بيلاروس",
+      "englishName": "Belarus",
+      "currency": "BYN",
+      "dialCode": "375",
+      "nationalPrefix": "8",
+      "aliases": [
+        "بيلاروس",
+        "Belarus",
+        "BY"
+      ]
+    },
+    {
+      "code": "BZ",
+      "name": "بليز",
+      "englishName": "Belize",
+      "currency": "BZD",
+      "dialCode": "501",
+      "nationalPrefix": "",
+      "aliases": [
+        "بليز",
+        "Belize",
+        "BZ"
+      ]
+    },
+    {
+      "code": "CA",
+      "name": "كندا",
+      "englishName": "Canada",
+      "currency": "CAD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "كندا",
+        "Canada",
+        "CA"
+      ]
+    },
+    {
+      "code": "CC",
+      "name": "جزر كوكوس (كيلينغ)",
+      "englishName": "Cocos (Keeling) Islands",
+      "currency": "AUD",
+      "dialCode": "61",
+      "nationalPrefix": "0",
+      "aliases": [
+        "جزر كوكوس (كيلينغ)",
+        "Cocos (Keeling) Islands",
+        "CC"
+      ]
+    },
+    {
+      "code": "CD",
+      "name": "الكونغو - كينشاسا",
+      "englishName": "Congo - Kinshasa",
+      "currency": "CDF",
+      "dialCode": "243",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الكونغو - كينشاسا",
+        "Congo - Kinshasa",
+        "CD"
+      ]
+    },
+    {
+      "code": "CF",
+      "name": "جمهورية أفريقيا الوسطى",
+      "englishName": "Central African Republic",
+      "currency": "XAF",
+      "dialCode": "236",
+      "nationalPrefix": "",
+      "aliases": [
+        "جمهورية أفريقيا الوسطى",
+        "Central African Republic",
+        "CF"
+      ]
+    },
+    {
+      "code": "CG",
+      "name": "الكونغو - برازافيل",
+      "englishName": "Congo - Brazzaville",
+      "currency": "XAF",
+      "dialCode": "242",
+      "nationalPrefix": "",
+      "aliases": [
+        "الكونغو - برازافيل",
+        "Congo - Brazzaville",
+        "CG"
+      ]
+    },
+    {
+      "code": "CH",
+      "name": "سويسرا",
+      "englishName": "Switzerland",
+      "currency": "CHF",
+      "dialCode": "41",
+      "nationalPrefix": "0",
+      "aliases": [
+        "سويسرا",
+        "Switzerland",
+        "CH"
+      ]
+    },
+    {
+      "code": "CI",
+      "name": "ساحل العاج",
+      "englishName": "Côte d’Ivoire",
+      "currency": "XOF",
+      "dialCode": "225",
+      "nationalPrefix": "",
+      "aliases": [
+        "ساحل العاج",
+        "Côte d’Ivoire",
+        "CI"
+      ]
+    },
+    {
+      "code": "CK",
+      "name": "جزر كوك",
+      "englishName": "Cook Islands",
+      "currency": "NZD",
+      "dialCode": "682",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزر كوك",
+        "Cook Islands",
+        "CK"
+      ]
+    },
+    {
+      "code": "CL",
+      "name": "تشيلي",
+      "englishName": "Chile",
+      "currency": "CLP",
+      "dialCode": "56",
+      "nationalPrefix": "",
+      "aliases": [
+        "تشيلي",
+        "Chile",
+        "CL"
+      ]
+    },
+    {
+      "code": "CM",
+      "name": "الكاميرون",
+      "englishName": "Cameroon",
+      "currency": "XAF",
+      "dialCode": "237",
+      "nationalPrefix": "",
+      "aliases": [
+        "الكاميرون",
+        "Cameroon",
+        "CM"
+      ]
+    },
+    {
+      "code": "CN",
+      "name": "الصين",
+      "englishName": "China",
+      "currency": "CNY",
+      "dialCode": "86",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الصين",
+        "China",
+        "CN"
+      ]
+    },
+    {
+      "code": "CO",
+      "name": "كولومبيا",
+      "englishName": "Colombia",
+      "currency": "COP",
+      "dialCode": "57",
+      "nationalPrefix": "0",
+      "aliases": [
+        "كولومبيا",
+        "Colombia",
+        "CO"
+      ]
+    },
+    {
+      "code": "CP",
+      "name": "جزيرة كليبيرتون",
+      "englishName": "Clipperton Island",
+      "currency": "USD",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزيرة كليبيرتون",
+        "Clipperton Island",
+        "CP"
+      ]
+    },
+    {
+      "code": "CQ",
+      "name": "سارك",
+      "englishName": "Sark",
+      "currency": "USD",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "سارك",
+        "Sark",
+        "CQ"
+      ]
+    },
+    {
+      "code": "CR",
+      "name": "كوستاريكا",
+      "englishName": "Costa Rica",
+      "currency": "CRC",
+      "dialCode": "506",
+      "nationalPrefix": "",
+      "aliases": [
+        "كوستاريكا",
+        "Costa Rica",
+        "CR"
+      ]
+    },
+    {
+      "code": "CU",
+      "name": "كوبا",
+      "englishName": "Cuba",
+      "currency": "CUP",
+      "dialCode": "53",
+      "nationalPrefix": "0",
+      "aliases": [
+        "كوبا",
+        "Cuba",
+        "CU"
+      ]
+    },
+    {
+      "code": "CV",
+      "name": "الرأس الأخضر",
+      "englishName": "Cape Verde",
+      "currency": "CVE",
+      "dialCode": "238",
+      "nationalPrefix": "",
+      "aliases": [
+        "الرأس الأخضر",
+        "Cape Verde",
+        "CV"
+      ]
+    },
+    {
+      "code": "CW",
+      "name": "كوراساو",
+      "englishName": "Curaçao",
+      "currency": "XCG",
+      "dialCode": "599",
+      "nationalPrefix": "",
+      "aliases": [
+        "كوراساو",
+        "Curaçao",
+        "CW"
+      ]
+    },
+    {
+      "code": "CX",
+      "name": "جزيرة كريسماس",
+      "englishName": "Christmas Island",
+      "currency": "AUD",
+      "dialCode": "61",
+      "nationalPrefix": "0",
+      "aliases": [
+        "جزيرة كريسماس",
+        "Christmas Island",
+        "CX"
+      ]
+    },
+    {
+      "code": "CY",
+      "name": "قبرص",
+      "englishName": "Cyprus",
+      "currency": "EUR",
+      "dialCode": "357",
+      "nationalPrefix": "",
+      "aliases": [
+        "قبرص",
+        "Cyprus",
+        "CY"
+      ]
+    },
+    {
+      "code": "CZ",
+      "name": "التشيك",
+      "englishName": "Czechia",
+      "currency": "CZK",
+      "dialCode": "420",
+      "nationalPrefix": "",
+      "aliases": [
+        "التشيك",
+        "Czechia",
+        "CZ"
+      ]
+    },
+    {
+      "code": "DE",
+      "name": "ألمانيا",
+      "englishName": "Germany",
+      "currency": "EUR",
+      "dialCode": "49",
+      "nationalPrefix": "0",
+      "aliases": [
+        "ألمانيا",
+        "Germany",
+        "DE"
+      ]
+    },
+    {
+      "code": "DG",
+      "name": "دييغو غارسيا",
+      "englishName": "Diego Garcia",
+      "currency": "USD",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "دييغو غارسيا",
+        "Diego Garcia",
+        "DG"
+      ]
+    },
+    {
+      "code": "DJ",
+      "name": "جيبوتي",
+      "englishName": "Djibouti",
+      "currency": "DJF",
+      "dialCode": "253",
+      "nationalPrefix": "",
+      "aliases": [
+        "جيبوتي",
+        "Djibouti",
+        "DJ"
+      ]
+    },
+    {
+      "code": "DK",
+      "name": "الدانمرك",
+      "englishName": "Denmark",
+      "currency": "DKK",
+      "dialCode": "45",
+      "nationalPrefix": "",
+      "aliases": [
+        "الدانمرك",
+        "Denmark",
+        "DK"
+      ]
+    },
+    {
+      "code": "DM",
+      "name": "دومينيكا",
+      "englishName": "Dominica",
+      "currency": "XCD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "دومينيكا",
+        "Dominica",
+        "DM"
+      ]
+    },
+    {
+      "code": "DO",
+      "name": "جمهورية الدومينيكان",
+      "englishName": "Dominican Republic",
+      "currency": "DOP",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "جمهورية الدومينيكان",
+        "Dominican Republic",
+        "DO"
+      ]
+    },
+    {
+      "code": "DZ",
+      "name": "الجزائر",
+      "englishName": "Algeria",
+      "currency": "DZD",
+      "dialCode": "213",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الجزائر",
+        "Algeria",
+        "DZ"
+      ]
+    },
+    {
+      "code": "EA",
+      "name": "سيوتا وميليلا",
+      "englishName": "Ceuta & Melilla",
+      "currency": "EUR",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "سيوتا وميليلا",
+        "Ceuta & Melilla",
+        "EA"
+      ]
+    },
+    {
+      "code": "EC",
+      "name": "الإكوادور",
+      "englishName": "Ecuador",
+      "currency": "USD",
+      "dialCode": "593",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الإكوادور",
+        "Ecuador",
+        "EC"
+      ]
+    },
+    {
+      "code": "EE",
+      "name": "إستونيا",
+      "englishName": "Estonia",
+      "currency": "EUR",
+      "dialCode": "372",
+      "nationalPrefix": "",
+      "aliases": [
+        "إستونيا",
+        "Estonia",
+        "EE"
+      ]
+    },
+    {
+      "code": "EG",
+      "name": "مصر",
+      "englishName": "Egypt",
+      "currency": "EGP",
+      "dialCode": "20",
+      "nationalPrefix": "0",
+      "aliases": [
+        "مصر",
+        "Egypt",
+        "EG"
+      ]
+    },
+    {
+      "code": "EH",
+      "name": "الصحراء الغربية",
+      "englishName": "Western Sahara",
+      "currency": "MAD",
+      "dialCode": "212",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الصحراء الغربية",
+        "Western Sahara",
+        "EH"
+      ]
+    },
+    {
+      "code": "ER",
+      "name": "إريتريا",
+      "englishName": "Eritrea",
+      "currency": "ERN",
+      "dialCode": "291",
+      "nationalPrefix": "0",
+      "aliases": [
+        "إريتريا",
+        "Eritrea",
+        "ER"
+      ]
+    },
+    {
+      "code": "ES",
+      "name": "إسبانيا",
+      "englishName": "Spain",
+      "currency": "EUR",
+      "dialCode": "34",
+      "nationalPrefix": "",
+      "aliases": [
+        "إسبانيا",
+        "Spain",
+        "ES"
+      ]
+    },
+    {
+      "code": "ET",
+      "name": "إثيوبيا",
+      "englishName": "Ethiopia",
+      "currency": "ETB",
+      "dialCode": "251",
+      "nationalPrefix": "0",
+      "aliases": [
+        "إثيوبيا",
+        "Ethiopia",
+        "ET"
+      ]
+    },
+    {
+      "code": "FI",
+      "name": "فنلندا",
+      "englishName": "Finland",
+      "currency": "EUR",
+      "dialCode": "358",
+      "nationalPrefix": "0",
+      "aliases": [
+        "فنلندا",
+        "Finland",
+        "FI"
+      ]
+    },
+    {
+      "code": "FJ",
+      "name": "فيجي",
+      "englishName": "Fiji",
+      "currency": "FJD",
+      "dialCode": "679",
+      "nationalPrefix": "",
+      "aliases": [
+        "فيجي",
+        "Fiji",
+        "FJ"
+      ]
+    },
+    {
+      "code": "FK",
+      "name": "جزر فوكلاند",
+      "englishName": "Falkland Islands",
+      "currency": "FKP",
+      "dialCode": "500",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزر فوكلاند",
+        "Falkland Islands",
+        "FK"
+      ]
+    },
+    {
+      "code": "FM",
+      "name": "ميكرونيزيا",
+      "englishName": "Micronesia",
+      "currency": "USD",
+      "dialCode": "691",
+      "nationalPrefix": "",
+      "aliases": [
+        "ميكرونيزيا",
+        "Micronesia",
+        "FM"
+      ]
+    },
+    {
+      "code": "FO",
+      "name": "جزر فارو",
+      "englishName": "Faroe Islands",
+      "currency": "DKK",
+      "dialCode": "298",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزر فارو",
+        "Faroe Islands",
+        "FO"
+      ]
+    },
+    {
+      "code": "FR",
+      "name": "فرنسا",
+      "englishName": "France",
+      "currency": "EUR",
+      "dialCode": "33",
+      "nationalPrefix": "0",
+      "aliases": [
+        "فرنسا",
+        "France",
+        "FR"
+      ]
+    },
+    {
+      "code": "GA",
+      "name": "الغابون",
+      "englishName": "Gabon",
+      "currency": "XAF",
+      "dialCode": "241",
+      "nationalPrefix": "",
+      "aliases": [
+        "الغابون",
+        "Gabon",
+        "GA"
+      ]
+    },
+    {
+      "code": "GB",
+      "name": "المملكة المتحدة",
+      "englishName": "United Kingdom",
+      "currency": "GBP",
+      "dialCode": "44",
+      "nationalPrefix": "0",
+      "aliases": [
+        "المملكة المتحدة",
+        "United Kingdom",
+        "GB"
+      ]
+    },
+    {
+      "code": "GD",
+      "name": "غرينادا",
+      "englishName": "Grenada",
+      "currency": "XCD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "غرينادا",
+        "Grenada",
+        "GD"
+      ]
+    },
+    {
+      "code": "GE",
+      "name": "جورجيا",
+      "englishName": "Georgia",
+      "currency": "GEL",
+      "dialCode": "995",
+      "nationalPrefix": "0",
+      "aliases": [
+        "جورجيا",
+        "Georgia",
+        "GE"
+      ]
+    },
+    {
+      "code": "GF",
+      "name": "غويانا الفرنسية",
+      "englishName": "French Guiana",
+      "currency": "EUR",
+      "dialCode": "594",
+      "nationalPrefix": "0",
+      "aliases": [
+        "غويانا الفرنسية",
+        "French Guiana",
+        "GF"
+      ]
+    },
+    {
+      "code": "GG",
+      "name": "غيرنزي",
+      "englishName": "Guernsey",
+      "currency": "GBP",
+      "dialCode": "44",
+      "nationalPrefix": "0",
+      "aliases": [
+        "غيرنزي",
+        "Guernsey",
+        "GG"
+      ]
+    },
+    {
+      "code": "GH",
+      "name": "غانا",
+      "englishName": "Ghana",
+      "currency": "GHS",
+      "dialCode": "233",
+      "nationalPrefix": "0",
+      "aliases": [
+        "غانا",
+        "Ghana",
+        "GH"
+      ]
+    },
+    {
+      "code": "GI",
+      "name": "جبل طارق",
+      "englishName": "Gibraltar",
+      "currency": "GIP",
+      "dialCode": "350",
+      "nationalPrefix": "",
+      "aliases": [
+        "جبل طارق",
+        "Gibraltar",
+        "GI"
+      ]
+    },
+    {
+      "code": "GL",
+      "name": "غرينلاند",
+      "englishName": "Greenland",
+      "currency": "DKK",
+      "dialCode": "299",
+      "nationalPrefix": "",
+      "aliases": [
+        "غرينلاند",
+        "Greenland",
+        "GL"
+      ]
+    },
+    {
+      "code": "GM",
+      "name": "غامبيا",
+      "englishName": "Gambia",
+      "currency": "GMD",
+      "dialCode": "220",
+      "nationalPrefix": "",
+      "aliases": [
+        "غامبيا",
+        "Gambia",
+        "GM"
+      ]
+    },
+    {
+      "code": "GN",
+      "name": "غينيا",
+      "englishName": "Guinea",
+      "currency": "GNF",
+      "dialCode": "224",
+      "nationalPrefix": "",
+      "aliases": [
+        "غينيا",
+        "Guinea",
+        "GN"
+      ]
+    },
+    {
+      "code": "GP",
+      "name": "غوادلوب",
+      "englishName": "Guadeloupe",
+      "currency": "EUR",
+      "dialCode": "590",
+      "nationalPrefix": "0",
+      "aliases": [
+        "غوادلوب",
+        "Guadeloupe",
+        "GP"
+      ]
+    },
+    {
+      "code": "GQ",
+      "name": "غينيا الاستوائية",
+      "englishName": "Equatorial Guinea",
+      "currency": "XAF",
+      "dialCode": "240",
+      "nationalPrefix": "",
+      "aliases": [
+        "غينيا الاستوائية",
+        "Equatorial Guinea",
+        "GQ"
+      ]
+    },
+    {
+      "code": "GR",
+      "name": "اليونان",
+      "englishName": "Greece",
+      "currency": "EUR",
+      "dialCode": "30",
+      "nationalPrefix": "",
+      "aliases": [
+        "اليونان",
+        "Greece",
+        "GR"
+      ]
+    },
+    {
+      "code": "GS",
+      "name": "جورجيا الجنوبية وجزر ساندويتش الجنوبية",
+      "englishName": "South Georgia & South Sandwich Islands",
+      "currency": "GBP",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "جورجيا الجنوبية وجزر ساندويتش الجنوبية",
+        "South Georgia & South Sandwich Islands",
+        "GS"
+      ]
+    },
+    {
+      "code": "GT",
+      "name": "غواتيمالا",
+      "englishName": "Guatemala",
+      "currency": "GTQ",
+      "dialCode": "502",
+      "nationalPrefix": "",
+      "aliases": [
+        "غواتيمالا",
+        "Guatemala",
+        "GT"
+      ]
+    },
+    {
+      "code": "GU",
+      "name": "غوام",
+      "englishName": "Guam",
+      "currency": "USD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "غوام",
+        "Guam",
+        "GU"
+      ]
+    },
+    {
+      "code": "GW",
+      "name": "غينيا بيساو",
+      "englishName": "Guinea-Bissau",
+      "currency": "XOF",
+      "dialCode": "245",
+      "nationalPrefix": "",
+      "aliases": [
+        "غينيا بيساو",
+        "Guinea-Bissau",
+        "GW"
+      ]
+    },
+    {
+      "code": "GY",
+      "name": "غيانا",
+      "englishName": "Guyana",
+      "currency": "GYD",
+      "dialCode": "592",
+      "nationalPrefix": "",
+      "aliases": [
+        "غيانا",
+        "Guyana",
+        "GY"
+      ]
+    },
+    {
+      "code": "HK",
+      "name": "هونغ كونغ الصينية (منطقة إدارية خاصة)",
+      "englishName": "Hong Kong SAR China",
+      "currency": "HKD",
+      "dialCode": "852",
+      "nationalPrefix": "",
+      "aliases": [
+        "هونغ كونغ الصينية (منطقة إدارية خاصة)",
+        "Hong Kong SAR China",
+        "HK"
+      ]
+    },
+    {
+      "code": "HM",
+      "name": "جزيرة هيرد وجزر ماكدونالد",
+      "englishName": "Heard & McDonald Islands",
+      "currency": "AUD",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزيرة هيرد وجزر ماكدونالد",
+        "Heard & McDonald Islands",
+        "HM"
+      ]
+    },
+    {
+      "code": "HN",
+      "name": "هندوراس",
+      "englishName": "Honduras",
+      "currency": "HNL",
+      "dialCode": "504",
+      "nationalPrefix": "",
+      "aliases": [
+        "هندوراس",
+        "Honduras",
+        "HN"
+      ]
+    },
+    {
+      "code": "HR",
+      "name": "كرواتيا",
+      "englishName": "Croatia",
+      "currency": "EUR",
+      "dialCode": "385",
+      "nationalPrefix": "0",
+      "aliases": [
+        "كرواتيا",
+        "Croatia",
+        "HR"
+      ]
+    },
+    {
+      "code": "HT",
+      "name": "هايتي",
+      "englishName": "Haiti",
+      "currency": "HTG",
+      "dialCode": "509",
+      "nationalPrefix": "",
+      "aliases": [
+        "هايتي",
+        "Haiti",
+        "HT"
+      ]
+    },
+    {
+      "code": "HU",
+      "name": "هنغاريا",
+      "englishName": "Hungary",
+      "currency": "HUF",
+      "dialCode": "36",
+      "nationalPrefix": "06",
+      "aliases": [
+        "هنغاريا",
+        "Hungary",
+        "HU"
+      ]
+    },
+    {
+      "code": "IC",
+      "name": "جزر الكناري",
+      "englishName": "Canary Islands",
+      "currency": "EUR",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزر الكناري",
+        "Canary Islands",
+        "IC"
+      ]
+    },
+    {
+      "code": "ID",
+      "name": "إندونيسيا",
+      "englishName": "Indonesia",
+      "currency": "IDR",
+      "dialCode": "62",
+      "nationalPrefix": "0",
+      "aliases": [
+        "إندونيسيا",
+        "Indonesia",
+        "ID"
+      ]
+    },
+    {
+      "code": "IE",
+      "name": "أيرلندا",
+      "englishName": "Ireland",
+      "currency": "EUR",
+      "dialCode": "353",
+      "nationalPrefix": "0",
+      "aliases": [
+        "أيرلندا",
+        "Ireland",
+        "IE"
+      ]
+    },
+    {
+      "code": "IL",
+      "name": "إسرائيل",
+      "englishName": "Israel",
+      "currency": "ILS",
+      "dialCode": "972",
+      "nationalPrefix": "0",
+      "aliases": [
+        "إسرائيل",
+        "Israel",
+        "IL"
+      ]
+    },
+    {
+      "code": "IM",
+      "name": "جزيرة مان",
+      "englishName": "Isle of Man",
+      "currency": "GBP",
+      "dialCode": "44",
+      "nationalPrefix": "0",
+      "aliases": [
+        "جزيرة مان",
+        "Isle of Man",
+        "IM"
+      ]
+    },
+    {
+      "code": "IN",
+      "name": "الهند",
+      "englishName": "India",
+      "currency": "INR",
+      "dialCode": "91",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الهند",
+        "India",
+        "IN"
+      ]
+    },
+    {
+      "code": "IO",
+      "name": "الإقليم البريطاني في المحيط الهندي",
+      "englishName": "British Indian Ocean Territory",
+      "currency": "USD",
+      "dialCode": "246",
+      "nationalPrefix": "",
+      "aliases": [
+        "الإقليم البريطاني في المحيط الهندي",
+        "British Indian Ocean Territory",
+        "IO"
+      ]
+    },
+    {
+      "code": "IQ",
+      "name": "العراق",
+      "englishName": "Iraq",
+      "currency": "IQD",
+      "dialCode": "964",
+      "nationalPrefix": "0",
+      "aliases": [
+        "العراق",
+        "Iraq",
+        "IQ"
+      ]
+    },
+    {
+      "code": "IR",
+      "name": "إيران",
+      "englishName": "Iran",
+      "currency": "IRR",
+      "dialCode": "98",
+      "nationalPrefix": "0",
+      "aliases": [
+        "إيران",
+        "Iran",
+        "IR"
+      ]
+    },
+    {
+      "code": "IS",
+      "name": "آيسلندا",
+      "englishName": "Iceland",
+      "currency": "ISK",
+      "dialCode": "354",
+      "nationalPrefix": "",
+      "aliases": [
+        "آيسلندا",
+        "Iceland",
+        "IS"
+      ]
+    },
+    {
+      "code": "IT",
+      "name": "إيطاليا",
+      "englishName": "Italy",
+      "currency": "EUR",
+      "dialCode": "39",
+      "nationalPrefix": "",
+      "aliases": [
+        "إيطاليا",
+        "Italy",
+        "IT"
+      ]
+    },
+    {
+      "code": "JE",
+      "name": "جيرسي",
+      "englishName": "Jersey",
+      "currency": "GBP",
+      "dialCode": "44",
+      "nationalPrefix": "0",
+      "aliases": [
+        "جيرسي",
+        "Jersey",
+        "JE"
+      ]
+    },
+    {
+      "code": "JM",
+      "name": "جامايكا",
+      "englishName": "Jamaica",
+      "currency": "JMD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "جامايكا",
+        "Jamaica",
+        "JM"
+      ]
+    },
+    {
+      "code": "JO",
+      "name": "الأردن",
+      "englishName": "Jordan",
+      "currency": "JOD",
+      "dialCode": "962",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الأردن",
+        "Jordan",
+        "JO"
+      ]
+    },
+    {
+      "code": "JP",
+      "name": "اليابان",
+      "englishName": "Japan",
+      "currency": "JPY",
+      "dialCode": "81",
+      "nationalPrefix": "0",
+      "aliases": [
+        "اليابان",
+        "Japan",
+        "JP"
+      ]
+    },
+    {
+      "code": "KE",
+      "name": "كينيا",
+      "englishName": "Kenya",
+      "currency": "KES",
+      "dialCode": "254",
+      "nationalPrefix": "0",
+      "aliases": [
+        "كينيا",
+        "Kenya",
+        "KE"
+      ]
+    },
+    {
+      "code": "KG",
+      "name": "قيرغيزستان",
+      "englishName": "Kyrgyzstan",
+      "currency": "KGS",
+      "dialCode": "996",
+      "nationalPrefix": "0",
+      "aliases": [
+        "قيرغيزستان",
+        "Kyrgyzstan",
+        "KG"
+      ]
+    },
+    {
+      "code": "KH",
+      "name": "كمبوديا",
+      "englishName": "Cambodia",
+      "currency": "KHR",
+      "dialCode": "855",
+      "nationalPrefix": "0",
+      "aliases": [
+        "كمبوديا",
+        "Cambodia",
+        "KH"
+      ]
+    },
+    {
+      "code": "KI",
+      "name": "كيريباتي",
+      "englishName": "Kiribati",
+      "currency": "AUD",
+      "dialCode": "686",
+      "nationalPrefix": "0",
+      "aliases": [
+        "كيريباتي",
+        "Kiribati",
+        "KI"
+      ]
+    },
+    {
+      "code": "KM",
+      "name": "جزر القمر",
+      "englishName": "Comoros",
+      "currency": "KMF",
+      "dialCode": "269",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزر القمر",
+        "Comoros",
+        "KM"
+      ]
+    },
+    {
+      "code": "KN",
+      "name": "سانت كيتس ونيفيس",
+      "englishName": "St. Kitts & Nevis",
+      "currency": "XCD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "سانت كيتس ونيفيس",
+        "St. Kitts & Nevis",
+        "KN"
+      ]
+    },
+    {
+      "code": "KP",
+      "name": "كوريا الشمالية",
+      "englishName": "North Korea",
+      "currency": "KPW",
+      "dialCode": "850",
+      "nationalPrefix": "0",
+      "aliases": [
+        "كوريا الشمالية",
+        "North Korea",
+        "KP"
+      ]
+    },
+    {
+      "code": "KR",
+      "name": "كوريا الجنوبية",
+      "englishName": "South Korea",
+      "currency": "KRW",
+      "dialCode": "82",
+      "nationalPrefix": "0",
+      "aliases": [
+        "كوريا الجنوبية",
+        "South Korea",
+        "KR"
+      ]
+    },
+    {
+      "code": "KW",
+      "name": "الكويت",
+      "englishName": "Kuwait",
+      "currency": "KWD",
+      "dialCode": "965",
+      "nationalPrefix": "",
+      "aliases": [
+        "الكويت",
+        "Kuwait",
+        "KW"
+      ]
+    },
+    {
+      "code": "KY",
+      "name": "جزر كايمان",
+      "englishName": "Cayman Islands",
+      "currency": "KYD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "جزر كايمان",
+        "Cayman Islands",
+        "KY"
+      ]
+    },
+    {
+      "code": "KZ",
+      "name": "كازاخستان",
+      "englishName": "Kazakhstan",
+      "currency": "KZT",
+      "dialCode": "7",
+      "nationalPrefix": "8",
+      "aliases": [
+        "كازاخستان",
+        "Kazakhstan",
+        "KZ"
+      ]
+    },
+    {
+      "code": "LA",
+      "name": "لاوس",
+      "englishName": "Laos",
+      "currency": "LAK",
+      "dialCode": "856",
+      "nationalPrefix": "0",
+      "aliases": [
+        "لاوس",
+        "Laos",
+        "LA"
+      ]
+    },
+    {
+      "code": "LB",
+      "name": "لبنان",
+      "englishName": "Lebanon",
+      "currency": "LBP",
+      "dialCode": "961",
+      "nationalPrefix": "0",
+      "aliases": [
+        "لبنان",
+        "Lebanon",
+        "LB"
+      ]
+    },
+    {
+      "code": "LC",
+      "name": "سانت لوسيا",
+      "englishName": "St. Lucia",
+      "currency": "XCD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "سانت لوسيا",
+        "St. Lucia",
+        "LC"
+      ]
+    },
+    {
+      "code": "LI",
+      "name": "ليختنشتاين",
+      "englishName": "Liechtenstein",
+      "currency": "CHF",
+      "dialCode": "423",
+      "nationalPrefix": "0",
+      "aliases": [
+        "ليختنشتاين",
+        "Liechtenstein",
+        "LI"
+      ]
+    },
+    {
+      "code": "LK",
+      "name": "سريلانكا",
+      "englishName": "Sri Lanka",
+      "currency": "LKR",
+      "dialCode": "94",
+      "nationalPrefix": "0",
+      "aliases": [
+        "سريلانكا",
+        "Sri Lanka",
+        "LK"
+      ]
+    },
+    {
+      "code": "LR",
+      "name": "ليبيريا",
+      "englishName": "Liberia",
+      "currency": "LRD",
+      "dialCode": "231",
+      "nationalPrefix": "0",
+      "aliases": [
+        "ليبيريا",
+        "Liberia",
+        "LR"
+      ]
+    },
+    {
+      "code": "LS",
+      "name": "ليسوتو",
+      "englishName": "Lesotho",
+      "currency": "ZAR",
+      "dialCode": "266",
+      "nationalPrefix": "",
+      "aliases": [
+        "ليسوتو",
+        "Lesotho",
+        "LS"
+      ]
+    },
+    {
+      "code": "LT",
+      "name": "ليتوانيا",
+      "englishName": "Lithuania",
+      "currency": "EUR",
+      "dialCode": "370",
+      "nationalPrefix": "0",
+      "aliases": [
+        "ليتوانيا",
+        "Lithuania",
+        "LT"
+      ]
+    },
+    {
+      "code": "LU",
+      "name": "لوكسمبورغ",
+      "englishName": "Luxembourg",
+      "currency": "EUR",
+      "dialCode": "352",
+      "nationalPrefix": "",
+      "aliases": [
+        "لوكسمبورغ",
+        "Luxembourg",
+        "LU"
+      ]
+    },
+    {
+      "code": "LV",
+      "name": "لاتفيا",
+      "englishName": "Latvia",
+      "currency": "EUR",
+      "dialCode": "371",
+      "nationalPrefix": "",
+      "aliases": [
+        "لاتفيا",
+        "Latvia",
+        "LV"
+      ]
+    },
+    {
+      "code": "LY",
+      "name": "ليبيا",
+      "englishName": "Libya",
+      "currency": "LYD",
+      "dialCode": "218",
+      "nationalPrefix": "0",
+      "aliases": [
+        "ليبيا",
+        "Libya",
+        "LY"
+      ]
+    },
+    {
+      "code": "MA",
+      "name": "المغرب",
+      "englishName": "Morocco",
+      "currency": "MAD",
+      "dialCode": "212",
+      "nationalPrefix": "0",
+      "aliases": [
+        "المغرب",
+        "Morocco",
+        "MA"
+      ]
+    },
+    {
+      "code": "MC",
+      "name": "موناكو",
+      "englishName": "Monaco",
+      "currency": "EUR",
+      "dialCode": "377",
+      "nationalPrefix": "0",
+      "aliases": [
+        "موناكو",
+        "Monaco",
+        "MC"
+      ]
+    },
+    {
+      "code": "MD",
+      "name": "مولدوفا",
+      "englishName": "Moldova",
+      "currency": "MDL",
+      "dialCode": "373",
+      "nationalPrefix": "0",
+      "aliases": [
+        "مولدوفا",
+        "Moldova",
+        "MD"
+      ]
+    },
+    {
+      "code": "ME",
+      "name": "الجبل الأسود",
+      "englishName": "Montenegro",
+      "currency": "EUR",
+      "dialCode": "382",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الجبل الأسود",
+        "Montenegro",
+        "ME"
+      ]
+    },
+    {
+      "code": "MF",
+      "name": "سان مارتن",
+      "englishName": "St. Martin",
+      "currency": "EUR",
+      "dialCode": "590",
+      "nationalPrefix": "0",
+      "aliases": [
+        "سان مارتن",
+        "St. Martin",
+        "MF"
+      ]
+    },
+    {
+      "code": "MG",
+      "name": "مدغشقر",
+      "englishName": "Madagascar",
+      "currency": "MGA",
+      "dialCode": "261",
+      "nationalPrefix": "0",
+      "aliases": [
+        "مدغشقر",
+        "Madagascar",
+        "MG"
+      ]
+    },
+    {
+      "code": "MH",
+      "name": "جزر مارشال",
+      "englishName": "Marshall Islands",
+      "currency": "USD",
+      "dialCode": "692",
+      "nationalPrefix": "1",
+      "aliases": [
+        "جزر مارشال",
+        "Marshall Islands",
+        "MH"
+      ]
+    },
+    {
+      "code": "MK",
+      "name": "مقدونيا الشمالية",
+      "englishName": "North Macedonia",
+      "currency": "MKD",
+      "dialCode": "389",
+      "nationalPrefix": "0",
+      "aliases": [
+        "مقدونيا الشمالية",
+        "North Macedonia",
+        "MK"
+      ]
+    },
+    {
+      "code": "ML",
+      "name": "مالي",
+      "englishName": "Mali",
+      "currency": "XOF",
+      "dialCode": "223",
+      "nationalPrefix": "",
+      "aliases": [
+        "مالي",
+        "Mali",
+        "ML"
+      ]
+    },
+    {
+      "code": "MM",
+      "name": "ميانمار (بورما)",
+      "englishName": "Myanmar (Burma)",
+      "currency": "MMK",
+      "dialCode": "95",
+      "nationalPrefix": "0",
+      "aliases": [
+        "ميانمار (بورما)",
+        "Myanmar (Burma)",
+        "MM"
+      ]
+    },
+    {
+      "code": "MN",
+      "name": "منغوليا",
+      "englishName": "Mongolia",
+      "currency": "MNT",
+      "dialCode": "976",
+      "nationalPrefix": "0",
+      "aliases": [
+        "منغوليا",
+        "Mongolia",
+        "MN"
+      ]
+    },
+    {
+      "code": "MO",
+      "name": "منطقة ماكاو الإدارية الخاصة",
+      "englishName": "Macao SAR China",
+      "currency": "MOP",
+      "dialCode": "853",
+      "nationalPrefix": "",
+      "aliases": [
+        "منطقة ماكاو الإدارية الخاصة",
+        "Macao SAR China",
+        "MO"
+      ]
+    },
+    {
+      "code": "MP",
+      "name": "جزر ماريانا الشمالية",
+      "englishName": "Northern Mariana Islands",
+      "currency": "USD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "جزر ماريانا الشمالية",
+        "Northern Mariana Islands",
+        "MP"
+      ]
+    },
+    {
+      "code": "MQ",
+      "name": "جزر المارتينيك",
+      "englishName": "Martinique",
+      "currency": "EUR",
+      "dialCode": "596",
+      "nationalPrefix": "0",
+      "aliases": [
+        "جزر المارتينيك",
+        "Martinique",
+        "MQ"
+      ]
+    },
+    {
+      "code": "MR",
+      "name": "موريتانيا",
+      "englishName": "Mauritania",
+      "currency": "MRU",
+      "dialCode": "222",
+      "nationalPrefix": "",
+      "aliases": [
+        "موريتانيا",
+        "Mauritania",
+        "MR"
+      ]
+    },
+    {
+      "code": "MS",
+      "name": "مونتسرات",
+      "englishName": "Montserrat",
+      "currency": "XCD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "مونتسرات",
+        "Montserrat",
+        "MS"
+      ]
+    },
+    {
+      "code": "MT",
+      "name": "مالطا",
+      "englishName": "Malta",
+      "currency": "EUR",
+      "dialCode": "356",
+      "nationalPrefix": "",
+      "aliases": [
+        "مالطا",
+        "Malta",
+        "MT"
+      ]
+    },
+    {
+      "code": "MU",
+      "name": "موريشيوس",
+      "englishName": "Mauritius",
+      "currency": "MUR",
+      "dialCode": "230",
+      "nationalPrefix": "",
+      "aliases": [
+        "موريشيوس",
+        "Mauritius",
+        "MU"
+      ]
+    },
+    {
+      "code": "MV",
+      "name": "جزر المالديف",
+      "englishName": "Maldives",
+      "currency": "MVR",
+      "dialCode": "960",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزر المالديف",
+        "Maldives",
+        "MV"
+      ]
+    },
+    {
+      "code": "MW",
+      "name": "ملاوي",
+      "englishName": "Malawi",
+      "currency": "MWK",
+      "dialCode": "265",
+      "nationalPrefix": "0",
+      "aliases": [
+        "ملاوي",
+        "Malawi",
+        "MW"
+      ]
+    },
+    {
+      "code": "MX",
+      "name": "المكسيك",
+      "englishName": "Mexico",
+      "currency": "MXN",
+      "dialCode": "52",
+      "nationalPrefix": "",
+      "aliases": [
+        "المكسيك",
+        "Mexico",
+        "MX"
+      ]
+    },
+    {
+      "code": "MY",
+      "name": "ماليزيا",
+      "englishName": "Malaysia",
+      "currency": "MYR",
+      "dialCode": "60",
+      "nationalPrefix": "0",
+      "aliases": [
+        "ماليزيا",
+        "Malaysia",
+        "MY"
+      ]
+    },
+    {
+      "code": "MZ",
+      "name": "موزمبيق",
+      "englishName": "Mozambique",
+      "currency": "MZN",
+      "dialCode": "258",
+      "nationalPrefix": "",
+      "aliases": [
+        "موزمبيق",
+        "Mozambique",
+        "MZ"
+      ]
+    },
+    {
+      "code": "NA",
+      "name": "ناميبيا",
+      "englishName": "Namibia",
+      "currency": "NAD",
+      "dialCode": "264",
+      "nationalPrefix": "0",
+      "aliases": [
+        "ناميبيا",
+        "Namibia",
+        "NA"
+      ]
+    },
+    {
+      "code": "NC",
+      "name": "كاليدونيا الجديدة",
+      "englishName": "New Caledonia",
+      "currency": "XPF",
+      "dialCode": "687",
+      "nationalPrefix": "",
+      "aliases": [
+        "كاليدونيا الجديدة",
+        "New Caledonia",
+        "NC"
+      ]
+    },
+    {
+      "code": "NE",
+      "name": "النيجر",
+      "englishName": "Niger",
+      "currency": "XOF",
+      "dialCode": "227",
+      "nationalPrefix": "",
+      "aliases": [
+        "النيجر",
+        "Niger",
+        "NE"
+      ]
+    },
+    {
+      "code": "NF",
+      "name": "جزيرة نورفولك",
+      "englishName": "Norfolk Island",
+      "currency": "AUD",
+      "dialCode": "672",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزيرة نورفولك",
+        "Norfolk Island",
+        "NF"
+      ]
+    },
+    {
+      "code": "NG",
+      "name": "نيجيريا",
+      "englishName": "Nigeria",
+      "currency": "NGN",
+      "dialCode": "234",
+      "nationalPrefix": "0",
+      "aliases": [
+        "نيجيريا",
+        "Nigeria",
+        "NG"
+      ]
+    },
+    {
+      "code": "NI",
+      "name": "نيكاراغوا",
+      "englishName": "Nicaragua",
+      "currency": "NIO",
+      "dialCode": "505",
+      "nationalPrefix": "",
+      "aliases": [
+        "نيكاراغوا",
+        "Nicaragua",
+        "NI"
+      ]
+    },
+    {
+      "code": "NL",
+      "name": "هولندا",
+      "englishName": "Netherlands",
+      "currency": "EUR",
+      "dialCode": "31",
+      "nationalPrefix": "0",
+      "aliases": [
+        "هولندا",
+        "Netherlands",
+        "NL"
+      ]
+    },
+    {
+      "code": "NO",
+      "name": "النرويج",
+      "englishName": "Norway",
+      "currency": "NOK",
+      "dialCode": "47",
+      "nationalPrefix": "",
+      "aliases": [
+        "النرويج",
+        "Norway",
+        "NO"
+      ]
+    },
+    {
+      "code": "NP",
+      "name": "نيبال",
+      "englishName": "Nepal",
+      "currency": "NPR",
+      "dialCode": "977",
+      "nationalPrefix": "0",
+      "aliases": [
+        "نيبال",
+        "Nepal",
+        "NP"
+      ]
+    },
+    {
+      "code": "NR",
+      "name": "ناورو",
+      "englishName": "Nauru",
+      "currency": "AUD",
+      "dialCode": "674",
+      "nationalPrefix": "",
+      "aliases": [
+        "ناورو",
+        "Nauru",
+        "NR"
+      ]
+    },
+    {
+      "code": "NU",
+      "name": "نيوي",
+      "englishName": "Niue",
+      "currency": "NZD",
+      "dialCode": "683",
+      "nationalPrefix": "",
+      "aliases": [
+        "نيوي",
+        "Niue",
+        "NU"
+      ]
+    },
+    {
+      "code": "NZ",
+      "name": "نيوزيلندا",
+      "englishName": "New Zealand",
+      "currency": "NZD",
+      "dialCode": "64",
+      "nationalPrefix": "0",
+      "aliases": [
+        "نيوزيلندا",
+        "New Zealand",
+        "NZ"
+      ]
+    },
+    {
+      "code": "OM",
+      "name": "عُمان",
+      "englishName": "Oman",
+      "currency": "OMR",
+      "dialCode": "968",
+      "nationalPrefix": "",
+      "aliases": [
+        "عُمان",
+        "Oman",
+        "OM"
+      ]
+    },
+    {
+      "code": "PA",
+      "name": "بنما",
+      "englishName": "Panama",
+      "currency": "PAB",
+      "dialCode": "507",
+      "nationalPrefix": "",
+      "aliases": [
+        "بنما",
+        "Panama",
+        "PA"
+      ]
+    },
+    {
+      "code": "PE",
+      "name": "بيرو",
+      "englishName": "Peru",
+      "currency": "PEN",
+      "dialCode": "51",
+      "nationalPrefix": "0",
+      "aliases": [
+        "بيرو",
+        "Peru",
+        "PE"
+      ]
+    },
+    {
+      "code": "PF",
+      "name": "بولينيزيا الفرنسية",
+      "englishName": "French Polynesia",
+      "currency": "XPF",
+      "dialCode": "689",
+      "nationalPrefix": "",
+      "aliases": [
+        "بولينيزيا الفرنسية",
+        "French Polynesia",
+        "PF"
+      ]
+    },
+    {
+      "code": "PG",
+      "name": "بابوا غينيا الجديدة",
+      "englishName": "Papua New Guinea",
+      "currency": "PGK",
+      "dialCode": "675",
+      "nationalPrefix": "",
+      "aliases": [
+        "بابوا غينيا الجديدة",
+        "Papua New Guinea",
+        "PG"
+      ]
+    },
+    {
+      "code": "PH",
+      "name": "الفلبين",
+      "englishName": "Philippines",
+      "currency": "PHP",
+      "dialCode": "63",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الفلبين",
+        "Philippines",
+        "PH"
+      ]
+    },
+    {
+      "code": "PK",
+      "name": "باكستان",
+      "englishName": "Pakistan",
+      "currency": "PKR",
+      "dialCode": "92",
+      "nationalPrefix": "0",
+      "aliases": [
+        "باكستان",
+        "Pakistan",
+        "PK"
+      ]
+    },
+    {
+      "code": "PL",
+      "name": "بولندا",
+      "englishName": "Poland",
+      "currency": "PLN",
+      "dialCode": "48",
+      "nationalPrefix": "",
+      "aliases": [
+        "بولندا",
+        "Poland",
+        "PL"
+      ]
+    },
+    {
+      "code": "PM",
+      "name": "سان بيير ومكويلون",
+      "englishName": "St. Pierre & Miquelon",
+      "currency": "EUR",
+      "dialCode": "508",
+      "nationalPrefix": "0",
+      "aliases": [
+        "سان بيير ومكويلون",
+        "St. Pierre & Miquelon",
+        "PM"
+      ]
+    },
+    {
+      "code": "PN",
+      "name": "جزر بيتكيرن",
+      "englishName": "Pitcairn Islands",
+      "currency": "NZD",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزر بيتكيرن",
+        "Pitcairn Islands",
+        "PN"
+      ]
+    },
+    {
+      "code": "PR",
+      "name": "بورتوريكو",
+      "englishName": "Puerto Rico",
+      "currency": "USD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "بورتوريكو",
+        "Puerto Rico",
+        "PR"
+      ]
+    },
+    {
+      "code": "PS",
+      "name": "فلسطين",
+      "englishName": "Palestinian Territories",
+      "currency": "ILS",
+      "dialCode": "970",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الأراضي الفلسطينية",
+        "Palestinian Territories",
+        "PS",
+        "Palestine"
+      ]
+    },
+    {
+      "code": "PT",
+      "name": "البرتغال",
+      "englishName": "Portugal",
+      "currency": "EUR",
+      "dialCode": "351",
+      "nationalPrefix": "",
+      "aliases": [
+        "البرتغال",
+        "Portugal",
+        "PT"
+      ]
+    },
+    {
+      "code": "PW",
+      "name": "بالاو",
+      "englishName": "Palau",
+      "currency": "USD",
+      "dialCode": "680",
+      "nationalPrefix": "",
+      "aliases": [
+        "بالاو",
+        "Palau",
+        "PW"
+      ]
+    },
+    {
+      "code": "PY",
+      "name": "باراغواي",
+      "englishName": "Paraguay",
+      "currency": "PYG",
+      "dialCode": "595",
+      "nationalPrefix": "0",
+      "aliases": [
+        "باراغواي",
+        "Paraguay",
+        "PY"
+      ]
+    },
+    {
+      "code": "QA",
+      "name": "قطر",
+      "englishName": "Qatar",
+      "currency": "QAR",
+      "dialCode": "974",
+      "nationalPrefix": "",
+      "aliases": [
+        "قطر",
+        "Qatar",
+        "QA"
+      ]
+    },
+    {
+      "code": "RE",
+      "name": "روينيون",
+      "englishName": "Réunion",
+      "currency": "EUR",
+      "dialCode": "262",
+      "nationalPrefix": "0",
+      "aliases": [
+        "روينيون",
+        "Réunion",
+        "RE"
+      ]
+    },
+    {
+      "code": "RO",
+      "name": "رومانيا",
+      "englishName": "Romania",
+      "currency": "RON",
+      "dialCode": "40",
+      "nationalPrefix": "0",
+      "aliases": [
+        "رومانيا",
+        "Romania",
+        "RO"
+      ]
+    },
+    {
+      "code": "RS",
+      "name": "صربيا",
+      "englishName": "Serbia",
+      "currency": "RSD",
+      "dialCode": "381",
+      "nationalPrefix": "0",
+      "aliases": [
+        "صربيا",
+        "Serbia",
+        "RS"
+      ]
+    },
+    {
+      "code": "RU",
+      "name": "روسيا",
+      "englishName": "Russia",
+      "currency": "RUB",
+      "dialCode": "7",
+      "nationalPrefix": "8",
+      "aliases": [
+        "روسيا",
+        "Russia",
+        "RU"
+      ]
+    },
+    {
+      "code": "RW",
+      "name": "رواندا",
+      "englishName": "Rwanda",
+      "currency": "RWF",
+      "dialCode": "250",
+      "nationalPrefix": "0",
+      "aliases": [
+        "رواندا",
+        "Rwanda",
+        "RW"
+      ]
+    },
+    {
+      "code": "SA",
+      "name": "السعودية",
+      "englishName": "Saudi Arabia",
+      "currency": "SAR",
+      "dialCode": "966",
+      "nationalPrefix": "0",
+      "aliases": [
+        "المملكة العربية السعودية",
+        "Saudi Arabia",
+        "SA",
+        "KSA"
+      ]
+    },
+    {
+      "code": "SB",
+      "name": "جزر سليمان",
+      "englishName": "Solomon Islands",
+      "currency": "SBD",
+      "dialCode": "677",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزر سليمان",
+        "Solomon Islands",
+        "SB"
+      ]
+    },
+    {
+      "code": "SC",
+      "name": "سيشل",
+      "englishName": "Seychelles",
+      "currency": "SCR",
+      "dialCode": "248",
+      "nationalPrefix": "",
+      "aliases": [
+        "سيشل",
+        "Seychelles",
+        "SC"
+      ]
+    },
+    {
+      "code": "SD",
+      "name": "السودان",
+      "englishName": "Sudan",
+      "currency": "SDG",
+      "dialCode": "249",
+      "nationalPrefix": "0",
+      "aliases": [
+        "السودان",
+        "Sudan",
+        "SD"
+      ]
+    },
+    {
+      "code": "SE",
+      "name": "السويد",
+      "englishName": "Sweden",
+      "currency": "SEK",
+      "dialCode": "46",
+      "nationalPrefix": "0",
+      "aliases": [
+        "السويد",
+        "Sweden",
+        "SE"
+      ]
+    },
+    {
+      "code": "SG",
+      "name": "سنغافورة",
+      "englishName": "Singapore",
+      "currency": "SGD",
+      "dialCode": "65",
+      "nationalPrefix": "",
+      "aliases": [
+        "سنغافورة",
+        "Singapore",
+        "SG"
+      ]
+    },
+    {
+      "code": "SH",
+      "name": "سانت هيلينا",
+      "englishName": "St. Helena",
+      "currency": "SHP",
+      "dialCode": "290",
+      "nationalPrefix": "",
+      "aliases": [
+        "سانت هيلينا",
+        "St. Helena",
+        "SH"
+      ]
+    },
+    {
+      "code": "SI",
+      "name": "سلوفينيا",
+      "englishName": "Slovenia",
+      "currency": "EUR",
+      "dialCode": "386",
+      "nationalPrefix": "0",
+      "aliases": [
+        "سلوفينيا",
+        "Slovenia",
+        "SI"
+      ]
+    },
+    {
+      "code": "SJ",
+      "name": "سفالبارد وجان ماين",
+      "englishName": "Svalbard & Jan Mayen",
+      "currency": "NOK",
+      "dialCode": "47",
+      "nationalPrefix": "",
+      "aliases": [
+        "سفالبارد وجان ماين",
+        "Svalbard & Jan Mayen",
+        "SJ"
+      ]
+    },
+    {
+      "code": "SK",
+      "name": "سلوفاكيا",
+      "englishName": "Slovakia",
+      "currency": "EUR",
+      "dialCode": "421",
+      "nationalPrefix": "0",
+      "aliases": [
+        "سلوفاكيا",
+        "Slovakia",
+        "SK"
+      ]
+    },
+    {
+      "code": "SL",
+      "name": "سيراليون",
+      "englishName": "Sierra Leone",
+      "currency": "SLE",
+      "dialCode": "232",
+      "nationalPrefix": "0",
+      "aliases": [
+        "سيراليون",
+        "Sierra Leone",
+        "SL"
+      ]
+    },
+    {
+      "code": "SM",
+      "name": "سان مارينو",
+      "englishName": "San Marino",
+      "currency": "EUR",
+      "dialCode": "378",
+      "nationalPrefix": "",
+      "aliases": [
+        "سان مارينو",
+        "San Marino",
+        "SM"
+      ]
+    },
+    {
+      "code": "SN",
+      "name": "السنغال",
+      "englishName": "Senegal",
+      "currency": "XOF",
+      "dialCode": "221",
+      "nationalPrefix": "",
+      "aliases": [
+        "السنغال",
+        "Senegal",
+        "SN"
+      ]
+    },
+    {
+      "code": "SO",
+      "name": "الصومال",
+      "englishName": "Somalia",
+      "currency": "SOS",
+      "dialCode": "252",
+      "nationalPrefix": "0",
+      "aliases": [
+        "الصومال",
+        "Somalia",
+        "SO"
+      ]
+    },
+    {
+      "code": "SR",
+      "name": "سورينام",
+      "englishName": "Suriname",
+      "currency": "SRD",
+      "dialCode": "597",
+      "nationalPrefix": "",
+      "aliases": [
+        "سورينام",
+        "Suriname",
+        "SR"
+      ]
+    },
+    {
+      "code": "SS",
+      "name": "جنوب السودان",
+      "englishName": "South Sudan",
+      "currency": "SSP",
+      "dialCode": "211",
+      "nationalPrefix": "0",
+      "aliases": [
+        "جنوب السودان",
+        "South Sudan",
+        "SS"
+      ]
+    },
+    {
+      "code": "ST",
+      "name": "ساو تومي وبرينسيبي",
+      "englishName": "São Tomé & Príncipe",
+      "currency": "STN",
+      "dialCode": "239",
+      "nationalPrefix": "",
+      "aliases": [
+        "ساو تومي وبرينسيبي",
+        "São Tomé & Príncipe",
+        "ST"
+      ]
+    },
+    {
+      "code": "SV",
+      "name": "السلفادور",
+      "englishName": "El Salvador",
+      "currency": "USD",
+      "dialCode": "503",
+      "nationalPrefix": "",
+      "aliases": [
+        "السلفادور",
+        "El Salvador",
+        "SV"
+      ]
+    },
+    {
+      "code": "SX",
+      "name": "سانت مارتن",
+      "englishName": "Sint Maarten",
+      "currency": "XCG",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "سانت مارتن",
+        "Sint Maarten",
+        "SX"
+      ]
+    },
+    {
+      "code": "SY",
+      "name": "سوريا",
+      "englishName": "Syria",
+      "currency": "SYP",
+      "dialCode": "963",
+      "nationalPrefix": "0",
+      "aliases": [
+        "سوريا",
+        "Syria",
+        "SY",
+        "سورية",
+        "Syrian Arab Republic"
+      ]
+    },
+    {
+      "code": "SZ",
+      "name": "إسواتيني",
+      "englishName": "Eswatini",
+      "currency": "SZL",
+      "dialCode": "268",
+      "nationalPrefix": "",
+      "aliases": [
+        "إسواتيني",
+        "Eswatini",
+        "SZ"
+      ]
+    },
+    {
+      "code": "TA",
+      "name": "تريستان دا كونا",
+      "englishName": "Tristan da Cunha",
+      "currency": "GBP",
+      "dialCode": "290",
+      "nationalPrefix": "",
+      "aliases": [
+        "تريستان دا كونا",
+        "Tristan da Cunha",
+        "TA"
+      ]
+    },
+    {
+      "code": "TC",
+      "name": "جزر توركس وكايكوس",
+      "englishName": "Turks & Caicos Islands",
+      "currency": "USD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "جزر توركس وكايكوس",
+        "Turks & Caicos Islands",
+        "TC"
+      ]
+    },
+    {
+      "code": "TD",
+      "name": "تشاد",
+      "englishName": "Chad",
+      "currency": "XAF",
+      "dialCode": "235",
+      "nationalPrefix": "",
+      "aliases": [
+        "تشاد",
+        "Chad",
+        "TD"
+      ]
+    },
+    {
+      "code": "TF",
+      "name": "الأقاليم الجنوبية الفرنسية",
+      "englishName": "French Southern Territories",
+      "currency": "EUR",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "الأقاليم الجنوبية الفرنسية",
+        "French Southern Territories",
+        "TF"
+      ]
+    },
+    {
+      "code": "TG",
+      "name": "توغو",
+      "englishName": "Togo",
+      "currency": "XOF",
+      "dialCode": "228",
+      "nationalPrefix": "",
+      "aliases": [
+        "توغو",
+        "Togo",
+        "TG"
+      ]
+    },
+    {
+      "code": "TH",
+      "name": "تايلاند",
+      "englishName": "Thailand",
+      "currency": "THB",
+      "dialCode": "66",
+      "nationalPrefix": "0",
+      "aliases": [
+        "تايلاند",
+        "Thailand",
+        "TH"
+      ]
+    },
+    {
+      "code": "TJ",
+      "name": "طاجيكستان",
+      "englishName": "Tajikistan",
+      "currency": "TJS",
+      "dialCode": "992",
+      "nationalPrefix": "",
+      "aliases": [
+        "طاجيكستان",
+        "Tajikistan",
+        "TJ"
+      ]
+    },
+    {
+      "code": "TK",
+      "name": "توكيلاو",
+      "englishName": "Tokelau",
+      "currency": "NZD",
+      "dialCode": "690",
+      "nationalPrefix": "",
+      "aliases": [
+        "توكيلاو",
+        "Tokelau",
+        "TK"
+      ]
+    },
+    {
+      "code": "TL",
+      "name": "تيمور - ليشتي",
+      "englishName": "Timor-Leste",
+      "currency": "USD",
+      "dialCode": "670",
+      "nationalPrefix": "",
+      "aliases": [
+        "تيمور - ليشتي",
+        "Timor-Leste",
+        "TL"
+      ]
+    },
+    {
+      "code": "TM",
+      "name": "تركمانستان",
+      "englishName": "Turkmenistan",
+      "currency": "TMT",
+      "dialCode": "993",
+      "nationalPrefix": "8",
+      "aliases": [
+        "تركمانستان",
+        "Turkmenistan",
+        "TM"
+      ]
+    },
+    {
+      "code": "TN",
+      "name": "تونس",
+      "englishName": "Tunisia",
+      "currency": "TND",
+      "dialCode": "216",
+      "nationalPrefix": "",
+      "aliases": [
+        "تونس",
+        "Tunisia",
+        "TN"
+      ]
+    },
+    {
+      "code": "TO",
+      "name": "تونغا",
+      "englishName": "Tonga",
+      "currency": "TOP",
+      "dialCode": "676",
+      "nationalPrefix": "",
+      "aliases": [
+        "تونغا",
+        "Tonga",
+        "TO"
+      ]
+    },
+    {
+      "code": "TR",
+      "name": "تركيا",
+      "englishName": "Türkiye",
+      "currency": "TRY",
+      "dialCode": "90",
+      "nationalPrefix": "0",
+      "aliases": [
+        "تركيا",
+        "Türkiye",
+        "TR",
+        "Turkey"
+      ]
+    },
+    {
+      "code": "TT",
+      "name": "ترينيداد وتوباغو",
+      "englishName": "Trinidad & Tobago",
+      "currency": "TTD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "ترينيداد وتوباغو",
+        "Trinidad & Tobago",
+        "TT"
+      ]
+    },
+    {
+      "code": "TV",
+      "name": "توفالو",
+      "englishName": "Tuvalu",
+      "currency": "AUD",
+      "dialCode": "688",
+      "nationalPrefix": "",
+      "aliases": [
+        "توفالو",
+        "Tuvalu",
+        "TV"
+      ]
+    },
+    {
+      "code": "TW",
+      "name": "تايوان",
+      "englishName": "Taiwan",
+      "currency": "TWD",
+      "dialCode": "886",
+      "nationalPrefix": "0",
+      "aliases": [
+        "تايوان",
+        "Taiwan",
+        "TW"
+      ]
+    },
+    {
+      "code": "TZ",
+      "name": "تنزانيا",
+      "englishName": "Tanzania",
+      "currency": "TZS",
+      "dialCode": "255",
+      "nationalPrefix": "0",
+      "aliases": [
+        "تنزانيا",
+        "Tanzania",
+        "TZ"
+      ]
+    },
+    {
+      "code": "UA",
+      "name": "أوكرانيا",
+      "englishName": "Ukraine",
+      "currency": "UAH",
+      "dialCode": "380",
+      "nationalPrefix": "0",
+      "aliases": [
+        "أوكرانيا",
+        "Ukraine",
+        "UA"
+      ]
+    },
+    {
+      "code": "UG",
+      "name": "أوغندا",
+      "englishName": "Uganda",
+      "currency": "UGX",
+      "dialCode": "256",
+      "nationalPrefix": "0",
+      "aliases": [
+        "أوغندا",
+        "Uganda",
+        "UG"
+      ]
+    },
+    {
+      "code": "UM",
+      "name": "جزر الولايات المتحدة النائية",
+      "englishName": "U.S. Outlying Islands",
+      "currency": "USD",
+      "dialCode": "",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزر الولايات المتحدة النائية",
+        "U.S. Outlying Islands",
+        "UM"
+      ]
+    },
+    {
+      "code": "US",
+      "name": "الولايات المتحدة",
+      "englishName": "United States",
+      "currency": "USD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "الولايات المتحدة",
+        "United States",
+        "US"
+      ]
+    },
+    {
+      "code": "UY",
+      "name": "أورغواي",
+      "englishName": "Uruguay",
+      "currency": "UYU",
+      "dialCode": "598",
+      "nationalPrefix": "0",
+      "aliases": [
+        "أورغواي",
+        "Uruguay",
+        "UY"
+      ]
+    },
+    {
+      "code": "UZ",
+      "name": "أوزبكستان",
+      "englishName": "Uzbekistan",
+      "currency": "UZS",
+      "dialCode": "998",
+      "nationalPrefix": "",
+      "aliases": [
+        "أوزبكستان",
+        "Uzbekistan",
+        "UZ"
+      ]
+    },
+    {
+      "code": "VA",
+      "name": "الفاتيكان",
+      "englishName": "Vatican City",
+      "currency": "EUR",
+      "dialCode": "39",
+      "nationalPrefix": "",
+      "aliases": [
+        "الفاتيكان",
+        "Vatican City",
+        "VA"
+      ]
+    },
+    {
+      "code": "VC",
+      "name": "سانت فنسنت وجزر غرينادين",
+      "englishName": "St. Vincent & Grenadines",
+      "currency": "XCD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "سانت فنسنت وجزر غرينادين",
+        "St. Vincent & Grenadines",
+        "VC"
+      ]
+    },
+    {
+      "code": "VE",
+      "name": "فنزويلا",
+      "englishName": "Venezuela",
+      "currency": "VES",
+      "dialCode": "58",
+      "nationalPrefix": "0",
+      "aliases": [
+        "فنزويلا",
+        "Venezuela",
+        "VE"
+      ]
+    },
+    {
+      "code": "VG",
+      "name": "جزر فيرجن البريطانية",
+      "englishName": "British Virgin Islands",
+      "currency": "USD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "جزر فيرجن البريطانية",
+        "British Virgin Islands",
+        "VG"
+      ]
+    },
+    {
+      "code": "VI",
+      "name": "جزر فيرجن الأمريكية",
+      "englishName": "U.S. Virgin Islands",
+      "currency": "USD",
+      "dialCode": "1",
+      "nationalPrefix": "1",
+      "aliases": [
+        "جزر فيرجن الأمريكية",
+        "U.S. Virgin Islands",
+        "VI"
+      ]
+    },
+    {
+      "code": "VN",
+      "name": "فيتنام",
+      "englishName": "Vietnam",
+      "currency": "VND",
+      "dialCode": "84",
+      "nationalPrefix": "0",
+      "aliases": [
+        "فيتنام",
+        "Vietnam",
+        "VN"
+      ]
+    },
+    {
+      "code": "VU",
+      "name": "فانواتو",
+      "englishName": "Vanuatu",
+      "currency": "VUV",
+      "dialCode": "678",
+      "nationalPrefix": "",
+      "aliases": [
+        "فانواتو",
+        "Vanuatu",
+        "VU"
+      ]
+    },
+    {
+      "code": "WF",
+      "name": "جزر والس وفوتونا",
+      "englishName": "Wallis & Futuna",
+      "currency": "XPF",
+      "dialCode": "681",
+      "nationalPrefix": "",
+      "aliases": [
+        "جزر والس وفوتونا",
+        "Wallis & Futuna",
+        "WF"
+      ]
+    },
+    {
+      "code": "WS",
+      "name": "ساموا",
+      "englishName": "Samoa",
+      "currency": "WST",
+      "dialCode": "685",
+      "nationalPrefix": "",
+      "aliases": [
+        "ساموا",
+        "Samoa",
+        "WS"
+      ]
+    },
+    {
+      "code": "XK",
+      "name": "كوسوفو",
+      "englishName": "Kosovo",
+      "currency": "EUR",
+      "dialCode": "383",
+      "nationalPrefix": "0",
+      "aliases": [
+        "كوسوفو",
+        "Kosovo",
+        "XK"
+      ]
+    },
+    {
+      "code": "YE",
+      "name": "اليمن",
+      "englishName": "Yemen",
+      "currency": "YER",
+      "dialCode": "967",
+      "nationalPrefix": "0",
+      "aliases": [
+        "اليمن",
+        "Yemen",
+        "YE"
+      ]
+    },
+    {
+      "code": "YT",
+      "name": "مايوت",
+      "englishName": "Mayotte",
+      "currency": "EUR",
+      "dialCode": "262",
+      "nationalPrefix": "0",
+      "aliases": [
+        "مايوت",
+        "Mayotte",
+        "YT"
+      ]
+    },
+    {
+      "code": "ZA",
+      "name": "جنوب أفريقيا",
+      "englishName": "South Africa",
+      "currency": "ZAR",
+      "dialCode": "27",
+      "nationalPrefix": "0",
+      "aliases": [
+        "جنوب أفريقيا",
+        "South Africa",
+        "ZA"
+      ]
+    },
+    {
+      "code": "ZM",
+      "name": "زامبيا",
+      "englishName": "Zambia",
+      "currency": "ZMW",
+      "dialCode": "260",
+      "nationalPrefix": "0",
+      "aliases": [
+        "زامبيا",
+        "Zambia",
+        "ZM"
+      ]
+    },
+    {
+      "code": "ZW",
+      "name": "زيمبابوي",
+      "englishName": "Zimbabwe",
+      "currency": "ZWG",
+      "dialCode": "263",
+      "nationalPrefix": "0",
+      "aliases": [
+        "زيمبابوي",
+        "Zimbabwe",
+        "ZW"
+      ]
+    }
+  ],
+  "currencies": {
+    "AED": "درهم إماراتي",
+    "AFN": "أفغاني",
+    "ALL": "ليك ألباني",
+    "AMD": "درام أرميني",
+    "AOA": "كوانزا أنغولي",
+    "ARS": "بيزو أرجنتيني",
+    "AUD": "دولار أسترالي",
+    "AWG": "فلورن أروبي",
+    "AZN": "مانات أذربيجان",
+    "BAM": "مارك البوسنة والهرسك قابل للتحويل",
+    "BBD": "دولار بربادوسي",
+    "BDT": "تاكا بنغلاديشي",
+    "BHD": "دينار بحريني",
+    "BIF": "فرنك بروندي",
+    "BMD": "دولار برمودي",
+    "BND": "دولار بروناي",
+    "BOB": "بوليفيانو بوليفي",
+    "BRL": "ريال برازيلي",
+    "BSD": "دولار باهامي",
+    "BTN": "نولتوم بوتاني",
+    "BWP": "بولا بتسواني",
+    "BYN": "روبل بيلاروسي",
+    "BZD": "دولار بليزي",
+    "CAD": "دولار كندي",
+    "CDF": "فرنك كونغولي",
+    "CHF": "فرنك سويسري",
+    "CLP": "بيزو تشيلي",
+    "CNY": "يوان صيني",
+    "COP": "بيزو كولومبي",
+    "CRC": "كولن كوستاريكي",
+    "CUP": "بيزو كوبي",
+    "CVE": "اسكودو الرأس الأخضر",
+    "CZK": "كرونة تشيكية",
+    "DJF": "فرنك جيبوتي",
+    "DKK": "كرونة دنماركية",
+    "DOP": "بيزو الدومنيكان",
+    "DZD": "دينار جزائري",
+    "EGP": "جنيه مصري",
+    "ERN": "ناكفا أريتري",
+    "ETB": "بير أثيوبي",
+    "EUR": "يورو",
+    "FJD": "دولار فيجي",
+    "FKP": "جنيه جزر فوكلاند",
+    "GBP": "جنيه إسترليني",
+    "GEL": "لارى جورجي",
+    "GHS": "سيدي غانا",
+    "GIP": "جنيه جبل طارق",
+    "GMD": "دلاسي غامبي",
+    "GNF": "فرنك غينيا",
+    "GTQ": "كوتزال غواتيمالا",
+    "GYD": "دولار غيانا",
+    "HKD": "دولار هونغ كونغ",
+    "HNL": "ليمبيرا هنداروس",
+    "HTG": "جوردى هايتي",
+    "HUF": "فورينت هنغاري",
+    "IDR": "روبية إندونيسية",
+    "ILS": "شيكل إسرائيلي جديد",
+    "INR": "روبية هندي",
+    "IQD": "دينار عراقي",
+    "IRR": "ريال إيراني",
+    "ISK": "كرونة أيسلندية",
+    "JMD": "دولار جامايكي",
+    "JOD": "دينار أردني",
+    "JPY": "ين ياباني",
+    "KES": "شلن كينيي",
+    "KGS": "سوم قيرغستاني",
+    "KHR": "رييال كمبودي",
+    "KMF": "فرنك جزر القمر",
+    "KPW": "وون كوريا الشمالية",
+    "KRW": "وون كوريا الجنوبية",
+    "KWD": "دينار كويتي",
+    "KYD": "دولار جزر كيمن",
+    "KZT": "تينغ كازاخستاني",
+    "LAK": "كيب لاوسي",
+    "LBP": "جنيه لبناني",
+    "LKR": "روبية سريلانكية",
+    "LRD": "دولار ليبيري",
+    "LSL": "لوتي ليسوتو",
+    "LYD": "دينار ليبي",
+    "MAD": "درهم مغربي",
+    "MDL": "ليو مولدوفي",
+    "MGA": "أرياري مدغشقر",
+    "MKD": "دينار مقدوني",
+    "MMK": "كيات ميانمار",
+    "MNT": "توغروغ منغولي",
+    "MOP": "باتاكا ماكاوي",
+    "MRU": "أوقية موريتانية",
+    "MUR": "روبية موريشيوسية",
+    "MVR": "روفيه جزر المالديف",
+    "MWK": "كواشا مالاوي",
+    "MXN": "بيزو مكسيكي",
+    "MYR": "رينغيت ماليزي",
+    "MZN": "متكال موزمبيقي",
+    "NAD": "دولار ناميبي",
+    "NGN": "نايرا نيجيري",
+    "NIO": "قرطبة نيكاراغوا",
+    "NOK": "كرونة نرويجية",
+    "NPR": "روبية نيبالي",
+    "NZD": "دولار نيوزيلندي",
+    "OMR": "ريال عماني",
+    "PAB": "بالبوا بنمي",
+    "PEN": "سول بيروفي",
+    "PGK": "كينا بابوا غينيا الجديدة",
+    "PHP": "بيزو فلبيني",
+    "PKR": "روبية باكستاني",
+    "PLN": "زلوتي بولندي",
+    "PYG": "غواراني باراغواي",
+    "QAR": "ريال قطري",
+    "RON": "ليو روماني",
+    "RSD": "دينار صربي",
+    "RUB": "روبل روسي",
+    "RWF": "فرنك رواندي",
+    "SAR": "ريال سعودي",
+    "SBD": "دولار جزر سليمان",
+    "SCR": "روبية سيشيلية",
+    "SDG": "جنيه سوداني",
+    "SEK": "كرونة سويدية",
+    "SGD": "دولار سنغافوري",
+    "SHP": "جنيه سانت هيلين",
+    "SLE": "ليون سيراليوني",
+    "SOS": "شلن صومالي",
+    "SRD": "دولار سورينامي",
+    "SSP": "جنيه جنوب السودان",
+    "STN": "دوبرا ساو تومي وبرينسيبي",
+    "SYP": "ليرة سورية",
+    "SZL": "ليلانجيني سوازيلندي",
+    "THB": "باخت تايلاندي",
+    "TJS": "سوموني طاجيكستاني",
+    "TMT": "مانات تركمانستان",
+    "TND": "دينار تونسي",
+    "TOP": "بانغا تونغا",
+    "TRY": "ليرة تركية",
+    "TTD": "دولار ترينداد وتوباغو",
+    "TWD": "دولار تايواني",
+    "TZS": "شلن تنزاني",
+    "UAH": "هريفنيا أوكراني",
+    "UGX": "شلن أوغندي",
+    "USD": "دولار أمريكي",
+    "UYU": "بيزو اوروغواي",
+    "UZS": "سوم أوزبكستاني",
+    "VES": "بوليفار فنزويلي",
+    "VND": "دونج فيتنامي",
+    "VUV": "فاتو فانواتو",
+    "WST": "تالا ساموا",
+    "XAF": "فرنك وسط أفريقي",
+    "XCD": "دولار شرق الكاريبي",
+    "XCG": "غيلدر كاريبي",
+    "XOF": "فرنك غرب أفريقي",
+    "XPF": "فرنك سي إف بي",
+    "YER": "ريال يمني",
+    "ZAR": "راند جنوب أفريقيا",
+    "ZMW": "كواشا زامبي",
+    "ZWG": "ذهب زيمبابوي"
+  }
+}
